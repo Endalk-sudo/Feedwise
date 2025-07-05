@@ -1,0 +1,26 @@
+import express from 'express';
+import authController from '../controllers/authController.js'
+
+const router = express.Router();
+
+// @route   POST /api/auth/register
+// @desc    Register a new user
+// @access  Public
+router.post('/register', authController.register);
+
+// @route   POST /api/auth/login
+// @desc    Authenticate user & get token
+// @access  Public
+router.post('/login', authController.login);
+
+// @route   POST /api/auth/refresh-token
+// @desc    Get a new access token using refresh token
+// @access  Public (but requires a valid refresh token)
+router.post('/refresh-token', authController.refreshToken);
+
+// @route   POST /api/auth/logout
+// @desc    Logout user by invalidating refresh token
+// @access  Public (requires refresh token)
+router.post('/logout', authController.logout);
+
+export default router;
