@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'; // For creating and verifying JWTs
 import User from '../models/User.js'; // User model (MongoDB)
 import RefreshToken from '../models/RefreshToken.js'; // Refresh token model
+import Organization from "../models/Organization.js"
 import dotenv from "dotenv";
 import ms from 'ms';
 
@@ -62,6 +63,11 @@ const  register = async (req, res) => {
 
         await user.save(); // Save user to database
 
+        await Organization.create({
+            ownerId: user._id,
+            name :"cafe",
+            slug :"demo-cafe"
+        })
         // Generate tokens for the new user
         const { accessToken, refreshToken } = generateTokens(user);
 
@@ -72,7 +78,7 @@ const  register = async (req, res) => {
             expiresAt: new Date(Date.now() + ms(REFRESH_EXPIRATION)), // Set expiration
         });
         await newRefreshToken.save();
-
+        
         res.status(201).json({
             msg: 'User registered successfully',
             accessToken,

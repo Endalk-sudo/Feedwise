@@ -1,35 +1,31 @@
-
 import jwt from "jsonwebtoken";
-// import { ACCESS_SECRET } from '../config/jwt.js';
-import dotenv from "dotenv";
-dotenv.config();
 
-const ACCESS_SECRET = process.env.JWT_SECRET_ACCESS;
+// This is like a security guard at the door
+// It checks if you have a valid key card (JWT token) before letting you in
 
-const verifyToken = (req, res, next) => {
-    // Get token from Authorization header (format: 'Bearer TOKEN')
-    const authHeader = req.header('Authorization');
-    if (!authHeader) {
-        return res.status(401).json({ msg: 'No token, authorization denied' });
+export const authenticateToken = (req, res, next) => {
+  // Get the token from the Authorization header
+  // Expected format: "Bearer your-token-here"
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Get the part after "Bearer"
+
+  // If no token provided, deny access
+  if (!token) {
+    return res.status(401).json({ message: "Access token required" });
+  }
+
+  // Verify the token is valid and not expired
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      // Token is invalid or expired
+      return res.status(403).json({ message: "Invalid or expired token" });
     }
 
-    const token = authHeader.split(' ')[1]; // Extract the token part
-
-    if (!token) {
-        return res.status(401).json({ msg: 'No token, authorization denied' });
-    }
-
-    try {
-        // Verify the token using the secret
-        const decoded = jwt.verify(token, ACCESS_SECRET);
-        req.user = decoded.user; // Attach user info (id, etc.) to the request
-        next(); // Continue to the next middleware or route handler
-    } catch (err) {
-        if (err.name === 'TokenExpiredError') {
-            return res.status(401).json({ msg: 'Token expired', code: 'TOKEN_EXPIRED' });
-        }
-        res.status(401).json({ msg: 'Token is not valid' });
-    }
+    // Token is valid - add organization info to the request
+    // This is like stamping your hand at a concert - now everyone knows you're allowed in
+    req.organizationId = decoded.organizationId;
+    
+    // Continue to the next step (the actual route handler)
+    next();
+  });
 };
-
-export default verifyToken;

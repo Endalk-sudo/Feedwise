@@ -1,0 +1,224 @@
+/*
+ * GRID LAYOUT FIX - EDUCATIONAL COMMENTS
+ * =====================================
+ * PROBLEM SOLVED: Fixed messy, rigid 3-column layout that didn't adapt to screen sizes
+ * SOLUTION: Created flexible 2-column grid with named areas for better organization
+ *
+ * Key improvements:
+ * 1. Replaced rigid repeat(3, 1fr) with flexible 2fr/1fr ratio
+ * 2. Added named grid areas for semantic layout control
+ * 3. Used gap instead of margins for consistent spacing
+ * 4. Made layout responsive with media queries
+ */
+.content {
+    display: grid;
+    /* 2fr for main content, 1fr for sidebar - creates 2:1 ratio */
+    grid-template-columns: 2fr 1fr;
+    /* Auto rows adapt to content height */
+    grid-template-rows: auto auto auto;
+    /* Named areas make layout semantic and easy to understand */
+    grid-template-areas:
+        "header header"    /* Full width header */
+        "qr total"         /* Main content + sidebar */
+        "latest latest";   /* Full width bottom section */
+    /* Consistent spacing between grid items */
+    gap: 1.5rem;
+    padding: 2rem;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.content > h1 {
+    grid-area: header;
+    font-size: 2rem;
+    margin: 0;
+    align-self: center;
+    color: var(--color-text-primary);
+}
+
+.qr-container {
+    grid-area: qr;
+    padding: 1.5rem;
+    background-color: var(--color-surface);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    color: var(--color-text-secondary);
+    border-radius: 12px;
+    box-shadow: var(--Layered-shadow);
+    min-height: 100px;
+}
+
+.qr-content > h2{
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.qr-content > p{
+    margin-bottom: 15px;
+    font-size: 0.6rem;
+}
+
+.btn-container{
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-container > .btn{
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--Layered-shadow);
+    transition: all 0.5s ease;
+}
+
+.btn-container > .btn:hover{
+    transform: translateY(-2px);
+}
+
+.btn-container > .btn-one{
+    background-color: var(--color-accent);
+    color: var(--color-button-text);
+}
+
+.btn-one:hover{
+    background-color: var(--color-accent-hover);
+}
+
+.btn-container > .btn-two{
+    background-color: #334155;
+    color: var(--color-button-text);
+}
+
+.btn-two:hover{
+    background-color: #475569;
+}
+
+.qr-code{
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--Layered-shadow);
+    object-fit: cover;
+}
+
+.qr-code > img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+
+.total-feedback {
+    grid-area: total;
+    padding: 1.5rem;
+    background-color: var(--color-surface);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.5rem;
+    color: var(--color-text-secondary);
+    border-radius: 12px;
+    box-shadow: var(--Layered-shadow);
+    min-height: 100px;
+}
+
+.total-feedback > p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.total-feedback > h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    color: var(--color-accent);
+}
+
+.latest-feedback {
+    grid-area: latest;
+    padding: 1.5rem;
+    background-color: var(--color-surface);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 1rem;
+    color: var(--color-text-secondary);
+    border-radius: 12px;
+    box-shadow: var(--Layered-shadow);
+    min-height: 300px;
+}
+
+.latest-feedback > h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
+    color: var(--color-text-primary);
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 0.5rem;
+    width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 1000px) {
+    .content {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "qr"
+            "total"
+            "latest";
+    }
+    .qr-container{
+        gap: 0.7rem;
+    }
+
+    .qr-code {
+        width: 110px;
+        height: 110px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .content {
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .content > h1 {
+        font-size: 1.5rem;
+    }
+    .qr-container{
+        gap: 1.5rem;
+    }
+    .qr-container {
+        flex-direction: column;
+        text-align: center;
+        min-height: auto;
+    }
+
+    .qr-content{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .qr-code {
+        margin: 0 auto;
+    }
+    
+    .qr-container,
+    .total-feedback,
+    .latest-feedback {
+        padding: 1rem;
+    }
+}
+
+

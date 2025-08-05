@@ -1,0 +1,19 @@
+
+
+.feedback-card{
+    padding: 15px;
+    background-color: var(--color-surface);
+    color: var(--color-text-secondary);
+    border-radius: 8px;
+}
+
+.feedback-card > .feedback-text{
+    margin-bottom: 6px;
+    font-size: 1.1rem;
+    color: var(--color-text-primary);
+}
+
+.feedback-card > .feedback-date{
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
