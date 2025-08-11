@@ -1,0 +1,555 @@
+/*
+  Feedback.css
+  - Component-scoped, mobile-first styles for the Feedback form
+  - Uses global CSS variables defined in :root (see styles/index.css)
+  - Focused on small screens first, then enhances at 480px and 768px
+*/
+
+/* Root container:
+   - Uses CSS grid to center content on the viewport
+   - min-height: 100dvh ensures full device height including mobile UI insets
+   - Uses proper dark theme background from color palette */
+.feedback-page {
+  min-height: 100dvh;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  padding: 16px;
+  background: var(--color-primary-bg);
+  color: var(--color-text-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle animated background pattern for modern look */
+.feedback-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Card container:
+   - Constrains width on large screens but remains full-width on mobile
+   - Modern glassmorphism effect with layered shadows
+   - Subtle border for depth */
+.feedback-card {
+  width: 100%;
+  max-width: 680px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(56, 189, 248, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+}
+
+.feedback-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg,
+    rgba(56, 189, 248, 0.05) 0%,
+    rgba(14, 165, 233, 0.05) 100%);
+  border-radius: 24px;
+  z-index: -1;
+}
+
+.feedback-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(56, 189, 248, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Header section spacing and alignment */
+.feedback-header {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  margin-bottom: 40px;
+  width: 100%;
+}
+
+/* Title with modern gradient effect and enhanced typography */
+.feedback-title {
+  font-size: 1.875rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 12px;
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg,
+    var(--color-accent) 0%,
+    #60a5fa 50%,
+    var(--color-text-primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease-in-out infinite;
+  letter-spacing: -0.025em;
+  width: 100%;
+  text-align: center;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Secondary copy with improved typography and spacing */
+.feedback-subtitle {
+  font-size: 1.0625rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  line-height: 1.5;
+  opacity: 0.9;
+  letter-spacing: 0.025em;
+}
+
+/* Form layout:
+   - Grid with gap keeps controls well-spaced on small screens */
+.feedback-form {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Labels slightly de-emphasized but readable */
+.feedback-label {
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: -12px;
+}
+
+/* Textarea with modern glassmorphism design and enhanced focus states */
+.feedback-textarea {
+  width: 100%;
+  min-height: 160px;
+  resize: vertical;
+  padding: 20px;
+  border-radius: 16px;
+  border: 2px solid var(--color-border);
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  line-height: 1.6;
+  outline: none;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  position: relative;
+}
+
+.feedback-textarea::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg,
+    rgba(56, 189, 248, 0.1) 0%,
+    rgba(14, 165, 233, 0.05) 100%);
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Placeholder with improved styling */
+.feedback-textarea::placeholder {
+  color: color-mix(in hsl, var(--color-text-secondary) 60%, transparent);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Enhanced focus state with modern glow effect */
+.feedback-textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow:
+    0 0 0 4px rgba(56, 189, 248, 0.2),
+    0 0 0 1px var(--color-accent),
+    0 8px 32px rgba(56, 189, 248, 0.15);
+  transform: translateY(-2px);
+  background: rgba(30, 41, 59, 0.8);
+}
+
+/* Invalid state styling */
+.feedback-textarea:invalid:not(:placeholder-shown) {
+  border-color: var(--color-error);
+  box-shadow:
+    0 0 0 4px rgba(239, 68, 68, 0.1),
+    0 0 0 1px var(--color-error);
+}
+
+/* Helper text communicates rules and live validation */
+.feedback-helper {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-top: -8px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+/* Modern submit button with enhanced styling and effects */
+.feedback-submit {
+  margin-top: 16px;
+  padding: 18px 28px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--color-button-bg), var(--color-accent-hover));
+  color: var(--color-button-text);
+  font-size: 1.125rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow:
+    0 8px 24px rgba(56, 189, 248, 0.3),
+    0 0 0 1px rgba(56, 189, 248, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: manipulation;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Enhanced shimmer effect */
+.feedback-submit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feedback-submit:hover::before {
+  left: 100%;
+}
+
+/* Enhanced active state */
+.feedback-submit:active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow:
+    0 4px 12px rgba(56, 189, 248, 0.2),
+    0 0 0 1px rgba(56, 189, 248, 0.1);
+}
+
+/* Enhanced hover state */
+.feedback-submit:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow:
+    0 16px 32px rgba(56, 189, 248, 0.4),
+    0 0 0 1px rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, var(--color-accent-hover), #0284c7);
+}
+
+.feedback-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Enhanced success state with modern glassmorphism design */
+.feedback-success {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+  padding: 48px 40px;
+  background: rgba(34, 197, 94, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 24px;
+  box-shadow:
+    0 16px 40px rgba(34, 197, 94, 0.2),
+    0 0 0 1px rgba(34, 197, 94, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: successSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Success state background pattern */
+.feedback-success::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+@keyframes successSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.feedback-success-title {
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: var(--color-success);
+  margin-bottom: 12px;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, var(--color-success), #4ade80);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.feedback-success-icon {
+  color: var(--color-success);
+  width: 80px;
+  height: 80px;
+  margin-bottom: 16px;
+  animation: successIconScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+  filter: drop-shadow(0 4px 12px rgba(34, 197, 94, 0.3));
+}
+
+@keyframes successIconScale {
+  from {
+    transform: scale(0) rotate(-10deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.feedback-success-msg {
+  color: var(--color-text-secondary);
+  font-size: 1.125rem;
+  max-width: 440px;
+  line-height: 1.7;
+  font-weight: 500;
+  opacity: 0.95;
+}
+
+.feedback-back-btn {
+  margin-top: 32px;
+  border-radius: 16px;
+  padding: 16px 32px;
+  width: 100%;
+  max-width: 220px;
+  align-self: center;
+  border: 2px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 4px 16px rgba(56, 189, 248, 0.2),
+    0 0 0 1px rgba(56, 189, 248, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+  overflow: hidden;
+}
+
+.feedback-back-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(56, 189, 248, 0.2) 50%,
+    transparent 100%);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feedback-back-btn:hover::before {
+  left: 100%;
+}
+
+.feedback-back-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-button-text);
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 24px rgba(56, 189, 248, 0.4),
+    0 0 0 1px rgba(56, 189, 248, 0.2);
+}
+
+.feedback-back-btn:active {
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 12px rgba(56, 189, 248, 0.2),
+    0 0 0 1px rgba(56, 189, 248, 0.1);
+}
+
+/* Accessibility: honor user's reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .feedback-submit,
+  .feedback-textarea,
+  .feedback-card,
+  .feedback-success,
+  .feedback-success-icon,
+  .feedback-back-btn {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Tablet breakpoint: enhanced spacing and typography */
+@media (min-width: 480px) {
+  .feedback-page {
+    padding: 32px;
+  }
+
+  .feedback-card {
+    padding: 40px;
+    border-radius: 28px;
+  }
+
+  .feedback-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .feedback-title {
+    font-size: 2.25rem;
+  }
+
+  .feedback-subtitle {
+    font-size: 1.125rem;
+  }
+
+  .feedback-textarea {
+    min-height: 180px;
+    font-size: 1.125rem;
+    padding: 24px;
+  }
+
+  .feedback-back-btn {
+    width: 220px;
+  }
+}
+
+/* Desktop breakpoint: enhanced layout and spacing */
+@media (min-width: 768px) {
+  .feedback-page {
+    padding: 48px;
+  }
+
+  .feedback-card {
+    padding: 56px;
+    border-radius: 32px;
+    max-width: 720px;
+  }
+
+  .feedback-title {
+    font-size: 2.75rem;
+    margin-bottom: 16px;
+  }
+
+  .feedback-subtitle {
+    font-size: 1.25rem;
+  }
+
+  .feedback-form {
+    gap: 24px;
+  }
+
+  .feedback-textarea {
+    min-height: 200px;
+    font-size: 1.125rem;
+    padding: 24px;
+  }
+
+  .feedback-submit {
+    padding: 20px 32px;
+    font-size: 1.1875rem;
+  }
+
+  .feedback-success {
+    padding: 56px;
+    border-radius: 32px;
+    max-width: 600px;
+  }
+
+  .feedback-success-title {
+    font-size: 2rem;
+  }
+
+  .feedback-success-msg {
+    font-size: 1.25rem;
+  }
+
+  .feedback-back-btn {
+    width: 240px;
+    padding: 18px 36px;
+  }
+}
+
+/* Large desktop enhancements */
+@media (min-width: 1024px) {
+  .feedback-page {
+    padding: 64px;
+  }
+
+  .feedback-card {
+    max-width: 760px;
+    padding: 64px;
+    border-radius: 36px;
+  }
+
+  .feedback-title {
+    font-size: 3rem;
+  }
+
+  .feedback-success {
+    max-width: 640px;
+    padding: 64px;
+    border-radius: 36px;
+  }
+}

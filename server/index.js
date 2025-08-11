@@ -30,7 +30,7 @@ app.use(express.json());
 // This is like connecting your building to the city's water and electricity
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/feedback-app");
+    await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/jwtAuthDB");
     console.log("✅ MongoDB connected successfully");
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);

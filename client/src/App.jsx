@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import Dashborad from "./pages/Dashborad"
 import MainContent from './components/MainContent';
 import AllFeedbacks from './components/AllFeedbacks';
+import AiPage from './pages/AiPage';
 
 function App() {
   return (
@@ -17,9 +18,13 @@ function App() {
       <Route path='/dashborad' element={ <Dashborad />}>
         <Route path='' element={<MainContent />}/>
         <Route path='feedbackes' element={<AllFeedbacks />}/>
-        <Route path='hooo' element={<MainContent />}/>
-      </ Route>
+        <Route path='categories' element={<MainContent />}/>
+        <Route path='chat-ai' element={<AiPage />}/>
+        <Route path='settings' element={<MainContent />}/>
+      </Route>
     </Routes>
+
+    
    </BrowserRouter>
   );
 }

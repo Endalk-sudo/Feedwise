@@ -2,11 +2,14 @@ import Feedback from "../models/Feedback.js"
 import Organization from "../models/Organization.js"
 
 export const getFeedback = async (req,res) => {
-    const {orgSlug} = req.body;
-
+    const {orgSlug} = req.params;
+    console.log("server is responding for the feedback request => ",orgSlug);
+    
     try {
         const org = await Organization.findOne({slug: orgSlug});
+        console.log("org =>",org);
         const allFeedbacks = await Feedback.find({organizationId: org._id});
+        console.log("allFeedbacks =>",allFeedbacks);
         if(allFeedbacks.length === 0){
             return res.status(201).json({message: "There is NO feedback"})
         } 

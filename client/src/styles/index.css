@@ -1,126 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 *{
     padding: 0;
     margin: 0;
     box-sizing: border-box;
 }
 
-
 :root {
   /* === Base Colors === */
   --color-primary-bg: #0F172A;         /* Deep Navy - main background */
-  --color-secondary-bg: #1E293B;       /* Slate Blue-Gray - secondary sections, cards */
-
-  --color-surface: #1E293B;            /* Surface background for components */
+  --color-secondary-bg: #1E293B;       /* Slate Blue-Gray - for secondary sections */
+  --color-surface: #1E293B;            /* Surface background for components like cards */
   --color-border: #334155;             /* Border color for inputs, dividers */
 
   /* === Text Colors === */
-  --color-text-primary: #F1F5F9;       /* Soft White - main text on dark */
-  --color-text-secondary: #CBD5E1;     /* Muted light gray - secondary text */
-  --color-text-invert: #0F172A;        /* Text on light backgrounds */
+  --color-text-primary: #F1F5F9;       /* Soft White - for main text on dark backgrounds */
+  --color-text-secondary: #94A3B8;     /* Muted light gray - for secondary or placeholder text */
+  --color-text-invert: #0F172A;        /* For text on light backgrounds */
 
   /* === Accent Colors === */
-  --color-accent: #38BDF8;             /* Sky Blue - links, highlights, CTAs */
-  --color-accent-hover: #0EA5E9;       /* Bright Cyan - on hover/focus */
+  --color-accent: #38BDF8;             /* Sky Blue - for links, highlights, and primary CTAs */
+  --color-accent-hover: #0EA5E9;       /* Bright Cyan - for hover/focus states */
+  --color-accent-rgb: rgb(56, 189, 248 ,0.5);    /* RGB version of accent color for transparent shadows */
 
   /* === Status Colors === */
-  --color-success: #22C55E;            /* Green - success states */
-  --color-warning: #FACC15;            /* Amber - warning states */
-  --color-error:   #EF4444;            /* Soft Red - error states */
+  --color-success: #22C55E;            /* Green for success states */
+  --color-warning: #FACC15;            /* Amber for warning states */
+  --color-error:   #EF4444;            /* Soft Red for error states */
 
   /* === Button Colors === */
   --color-button-bg: var(--color-accent);
   --color-button-hover: var(--color-accent-hover);
   --color-button-text: #FFFFFF;
 
-
   /* === Shadows === */
-  --shadow-sm: 0 2px 16px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
-  --Layered-shadow: 0 2px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --Layered-shadow: 0 0 0 1px rgba(var(--color-accent-rgb), 0.08), 0 8px 32px rgba(0,0,0,0.3);
 }
 
-body{
+body {
     color: var(--color-text-primary);
     background-color: var(--color-primary-bg);
-    font-family: sans-serif;
-}
-
-.feedback-page-container{
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.feedback-Surface{
-    padding: 20px;
-    background-color: var(--color-surface);
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    border-radius: 8px;
-    border: 1px solid var(--color-border);
-}
-
-.feedback-Surface > .feedback-content-container{
-    text-align: center;
-}
-
-.feedback-content-container > h1{
-    font-size: 1.6rem;
-    color: var(--color-text-primary);
-    margin-bottom: 10px;
-    margin-top: 10px;
-}
-
-.feedback-content-container > p{
-    color: var(--color-text-secondary);
-    font-size: 0.9rem;
-}
-
-.feedback-input-container{
-    display: flex;
-    flex-direction: column;
-}
-
-.feedback-input-container > label{
-    color: var(--color-text-secondary);
-}
-
-#feedback-input{
-    margin: 7px 0;
-    padding: 10px;
-    font-size: 0.7rem;
-    color: var(--color-text-secondary);
-    caret-color: var(--color-text-primary);
-    background-color: var(--color-secondary-bg);
-    align-self: normal;
-    resize: vertical;
-    height: 100px;
-    border-radius: 6px;
-    box-shadow: var(--shadow-md);
-    border: 2px solid var(--color-border);
-}
-
-.feedback-input-container > p{
-    color: var(--color-text-secondary);
-    font-size: 0.69rem;
-}
-
-.feedback-btn{
-    margin-top: 2rem;
-    padding: 10px 0;
-    border-radius: 8px;
-    background-color: var(--color-button-bg);
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    box-shadow: var(--shadow-lg);
-    transition: all 0.5s ease;
-}
-
-.feedback-btn:hover{
-    background-color: var(--color-button-hover);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }

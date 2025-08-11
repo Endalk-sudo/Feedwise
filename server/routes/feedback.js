@@ -11,7 +11,7 @@ const router = express.Router();
 // Purpose: Get all feedback for the logged-in organization
 // Who can use: Only authenticated organizations
 // What it returns: Array of feedback objects with text, rating, and date
-router.get("/me", authenticateToken, getFeedback);
+router.get("/me/:orgSlug", getFeedback);
 
 // POST /api/feedback
 // Purpose: Submit new feedback from customers

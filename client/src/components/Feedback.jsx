@@ -1,70 +1,150 @@
 import { useState } from "react";
-import submitFeedback from "../services/api.js"
+import submitFeedback from "../services/api.js";
+// Import component-scoped, mobile-first stylesheet
+import "./Feedback.css";
 
-// This is the main feedback form component where users can submit their feedback
+/**
+ * Feedback component
+ * - Mobile-first UI optimized for small screens
+ * - Semantic markup (section/article/header) for better structure and accessibility
+ * - Client-side validation with helpful messages
+ * - Async submit state handling and basic error reporting
+ */
 const Feedback = () => {
-  // Track whether feedback has been submitted to show thank you message
-  const [isSubmited, setIsSubmited] = useState(false)
+    // Component State
+    const [isSubmited, setIsSubmited] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const [feedback, setFeedback] = useState('');
+  
+    // Constants
+    const MIN_LEN = 10; // Minimum characters for feedback text
 
-  // This function runs when user clicks "Submit Feedback" button
+  /**
+   * Handles the form submission.
+   * - Uses the Form Actions pattern (form action={handleSubmit}) supported by React Router / modern React
+   * - Progressive enhancement: reads from FormData but falls back to local state
+   */
   const handleSubmit = async (formData) => {
-    console.log("hello endalk");
-    
-    // Get the feedback text from the form
-    const feedbackText = formData.get("feedback");
-    
-    // Send the feedback to the server using our API service
-    const message = await submitFeedback(feedbackText);
+    setError("");
+    setSubmitting(true);
 
-    console.log(message);
-    
-    // Show thank you message after successful submission
-    setIsSubmited(true);
-  }
+    // Prefer the form's POSTed value; fallback to controlled state for robustness
+    const feedbackText = formData.get('feedback') ?? feedback;
 
-  // Styling for the thank you message
-  const style = {
-    color: "#ffff",
-    padding: "2rem",
-    backgroundColor: "rgba(33, 40, 52, 1)",
-    borderRadius: "1rem",
-    boxShadow: "0px 0px 16px #ffff"
-  }
+    try {
+        await submitFeedback({
+            'comment': feedbackText.trim(),
+        });
+        setIsSubmited(true); // show thank you message
+        setFeedback(''); // reset form
+    } catch (e) {
+        setError(`Something went wrong. Please try again. ${e.message}`);
+    } finally {
+        setSubmitting(false);
+    }
+};
+
+  const handleReset = () => {
+    setIsSubmited(false);
+    setFeedback(''); // Reset feedback text
+  };
 
   return (
-    <section className="feedback-page-container">
-      
-      {/* Show either thank you message OR feedback form */}
-      {isSubmited ? 
-        // Thank you message shown after submission
-        <p style={style}>Thank you for your feedback</p>
-        : 
-        // Feedback form shown initially
-        <div className="feedback-Surface">
-            <div className="feedback-content-container">
-                <h1>Share Your Experience</h1>
-                <p>Your anonymous feedback helps us improve.</p>
-            </div>
-            
-            {/* This form sends data to handleSubmit function */}
-            <form action={handleSubmit} className="feedback-input-container">
-                <label htmlFor="feedback-input">Any comments?</label>
-                
-                {/* Text area where users type their feedback */}
-                <textarea 
-                  name="feedback" 
-                  id="feedback-input" 
-                  placeholder="Tell us about the food, the service, the atmosphere..."
-                />
-                
-                <p>Please enter at least 10 characters.</p>
-                <button className="feedback-btn">Submit Feedback</button>
-            </form>
+    // aria-live polite announces success to assistive tech without being disruptive
+    <section className="feedback-page" aria-live="polite">
+      {isSubmited ? (
+        // Success state: visually distinct card with short thank-you copy
+        <div className="feedback-success" role="status" aria-label="Feedback submitted">
+          <SuccessIcon />
+          <h2 className="feedback-success-title">Thank you for your feedback</h2>
+          <p className="feedback-success-msg">
+            We appreciate your time. Your input helps us improve the experience.
+          </p>
+          <button
+          className="feedback-back-btn"
+          onClick={handleReset}>Go Back</button>
         </div>
-      }
-        
+      ) : (
+        // Form card with clear hierarchy and spacing; optimized for mobile-first
+        <article className="feedback-card" aria-labelledby="feedback-title">
+          <header className="feedback-header">
+            <h1 id="feedback-title" className="feedback-title">Share Your Experience</h1>
+            <p className="feedback-subtitle">Your anonymous feedback helps us improve.</p>
+          </header>
+
+          {/* Use the action handler for submission; noValidate defers validation to our logic */}
+          <form action={handleSubmit} className="feedback-form" noValidate>
+            <label htmlFor="feedback-input" className="feedback-label">Share your thoughts</label>
+
+            {/* Controlled textarea provides instant validation feedback and better UX on mobile */}
+            <textarea
+              className="feedback-textarea"
+              name="feedback"
+              id="feedback-input"
+              placeholder="Tell us about your experience - what did you enjoy, what could we improve, or any suggestions you have..."
+              required
+              minLength={MIN_LEN}
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              // Mark invalid as user types if under minimum length
+              aria-invalid={feedback.length > 0 && feedback.length < MIN_LEN}
+              aria-describedby="feedback-helper"
+              disabled={submitting}
+            />
+
+            {/* Helper text communicates validation rules and current state */}
+            <p id="feedback-helper" className="feedback-helper">
+              {feedback.length < MIN_LEN
+                ? `Please enter at least ${MIN_LEN} characters.`
+                : "Looks good. You can submit now."}
+            </p>
+
+            {/* Error message region announced to screen readers */}
+            {error && (
+              <p role="alert" className="feedback-helper" style={{ color: "var(--color-error)" }}>
+                {error}
+              </p>
+            )}
+
+            {/* Disable submit while submitting or if below minimum characters */}
+            <button
+              className="feedback-submit"
+              type="submit"
+              disabled={submitting || feedback.trim().length < MIN_LEN}
+              aria-busy={submitting}
+            >
+              {submitting ? "Submitting..." : "Submit Feedback"}
+            </button>
+          </form>
+        </article>
+      )}
     </section>
-  )
-}
+  );
+};
+
+/**
+ * SuccessIcon component
+ * - Displays a checkmark icon in the success state
+ */
+const SuccessIcon = () => (
+  <svg
+    className="feedback-success-icon"
+    width="64"
+    height="64"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 export default Feedback;
