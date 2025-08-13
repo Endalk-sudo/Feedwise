@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import feedbackRoutes from "./routes/feedback.js";
 import userRoutes from "./routes/user.js";
+import aiRoutes from "./routes/ai.js"; // Import AI routes
 
 // Load environment variables from .env file
 // This is like reading configuration settings before starting
@@ -48,6 +49,9 @@ app.use("/api/auth", userRoutes);
 // Feedback routes (submit feedback, get feedback)
 // All routes starting with /api/feedback go to feedbackRoutes
 app.use("/api/feedback", feedbackRoutes);
+
+
+app.use("/api/ai", aiRoutes);
 
 // Health check endpoint
 // This is like a "ping" to check if the server is alive

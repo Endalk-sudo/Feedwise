@@ -7,9 +7,9 @@ export const getFeedback = async (req,res) => {
     
     try {
         const org = await Organization.findOne({slug: orgSlug});
-        console.log("org =>",org);
+        // console.log("org =>",org);
         const allFeedbacks = await Feedback.find({organizationId: org._id});
-        console.log("allFeedbacks =>",allFeedbacks);
+        // console.log("allFeedbacks =>",allFeedbacks);
         if(allFeedbacks.length === 0){
             return res.status(201).json({message: "There is NO feedback"})
         } 

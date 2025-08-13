@@ -21,8 +21,8 @@
   /* === Accent Colors === */
   --color-accent: #38BDF8;             /* Sky Blue - for links, highlights, and primary CTAs */
   --color-accent-hover: #0EA5E9;       /* Bright Cyan - for hover/focus states */
-  --color-accent-rgb: rgb(56, 189, 248 ,0.5);    /* RGB version of accent color for transparent shadows */
-
+  --color-accent-rgb: 56, 189, 248;    /* RGB version of accent color for transparent shadows */
+  --color-accent-rbg-shadow: rgba(56, 189, 248,0.6); 
   /* === Status Colors === */
   --color-success: #22C55E;            /* Green for success states */
   --color-warning: #FACC15;            /* Amber for warning states */

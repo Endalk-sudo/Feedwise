@@ -1,0 +1,70 @@
+/*
+ * AI Response Card Styles
+ *
+ * This file contains styling for the AI assistant's response messages.
+ * It features a clean, modern design with glass-morphism effects and
+ * proper alignment to distinguish AI responses from user messages.
+ */
+
+/* AI Response message container - left-aligned for AI responses */
+.ai-response-message {
+    display: flex;
+    gap: 12px; /* Space between avatar and message */
+    align-items: flex-start;
+    animation: slideIn 0.5s ease-out; /* Smooth entrance animation */
+    max-width: 70%;
+    margin-left: 0; /* AI messages align to the left */
+    margin-right: auto; /* Auto margin on the right */
+}
+
+/* AI Response avatar styling */
+.ai-response-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%; /* Circular avatar */
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0; /* Prevent shrinking */
+    box-shadow: 0 0 15px var(--color-accent-rbg-shadow);
+}
+
+/* AI Response content container */
+.ai-response-content {
+    flex: 1; /* Take remaining space */
+    background: rgba(15, 23, 42, 0.4); /* Semi-transparent background */
+    padding: 15px;
+    border-radius: 12px; /* Rounded corners */
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(5px); /* Subtle glass effect */
+}
+
+/* AI Response text styling */
+.ai-response-text {
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    line-height: 1.5; /* Readable line height */
+    margin-bottom: 8px;
+}
+
+/* AI Response timestamp styling */
+.ai-response-time {
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    text-align: right;
+    /* Smaller, muted timestamp text */
+}
+
+/* Slide-in animation for messages */
+@keyframes slideIn {
+    from {
+        opacity: 0; /* Start invisible */
+        transform: translateY(20px); /* Start lower */
+    }
+    to {
+        opacity: 1; /* Fully visible */
+        transform: translateY(0); /* Move to normal position */
+    }
+}

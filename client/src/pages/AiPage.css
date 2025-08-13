@@ -1,84 +1,339 @@
-.ai-app{
+/*
+ * AI Page Styles - Enhanced UI/UX Design
+ *
+ * This file contains comprehensive styling for the AI assistant page with modern design principles.
+ * Key improvements include: glass-morphism effects, smooth animations, responsive design,
+ * and enhanced user experience with proper visual hierarchy and feedback.
+ * 
+ * Updated to fix input alignment issues and separate concerns for message cards.
+ */
+
+/* Main container for the AI page */
+.ai-app {
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 100vh; /* Full viewport height */
+    background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-secondary-bg) 100%);
+    padding: 20px;
+    /* Gradient background creates depth and visual interest */
+}
+
+/* Main grid container for the AI chat interface */
+.ai-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 100px auto auto;
+    /* Using CSS Grid for layout with named areas */
+    grid-template-areas:
+        "header"      /* Header section at the top */
+        "play-ground" /* Chat messages in the middle */
+        "input";      /* Input form at the bottom */
+    align-items: stretch; /* Stretch items to fill height */
+    max-width: 800px; /* Maximum width for larger screens */
+    width: 100%;
+    height: 90vh; /* 90% of viewport height */
+    max-height: 700px; /* Maximum height limit */
+    gap: 20px; /* Space between grid items */
+}
+
+/* Header section styling */
+.ai-chat-header {
+    grid-area: header;
+    height: 100px;
+    width: 100%;
+}
+
+/* Header content with bot avatar and text */
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between avatar and text */
+    padding: 20px;
+    background: linear-gradient(135deg, var(--color-secondary-bg) 0%, rgba(30, 41, 59, 0.8) 100%);
+    border-radius: 16px; /* Rounded corners */
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg); /* Shadow for depth */
+    backdrop-filter: blur(10px); /* Glass-morphism effect */
+}
+
+/* Bot avatar with animated pulse effect */
+.bot-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%; /* Circular avatar */
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px var(--color-accent-rbg-shadow);
+    animation: pulse 2s infinite; /* Continuous pulse animation */
+}
+
+/* Bot icon styling with shadow effect */
+.bot-icon {
+    font-size: 24px;
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.3)); /* Icon shadow */
+}
+
+/* Pulse animation for bot avatar - creates a breathing effect */
+@keyframes pulse {
+    0% { box-shadow: 0 0 20px var(--color-accent-rbg-shadow); }
+    50% { box-shadow: 0 0 30px var(--color-accent-rbg-shadow), 0 0 40px var(--color-accent-rbg-shadow); }
+    100% { box-shadow: 0 0 20px var(--color-accent-rbg-shadow); }
+}
+
+/* Header text styling */
+.header-text h1 {
+    margin-bottom: 5px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    /* Gradient text effect for visual appeal */
+}
+
+.header-text p {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+    /* Subdued description text */
+}
+
+/* Chat playground area - main chat interface */
+.ai-play-ground {
+    
+    grid-area: play-ground;
+    background: linear-gradient(135deg, var(--color-secondary-bg) 0%, rgba(30, 41, 59, 0.6) 100%);
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px); /* Glass-morphism effect */
+    overflow: hidden; /* Hide overflow content */
+    display: flex;
+    flex-direction: column; /* Vertical layout */
+}
+
+/* Container for chat messages */
+.chat-messages {
+    flex: 1; /* Take available space */
+    padding: 20px;
+    overflow-y: auto; /* Enable vertical scrolling */
+    display: flex;
+    flex-direction: column; /* Stack messages vertically */
+    gap: 15px; /* Space between messages */
     
 }
 
-.ai-container{
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-areas: 
-    "header"
-    "play-ground"
-    "input";
-    align-items: start;
-    height: 100%;
-    width: 100%;
-    padding: 0 25px;
-}
-
-.ai-chat-header{
-    grid-area: header;
-    width: 100%;
-}
-
-.ai-chat-header > h1{
-    margin-bottom: 10px;
-    font-size: 1.8rem;
-}
-
-.ai-play-ground{
-    grid-area: play-ground;
-    background-color: var(--color-secondary-bg);
-    height: 370px;
-    border-radius: 12px;
-    box-shadow: var(--shadow-lg);
-    transition: all 0.3s ease;
-}
-
-
-#ai-form{
-    grid-area: input;
+/* Enhanced input form styling - FIXED POSITIONING FOR BETTER UX */
+.ai-form {
+   
     display: flex;
-    gap: 20px;
-}
-
-#ai-form > input{
-    font-size: 1.1rem;
-    flex: 1;
-    padding: 7px 15px;
-    border-radius: 12px;
-    border: none;
-    outline: none;
-    box-shadow: var(--shadow-md);
-    background-color: var(--color-surface);
+    align-self: center;
+    gap: 15px; /* Space between input and button */
+    padding: 15px;
+    background: rgba(15, 23, 42, 0.3); /* Semi-transparent background */
+    border-radius: 16px; /* Rounded corners */
     border: 1px solid var(--color-border);
+    backdrop-filter: blur(10px); /* Glass-morphism effect */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Added shadow for depth */
+}
+
+/* Chat input field styling */
+#chat-input {
+    flex: 1; /* Take available space */
+    font-size: 1rem;
+    padding: 12px 20px; /* Comfortable padding */
+    border-radius: 12px; /* Rounded corners */
+    border: 2px solid transparent; /* Transparent border */
+    background: rgba(30, 41, 59, 0.8); /* Semi-transparent background */
+    color: var(--color-text-primary);
+    outline: none; /* Remove default outline */
+    transition: all 0.3s ease; /* Smooth transitions */
+    backdrop-filter: blur(5px); /* Subtle glass effect */
+    box-shadow: 0px 0px 8px var(--color-accent-rbg-shadow);
+}
+
+/* Input placeholder styling */
+#chat-input::placeholder {
     color: var(--color-text-secondary);
-    transition: box-shadow 0.3s ease;
+    /* Muted placeholder text */
 }
 
-#ai-form > input:hover{
-    box-shadow: 0px 0px 16px var(--color-accent-rgb);
+/* Input hover effect */
+#chat-input:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 20px var(--color-accent-rbg-shadow);
+    /* Highlight on hover */
 }
 
-#ai-form > input:focus{
-    border: 2px solid var( --color-accent);
-    box-shadow: 0px 0px 25px var(--color-accent-rgb);
+/* Input focus effect */
+#chat-input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 25px var(--color-accent-rbg-shadow), 0 0 0 3px rgba(56, 189, 248, 0.1);
+    /* Strong highlight on focus */
 }
 
-#ai-form > .ai-chat-send-btn{
-    color: var();
-    background-color: var(--color-accent);
-    box-shadow: 0px 0px 34px var(--color-accent-rgb);
-    transition: all 0.3s ease-in;
+/* Enhanced send button styling */
+.ai-chat-send-btn {
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    color: white;
+    border: none; /* Remove default border */
+    border-radius: 12px; /* Rounded corners */
+    padding: 12px 20px; /* Comfortable padding */
+    font-size: 1rem;
+    font-weight: 600; /* Semi-bold text */
+    cursor: pointer; /* Pointer cursor */
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between text and icon */
+    transition: all 0.3s ease; /* Smooth transitions */
+    box-shadow: 0 4px 15px var(--color-accent-rbg-shadow);
+    min-width: 80px; /* Minimum width */
+    justify-content: center; /* Center content */
+    white-space: nowrap; /* Prevent button text from wrapping */
 }
 
-.ai-chat-send-btn:hover{
+/* Send button hover effect */
+.ai-chat-send-btn:hover {
+    transform: translateY(-2px); /* Lift up effect */
+    box-shadow: 0 6px 20px var(--color-accent-rbg-shadow);
+    /* Enhanced shadow on hover */
+}
+
+/* Send button active/click effect */
+.ai-chat-send-btn:active {
+    transform: translateY(0); /* Reset position */
+    /* Button press effect */
+}
+
+/* Button text styling */
+.btn-text {
+    font-size: 0.9rem;
+}
+
+/* Button icon styling */
+.btn-icon {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+/* Custom scrollbar styling for chat messages */
+.chat-messages::-webkit-scrollbar {
+    width: 6px; /* Narrow scrollbar */
+}
+
+/* Scrollbar track styling */
+.chat-messages::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.3); /* Semi-transparent track */
+    border-radius: 3px; /* Rounded corners */
+}
+
+/* Scrollbar thumb styling */
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--color-accent); /* Accent color thumb */
+    border-radius: 3px; /* Rounded corners */
+}
+
+/* Scrollbar thumb hover effect */
+.chat-messages::-webkit-scrollbar-thumb:hover {
     background: var(--color-accent-hover);
-    transform: translateY(-1px);
+    /* Darker accent on hover */
 }
 
-.ai-chat-send-btn:active{
-    transform: translateY(0px);
+/* Responsive Design for Tablets (768px and below) */
+@media (max-width: 768px) {
+    .ai-container {
+        height: 85vh; /* Slightly smaller height */
+        max-height: none; /* Remove max height limit */
+        gap: 15px; /* Reduced spacing */
+        padding: 0 15px; /* Reduced padding */
+    }
+    
+    .header-content {
+        padding: 15px; /* Reduced padding */
+        gap: 12px; /* Reduced spacing */
+    }
+    
+    .bot-avatar {
+        width: 40px; /* Smaller avatar */
+        height: 40px;
+    }
+    
+    .bot-icon {
+        font-size: 20px; /* Smaller icon */
+    }
+    
+    .header-text h1 {
+        font-size: 1.5rem; /* Smaller title */
+    }
+    
+    .ai-play-ground {
+        min-height: 300px; /* Minimum height for chat area */
+    }
+    
+    .chat-messages {
+        padding: 15px; /* Reduced padding */
+        padding-bottom: 100px; /* Adjusted for mobile */
+    }
+    
+    .ai-form {
+        padding: 12px; /* Reduced padding */
+        gap: 10px; /* Reduced spacing */
+        bottom: 10px; /* Adjusted for mobile */
+    }
+    
+    #chat-input {
+        padding: 10px 15px; /* Reduced padding */
+        font-size: 0.9rem; /* Smaller font */
+    }
+    
+    .ai-chat-send-btn {
+        padding: 10px 15px; /* Reduced padding */
+        min-width: 70px; /* Smaller minimum width */
+        font-size: 0.9rem; /* Smaller font */
+    }
+}
+
+/* Responsive Design for Mobile Phones (480px and below) */
+@media (max-width: 480px) {
+    .ai-app {
+        padding: 10px; /* Reduced padding */
+    }
+    
+    .ai-container {
+        gap: 10px; /* Reduced spacing */
+    }
+    
+    .header-content {
+        flex-direction: column; /* Stack avatar and text vertically */
+        text-align: center; /* Center text */
+        gap: 10px; /* Reduced spacing */
+    }
+    
+    .header-text h1 {
+        font-size: 1.3rem; /* Even smaller title */
+    }
+    
+    .header-text p {
+        font-size: 0.85rem; /* Smaller description */
+    }
+    
+    .ai-form {
+        flex-direction: column; /* Stack input and button vertically */
+        gap: 10px; /* Reduced gap */
+        padding: 10px; /* Reduced padding */
+        bottom: 10px; /* Adjusted for mobile */
+    }
+    
+    .ai-chat-send-btn {
+        width: 100%; /* Full width button */
+        padding: 12px; /* Adjusted padding */
+    }
+    
+    #chat-input {
+        width: 100%; /* Full width input */
+    }
 }
