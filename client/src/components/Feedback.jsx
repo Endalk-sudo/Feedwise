@@ -1,5 +1,4 @@
 import { useState } from "react";
-import submitFeedback from "../services/api.js";
 // Import component-scoped, mobile-first stylesheet
 import "./Feedback.css";
 
@@ -9,7 +8,7 @@ import "./Feedback.css";
  * - Semantic markup (section/article/header) for better structure and accessibility
  * - Client-side validation with helpful messages
  * - Async submit state handling and basic error reporting
- */
+ */ 
 const Feedback = () => {
     // Component State
     const [isSubmited, setIsSubmited] = useState(false);
@@ -18,7 +17,7 @@ const Feedback = () => {
     const [feedback, setFeedback] = useState('');
   
     // Constants
-    const MIN_LEN = 10; // Minimum characters for feedback text
+    const MIN_LEN = 15; // Minimum characters for feedback text
 
   /**
    * Handles the form submission.
@@ -30,23 +29,52 @@ const Feedback = () => {
     setSubmitting(true);
 
     // Prefer the form's POSTed value; fallback to controlled state for robustness
-    const feedbackText = formData.get('feedback') ?? feedback;
+    const text = formData.get('feedback') ?? feedback;
+
+    // ======================
+    // FEEDBACK SUBMISSION
+    // ======================
+
+    // This is the main function that sends feedback to your server
+    // It takes the user's feedback text and sends it to the "demo-cafe" organization
 
     try {
-        await submitFeedback({
-            'comment': feedbackText.trim(),
-        });
-        setIsSubmited(true); // show thank you message
-        setFeedback(''); // reset form
-    } catch (e) {
-        setError(`Something went wrong. Please try again. ${e.message}`);
-    } finally {
-        setSubmitting(false);
-    }
+    // Send POST request to create new feedback
+    const res = await fetch("http://localhost:5000/api/feedback/demo-cafe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }) // Send only the feedback text
+    });
+
+    setIsSubmited(true)
+    // Return the server's response (usually includes success message and feedback ID)
+    const data = await res.json()
+    console.log("feedback", data);
+    
+  } catch (error) {
+    // If anything goes wrong (network error, server down, etc.)
+    console.log("Error submitting Feedback", error.message);
+    setError(error.message)
+  }
+
+    // try {
+    //     await submitFeedback({
+    //         'comment': feedbackText.trim(),
+    //     });
+    //     setIsSubmited(true); // show thank you message
+    //     setFeedback(''); // reset form
+    // } catch (e) {
+    //     setError(`Something went wrong. Please try again. ${e.message}`);
+    // } finally {
+    //     setSubmitting(false);
+    // }
+   
+  
 };
 
   const handleReset = () => {
     setIsSubmited(false);
+    setSubmitting(false);
     setFeedback(''); // Reset feedback text
   };
 

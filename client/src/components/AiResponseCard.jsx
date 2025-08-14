@@ -20,6 +20,21 @@ import "./AiResponseCard.css"
  */
 const AiResponseCard = ({res}) => {
   console.log(res);
+
+  // Handle error object
+  if (res && res.error) {
+    return (
+      <div className="ai-response-message">
+        <div className="ai-response-avatar">🤖</div>
+        <div className="ai-response-content">
+          <div className="ai-response-text error-message" style={{color: "red"}}>
+            Error: {res.error}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="ai-response-message">
       {/* AI avatar with bot icon - provides visual identity for the AI assistant */}
@@ -29,10 +44,8 @@ const AiResponseCard = ({res}) => {
       <div className="ai-response-content">
         {/* AI response text - the main content of the message */}
         <div className="ai-response-text">
-          {res}
+          {res.response || "No response"}
         </div>
-        {/* Message timestamp - shows when the AI response was generated */}
-        <div className="ai-response-time">Just now</div>
       </div>
     </div>
   )

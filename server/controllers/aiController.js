@@ -7,7 +7,6 @@ const ai = new GoogleGenAI({apiKey: GEMINI_API_KEY});
 export default async function getAIResponse(req, res) {
   try {
     const { prompt } = req.body;
-
     if (!prompt) {
       return res.status(400).json({ error: "Prompt is required" });
     }

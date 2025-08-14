@@ -52,7 +52,7 @@ app.use("/api/feedback", feedbackRoutes);
 
 
 app.use("/api/ai", aiRoutes);
-
+ 
 // Health check endpoint
 // This is like a "ping" to check if the server is alive
 // Visit http://localhost:5000/health to see if server is running
@@ -62,7 +62,7 @@ app.get("/health", (req, res) => {
     message: "Server is running!",
     timestamp: new Date().toISOString()
   });
-});
+}); 
 
 // Start the server
 // This is like opening the building for business

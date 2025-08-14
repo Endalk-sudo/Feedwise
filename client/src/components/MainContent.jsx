@@ -2,30 +2,17 @@ import qrCode from "../assets/qr code.png"
 import { useState } from "react"
 import "./MainContent.css"
 import FeedbackCard from "./FeedbackCard"
+import { formatTimeAgo, sortFeedbackByTime } from "../utils/timeUtils";
 
 // The MainContent component serves as the landing page of the dashboard.
 // It provides a summary of feedback activity and tools for sharing the feedback link.
 function MainContent() {
     // A hardcoded array of feedback objects. In a real application, this data would be fetched from an API.
-  const [feedbacks] = useState([
-    {
-      id: 1,
-      text: "Great service! The team was very helpful and responsive to my needs.",
-      date: "2024-01-15 10:30"
-    },
-    {
-      id: 2,
-      text: "Good experience overall, but there's room for improvement in communication.",
-      date: "2024-01-14 15:45"
-    },
-    {
-      id: 3,
-      text: "Excellent product quality and fast delivery. Highly recommended!",
-      date: "2024-01-13 09:20"
-    }
-  ])
+  const [feedbacks ,setFeedbacks] = useState([])
+  
    // State to manage the "Copied!" confirmation message visibility.
   const [copied, setCopied] = useState(false)
+  const [error ,setError] = useState("")
 
    // Copies the feedback link to the user's clipboard and shows a confirmation message.
   const copyLink = () => {
@@ -44,6 +31,20 @@ function MainContent() {
 
    // Calculates the total number of feedback entries.
   const totalFeedbacks = feedbacks.length
+
+  useState(()=>{
+    fetch("http://localhost:5000/api/feedback/me/demo-cafe")
+    .then((res)=> res.json())
+    .then((data)=>{
+      console.log("data",data)
+      const sortedFeedbacks = sortFeedbackByTime(data);
+      setFeedbacks(sortedFeedbacks)
+    })
+    .catch((err)=>{
+      console.log("error",err.message);
+      setError(err.message)
+    })
+  },[])
 
   return (
     // The main container uses a grid layout to organize its sections.
@@ -100,11 +101,16 @@ function MainContent() {
         
          {/* The list renders the first three feedback items using the FeedbackCard component. */}
         <div className="feedback-list">
-          {feedbacks.slice(0, 3).map((feedback) => (
+          {error && (
+              <p role="alert" className="feedback-helper" style={{ color: "var(--color-error)" }}>
+                {error}
+              </p>
+            )}
+          {feedbacks.slice(0, 4).map((feedback) => (
             <FeedbackCard
-              key={feedback.id}
+              key={feedback._id}
               feedbackText={feedback.text}
-              date={feedback.date}
+              date={formatTimeAgo(feedback.createdAt)}
             />
           ))}
         </div>

@@ -32,8 +32,6 @@ const WelcomeMessage = () => {
                     Hello! I'm InsightBot, your AI assistant for customer feedback.
                     I can help you analyze trends, extract insights, and answer questions about your feedback data.
                 </div>
-                {/* Message timestamp showing when the message was sent */}
-                <div className="ai-response-time">Just now</div>
             </div>
         </div>
     )
@@ -59,12 +57,12 @@ const AiPage = () => {
             headers :{
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(prompt)
+            body: JSON.stringify({prompt})
         })
         .then((res)=> res.json())
         .then((resData)=>{
             setMessage((mg)=>{
-                return [...mg, <AiResponseCard res={resData}/>]
+                return [...mg, <AiResponseCard key={new Date()} res={resData}/>]
             })
         })
         .catch((err)=>{

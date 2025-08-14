@@ -36,26 +36,3 @@ export async function registerUser(username, email, password) {
   return res.json();
 }
 
-// ======================
-// FEEDBACK SUBMISSION
-// ======================
-
-// This is the main function that sends feedback to your server
-// It takes the user's feedback text and sends it to the "demo-cafe" organization
-export default async function submitFeedback(text) {
-  try {
-    // Send POST request to create new feedback
-    const res = await fetch(`${API_BASE}/feedback/demo-cafe`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }) // Send only the feedback text
-    });
-
-    // Return the server's response (usually includes success message and feedback ID)
-    return res.json();
-    
-  } catch (error) {
-    // If anything goes wrong (network error, server down, etc.)
-    console.log("Error submitting Feedback", error.message);
-  }
-}

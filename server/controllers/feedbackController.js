@@ -3,7 +3,6 @@ import Organization from "../models/Organization.js"
 
 export const getFeedback = async (req,res) => {
     const {orgSlug} = req.params;
-    console.log("server is responding for the feedback request => ",orgSlug);
     
     try {
         const org = await Organization.findOne({slug: orgSlug});
@@ -14,7 +13,7 @@ export const getFeedback = async (req,res) => {
             return res.status(201).json({message: "There is NO feedback"})
         } 
         res.status(202).json(allFeedbacks)
-
+ 
     } catch (error) {
         res.status(404).json({message: error.message})
     }
@@ -23,19 +22,17 @@ export const getFeedback = async (req,res) => {
 
 export const submitFeedback = async (req,res) => {
     const { orgSlug } = req.params;
-    console.log(orgSlug);
-    const {text,rating } = req.body;
+    const {text} = req.body;
 
     try {
         const org = await Organization.findOne({slug:orgSlug})
         if (!org) return res.status(404).json({ error: 'Organization not found' });
 
-        const feedback = Feedback.create({
+        const feedback = await Feedback.create({
             organizationId: org._id,
             text,
-            rating
         })
-
+        
         res.status(201).json({ ok: true, id: feedback._id }) 
 
     } catch (error) {
