@@ -1,4 +1,4 @@
-import React from 'react'
+import ReactMarkdown from 'react-markdown';
 import "./AiResponseCard.css"
 
 /**
@@ -44,7 +44,7 @@ const AiResponseCard = ({res}) => {
       <div className="ai-response-content">
         {/* AI response text - the main content of the message */}
         <div className="ai-response-text">
-          {res.response || "No response"}
+          <ReactMarkdown>{res.response || "No response"}</ReactMarkdown>
         </div>
       </div>
     </div>

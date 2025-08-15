@@ -45,6 +45,7 @@
 .ai-response-text {
     color: var(--color-text-primary);
     font-size: 0.95rem;
+    padding-left: 10px;
     line-height: 1.5; /* Readable line height */
     margin-bottom: 8px;
 }

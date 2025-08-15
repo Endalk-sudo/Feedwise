@@ -1,41 +1,166 @@
-import Feedback from "../models/Feedback.js"
-import Organization from "../models/Organization.js"
+/**
+ * controllers/feedbackController.js
+ *
+ * This file contains the logic for handling feedback submissions and retrieval.
+ * It uses the Google Generative AI SDK (@google/genai) to categorize feedback automatically.
+ */
 
-export const getFeedback = async (req,res) => {
-    const {orgSlug} = req.params;
-    
-    try {
-        const org = await Organization.findOne({slug: orgSlug});
-        // console.log("org =>",org);
-        const allFeedbacks = await Feedback.find({organizationId: org._id});
-        // console.log("allFeedbacks =>",allFeedbacks);
-        if(allFeedbacks.length === 0){
-            return res.status(201).json({message: "There is NO feedback"})
-        } 
-        res.status(202).json(allFeedbacks)
- 
-    } catch (error) {
-        res.status(404).json({message: error.message})
-    }
+// Import necessary modules
+import { GoogleGenAI, Type } from "@google/genai";
+import Feedback from "../models/Feedback.js";
+import Organization from "../models/Organization.js";
+import dotenv from "dotenv";
+
+dotenv.config(); // Load environment variables from .env file
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+// --- AI Model Initialization ---
+if (!GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY environment variable is not set.");
 }
 
+// Initialize the Google GenAI client
+// The constructor expects an options object with the API key
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-export const submitFeedback = async (req,res) => {
-    const { orgSlug } = req.params;
-    const {text} = req.body;
+// --- JSON Schema for AI Response ---
 
-    try {
-        const org = await Organization.findOne({slug:orgSlug})
-        if (!org) return res.status(404).json({ error: 'Organization not found' });
+// This schema defines the structure we want the AI to return in JSON format
+// This is called "structured output" - it ensures the AI responds in a predictable format
+const categorySchema = {
+  type: Type.OBJECT,
+  properties: {
+    category: {
+      type: Type.STRING, 
+      description: "The category of the feedback.", // Description for better understanding
+      // Use enum to restrict the AI to only return these specific values
+      enum: [
+        "Product/Service Quality",
+        "Staff Performance & Attitude",
+        "Ambiance & Cleanliness",
+        "Price & Value",
+        "Speed & Efficiency",
+        "Menu/Product Variety & Availability",
+        "Process & Operations",
+        "Suggestions for Improvement",
+        "Issue Resolution & Problems",
+        "Overall Experience & General Feedback",
+      ],
+    },
+    text: {
+      type: Type.STRING, 
+      description: "The original feedback text provided by the user.", // Description for better understanding
+    },
+  },
+  required: ["category", "text"],
+};
 
-        const feedback = await Feedback.create({
-            organizationId: org._id,
-            text,
-        })
-        
-        res.status(201).json({ ok: true, id: feedback._id }) 
+// --- Helper Function for AI Categorization ---
 
-    } catch (error) {
-        res.status(500).json({message: error.message})
-    }
+/**
+ * Categorizes the given feedback text using the Gemini AI model.
+ * * @param {string} originalText - The user's feedback text to categorize
+ * @returns {Promise<object>} A promise that resolves to an object with { category, text }
+ * * This function sends the feedback to the AI and requests a structured JSON response based on the defined schema.
+ */
+async function categorizeFeedback(originalText) {
+  try {
+    // Create a clear prompt for the AI
+    const prompt = `Analyze and categorize the following customer feedback.
+Return ONLY a valid JSON object with the following structure:
+{
+  "category": "...",
+  "text": "..."
 }
+The category must be one of: Product/Service Quality, Staff Performance & Attitude, Ambiance & Cleanliness, Price & Value, Speed & Efficiency, Menu/Product Variety & Availability, Process & Operations, Suggestions for Improvement, Issue Resolution & Problems, Overall Experience & General Feedback.
+
+Feedback: "${originalText}"`;
+
+    // Send the prompt to the AI model
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash", // Specify the model directly in the request
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: categorySchema,
+        temperature: 0.2,
+      },
+    });
+
+    const responseText = response.text;
+
+    // Remove Markdown code block formatting if present
+    const cleanedText = responseText.replace(/```json|```/g, '').trim();
+
+    console.log("AI Categorization Response:", cleanedText);
+
+    // Parse the JSON string into a JavaScript object
+    return JSON.parse(cleanedText);
+
+  } catch (error) {
+    console.error("Error during AI feedback categorization:", error);
+    // Provide a user-friendly error message
+    throw new Error("The AI failed to process the feedback. Please try again.");
+  }
+}
+
+// --- Route Controllers ---
+
+/**
+ * GET /:orgSlug/feedback
+ * Retrieves all feedback for a given organization.
+ */
+export const getFeedback = async (req, res) => {
+  const { orgSlug } = req.params;
+
+  try {
+    const org = await Organization.findOne({ slug: orgSlug });
+    if (!org) {
+      return res.status(404).json({ message: "Organization not found" });
+    }
+
+    const allFeedbacks = await Feedback.find({ organizationId: org._id });
+
+    res.status(200).json(allFeedbacks);
+
+  } catch (error) {
+    console.error("Error in getFeedback:", error);
+    res.status(500).json({ message: "An internal server error occurred." });
+  }
+};
+
+/**
+ * POST /:orgSlug/feedback
+ * Submits new feedback, categorizes it using AI, and saves it to the database.
+ */
+export const submitFeedback = async (req, res) => {
+  const { orgSlug } = req.params;
+  const { text } = req.body;
+
+  if (!text || typeof text !== 'string' || text.trim() === '') {
+    return res.status(400).json({ message: "Feedback text is required and cannot be empty." });
+  }
+
+  try {
+    const org = await Organization.findOne({ slug: orgSlug });
+    if (!org) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+
+    // Call the AI to categorize the feedback
+    const categorizedData = await categorizeFeedback(text);
+
+    // Create a new feedback document with the data from the AI
+    const newFeedback = await Feedback.create({
+      organizationId: org._id,
+      text: categorizedData.text,
+      category: categorizedData.category,
+    });
+
+    res.status(201).json({ ok: true, id: newFeedback._id });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
