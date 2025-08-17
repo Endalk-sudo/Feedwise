@@ -32,25 +32,28 @@ const categorySchema = {
   type: Type.OBJECT,
   properties: {
     category: {
-      type: Type.STRING, 
-      description: "The category of the feedback.", // Description for better understanding
-      // Use enum to restrict the AI to only return these specific values
+      type: Type.STRING,
+      description: "The category of the feedback.",
       enum: [
-        "Product/Service Quality",
-        "Staff Performance & Attitude",
-        "Ambiance & Cleanliness",
-        "Price & Value",
-        "Speed & Efficiency",
-        "Menu/Product Variety & Availability",
-        "Process & Operations",
-        "Suggestions for Improvement",
-        "Issue Resolution & Problems",
-        "Overall Experience & General Feedback",
+        "Product Quality & Features",
+        "Service Quality & Customer Support",
+        "Staff Behavior & Professionalism",
+        "Cleanliness & Hygiene",
+        "Pricing & Affordability",
+        "Speed of Service & Efficiency",
+        "Product Availability & Variety",
+        "Ease of Use & Accessibility",
+        "Suggestions & Recommendations",
+        "Complaint & Issue Resolution",
+        "Overall Experience & Satisfaction",
+        "Technical Issues & Bugs",
+        "Delivery & Logistics",
+        "Brand Perception & Trust",
       ],
     },
     text: {
-      type: Type.STRING, 
-      description: "The original feedback text provided by the user.", // Description for better understanding
+      type: Type.STRING,
+      description: "The original feedback text provided by the user.",
     },
   },
   required: ["category", "text"],
@@ -73,7 +76,7 @@ Return ONLY a valid JSON object with the following structure:
   "category": "...",
   "text": "..."
 }
-The category must be one of: Product/Service Quality, Staff Performance & Attitude, Ambiance & Cleanliness, Price & Value, Speed & Efficiency, Menu/Product Variety & Availability, Process & Operations, Suggestions for Improvement, Issue Resolution & Problems, Overall Experience & General Feedback.
+The category must be one of: Product Quality & Features, Service Quality & Customer Support, Staff Behavior & Professionalism, Cleanliness & Hygiene, Pricing & Affordability, Speed of Service & Efficiency, Product Availability & Variety, Ease of Use & Accessibility, Suggestions & Recommendations, Complaint & Issue Resolution, Overall Experience & Satisfaction, Technical Issues & Bugs, Delivery & Logistics, Brand Perception & Trust.
 
 Feedback: "${originalText}"`;
 
@@ -120,7 +123,7 @@ export const getFeedback = async (req, res) => {
       return res.status(404).json({ message: "Organization not found" });
     }
 
-    const allFeedbacks = await Feedback.find({ organizationId: org._id });
+    const allFeedbacks = await Feedback.find({ organizationId: org._id }).sort({createdAt: -1});
 
     res.status(200).json(allFeedbacks);
 
@@ -151,6 +154,7 @@ export const submitFeedback = async (req, res) => {
     // Call the AI to categorize the feedback
     const categorizedData = await categorizeFeedback(text);
 
+    console.log("Categorized Feedback Data:", categorizedData);
     // Create a new feedback document with the data from the AI
     const newFeedback = await Feedback.create({
       organizationId: org._id,

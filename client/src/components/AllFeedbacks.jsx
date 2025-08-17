@@ -81,6 +81,7 @@ const AllFeedbacks = () => {
               key={fb._id}
               feedbackText={fb.text}
               date={fb.createdAt}
+              category={fb.category}
             />
           ))}
         </div>

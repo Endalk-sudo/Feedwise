@@ -28,10 +28,10 @@ const feedbackSchema = new mongoose.Schema({
     maxlength: 5000      // Maximum 5000 characters (about a page of text)
   },
   
-  //catagory of feedback
-  catagory: {
+  //category of feedback
+  category: {
     type: String,
-    default: 'general',  // If not specified, use 'general'
+    required: true,      // Must have text content
     trim: true          // Remove extra spaces
   },
 

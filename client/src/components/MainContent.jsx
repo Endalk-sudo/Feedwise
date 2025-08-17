@@ -36,7 +36,6 @@ function MainContent() {
     fetch("http://localhost:5000/api/feedback/me/demo-cafe")
     .then((res)=> res.json())
     .then((data)=>{
-      console.log("data",data)
       const sortedFeedbacks = sortFeedbackByTime(data);
       setFeedbacks(sortedFeedbacks)
     })
@@ -106,11 +105,12 @@ function MainContent() {
                 {error}
               </p>
             )}
-          {feedbacks.slice(0, 4).map((feedback) => (
+          {feedbacks.slice(0, 3).map((feedback) => (
             <FeedbackCard
               key={feedback._id}
               feedbackText={feedback.text}
               date={formatTimeAgo(feedback.createdAt)}
+              category={feedback.category}
             />
           ))}
         </div>
