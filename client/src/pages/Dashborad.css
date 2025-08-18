@@ -1,91 +1,214 @@
 /*
+  DASHBOARD PAGE STYLES
+  This CSS file contains all styling for the dashboard page layout and components.
+  It uses CSS Grid for the main layout and includes responsive design for mobile devices.
+  Uses the established color palette from index.css for consistency.
+*/
+
+/*
   APP LAYOUT GRID
   Defines the primary structure of the application using CSS Grid.
+  - Creates a two-column layout with fixed sidebar and flexible content area
+  - Uses CSS Grid areas for easy layout management
+  - Implements responsive behavior for mobile devices
+  - Enhanced with modern design elements and consistent theming
 */
 .app {
   display: grid;
-  grid-template-columns: 260px 1fr; /* Fixed sidebar width */
-  grid-template-rows: 72px 1fr;    /* Fixed header height */
+  grid-template-columns: 280px 1fr; /* Enhanced sidebar width */
+  grid-template-rows: 80px 1fr;    /* Enhanced header height */
   grid-template-areas:
     "header header"
     "sidebar content";
   min-height: 100vh;
   background-color: var(--color-primary-bg);
+  transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /*
   HEADER STYLES
-  A sticky bar at the top of the page with a clean, modern look.
+  A sticky navigation bar at the top of the page with a clean, modern look.
+  - Contains user profile image and logout button
+  - Uses backdrop filter for glassmorphism effect
+  - Stays fixed at the top when scrolling
 */
 .header {
   grid-area: header;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 32px;
-  background-color: rgba(15, 23, 42, 0.8); /* Slightly transparent background */
-  backdrop-filter: saturate(180%) blur(10px);
-  border-bottom: 1px solid var(--color-border);
+  padding: 0 24px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  min-height: 72px;
 }
 
-.header > .img-container {
-  height: 48px;
-  width: 48px;
-  border-radius: 50%;
-  overflow: hidden;
-  cursor: pointer;
+.header-left{
+  display: flex;
+  gap: 50px;
+  align-items: center;
 }
 
+/* Logo Container */
+.header > .header-left > .img-container {
+  height: 60px;
+  width: 60px;
+  border-radius: 12px; /* Modern rounded corners */
+  overflow: hidden; /* Clip image to circle */
+  cursor: pointer; /* Clickable */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.header > .header-left > .img-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo Image Styling */
 .img-container > img {
   height: 100%;
   width: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Contain to show full logo without cropping */
+  object-position: center;
 }
 
+/* Fallback logo styling */
+.img-container:has(img:not([src])) {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Button Container for Header Actions */
 .btn-container {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px; /* Space between buttons */
 }
 
-.logout-btn {
-  color: var(--color-text-secondary);
-  background-color: transparent;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  border: 1px solid transparent;
+/* User Profile Icon */
+.user-profile-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  transition: all 0.2s ease;
+}
+
+.user-profile-icon:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Logout Button Styling */
+.logout-btn {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.1);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.logout-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .logout-btn:hover {
-  color: var(--color-text-primary);
-  background-color: var(--color-border);
+  color: #f1f5f9;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.logout-btn:hover::before {
+  left: 100%;
+}
+
+.logout-btn:active {
+  transform: translateY(0);
 }
 
 /*
   SIDEBAR STYLES
   Provides primary navigation with a clean, spacious design.
+  - Contains navigation links for different sections
+  - Sticky positioning for consistent navigation
+  - Scrollable content for long navigation lists
 */
+/* Sidebar Container */
 .sidebar {
   grid-area: sidebar;
-  background-color: var(--color-secondary-bg);
-  border-right: 1px solid var(--color-border);
-  padding: 32px;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  border-right: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 24px;
   position: sticky;
   top: 72px; /* Aligns with header height */
-  height: calc(100vh - 72px);
-  overflow-y: auto;
+  height: calc(100vh - 72px); /* Full viewport height minus header */
+  overflow-y: auto; /* Enable scrolling for long content */
+  transition: left 0.3s; /* Smooth slide animation for mobile */
+}
+
+/* Sidebar scrollbar styling */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.1);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Navigation Container */
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Space between navigation items */
+  padding: 0 16px;
 }
 
 /*
   MAIN CONTENT AREA
   The scrollable area where page content is rendered.
+  - Takes up the remaining grid space after header and sidebar
+  - Has proper padding for content spacing
+  - Handles overflow for long content
 */
 .app > :where(main, section, div):not(.header):not(.sidebar) {
   grid-area: content;
@@ -94,30 +217,135 @@
 }
 
 /*
-  NAVIGATION LINK STYLES
+  NAVIGATION LINK STYLES (Alternative Styling)
   Modern, clean navigation links with clear hover and active states.
+  This appears to be an alternative styling for navigation items.
+  - Smaller font size compared to sidebar nav items
+  - Different spacing and visual effects
 */
 .nav-item {
   font-size: 0.95rem;
   text-decoration: none;
-  display: block;
-  color: var(--color-text-secondary);
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #94a3b8;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 500;
+  position: relative;
+  overflow: hidden;
 }
 
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0 3px 3px 0;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+/* Navigation Link Hover State */
 .nav-item:hover {
-  background-color: rgba(148, 163, 184, 0.1);
-  color: var(--color-text-primary);
+  background: rgba(148, 163, 184, 0.1);
+  color: #f1f5f9;
+  transform: translateX(4px);
 }
 
+.nav-item:hover::before {
+  transform: translateX(0);
+}
+
+/* Navigation Link Active State */
 .nav-item.active {
-  background-color: var(--color-accent);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  color: #f1f5f9;
   font-weight: 600;
-  color: white;
-  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.25);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  border: 1px solid rgba(102, 126, 234, 0.3);
 }
 
+.nav-item.active::before {
+  transform: translateX(0);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/*
+    MOBILE RESPONSIVE STYLES (max-width: 900px)
+    - Hides the sidebar by default on mobile devices
+    - Implements a slide-in sidebar that can be toggled
+    - Adds backdrop blur and shadow effects for better visual hierarchy
+    - Uses CSS transitions for smooth animations
+  */
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 0 1fr; /* Hide sidebar column */
+    }
+    .sidebar {
+      position: fixed;
+      left: -260px; /* Hide sidebar off-screen */
+      /* top: 72px; */
+      top: 0px;
+      width: 260px;
+      height: 100vh;
+      /* height: calc(100vh - 72px); */
+      background: rgba(15, 23, 42, 0.98); /* Semi-transparent dark background */
+      box-shadow: 2px 0 12px rgba(0,0,0,0.08); /* Subtle shadow */
+      z-index: 200; /* Ensure sidebar appears above other content */
+      transition: left 0.3s; /* Smooth slide animation */
+      border-right: 1px solid var(--color-border);
+    }
+    .sidebar.open {
+      left: 0 ; /* Show sidebar when open */
+    }
+    .sidebar-header{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .sidebar-toggle-btn {
+      display: inline-flex;
+      background: rgba(148, 163, 184, 0.1);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      margin-left: 8px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 10px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .sidebar-toggle-btn:hover {
+      background: rgba(148, 163, 184, 0.2);
+      border-color: rgba(148, 163, 184, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
+    }
+    .sidebar-toggle-btn:active {
+      transform: translateY(0);
+    }
+  }
+
+  /*
+    DESKTOP RESPONSIVE STYLES (min-width: 901px)
+    - Hides the sidebar toggle button on desktop devices
+    - Shows the sidebar permanently on larger screens
+  */
+  @media (min-width: 901px) {
+    .sidebar-toggle-btn {
+      display: none; /* Hide toggle button on desktop */
+    }
+  }
