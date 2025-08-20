@@ -1,13 +1,1038 @@
-.home{
-    color: white;
+
+/*
+ * Navigation Bar Styles: Fixed top bar with glassmorphism effect for modern look
+ * Improvements: Added backdrop blur, gradient background, smooth animation, and responsive padding
+ */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  height: 70px;
+  width: 100%;
+  padding: 20px clamp(1rem, 5vw, 4rem); /* Responsive padding using clamp() */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(12px); /* Glassmorphism effect */
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%); /* Gradient background */
+  border-bottom: 1px solid rgba(51, 65, 85, 0.3); /* Subtle border */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); /* Enhanced shadow for depth */
+  animation: slideDown 0.6s ease-out; /* Smooth slide-in animation */
+}
+
+/* Responsive adjustments for navigation bar and logo on tablets and mobile */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 15px 1.5rem;
+    height: 60px;
+  }
+  
+  .ai-logo {
+    font-size: 1.5rem;
+  }
+  
+  .nav-links {
+    gap: 15px;
+  }
+  
+  .nav-links a {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+  }
+  
+  .cta-primary-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Animation for navbar sliding down on page load */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Logo Styles: Large, bold, with accent underline on hover */
+.ai-logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: -0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated underline for logo on hover */
+.ai-logo::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--color-accent);
+  transition: width 0.3s ease;
+}
+
+.ai-logo:hover::before {
+  width: 100%;
+}
+
+/* Accent color for 'AI' part of logo */
+.ai-logo > .logo-color {
+  color: var(--color-accent);
+  position: relative;
+}
+
+.ai-logo > .logo-color::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.ai-logo:hover > .logo-color::after {
+  transform: scaleX(1);
+}
+
+/* Navigation Links: Horizontal list with spacing and hover effect */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+  align-items: center;
+}
+
+/* Individual nav link styles: rounded, color, hover transition */
+.nav-links a {
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  color: var(--color-text-secondary);
+}
+
+.nav-links a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 12px;
+  transition: width 0.3s ease;
+  z-index: -1;
+}
+
+.nav-links a:hover::before {
+  width: 100%;
+}
+
+.nav-links a:hover {
+  color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+/* Primary Call-to-Action Button: Gradient, shadow, hover animation */
+.cta-primary-btn {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  color: var(--color-text-primary);
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-primary-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.cta-primary-btn:hover::before {
+  left: 100%;
+}
+
+.cta-primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(56, 189, 248, 0.4);
+}
+
+.cta-primary-btn:active {
+  transform: translateY(-1px);
+}
+
+/* Main Content Wrapper: Padding and margin to offset navbar */
+main {
+  padding: 0 clamp(1rem, 5vw, 5rem);
+  margin-top: 70px;
+}
+
+/* Responsive Design */
+/* Responsive adjustments for hero, solution, and features sections on medium screens */
+@media (max-width: 1024px) {
+  .hero {
+    gap: 30px;
+  }
+  
+  .hero > .cta-btn-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .solutions-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .solution-img-container {
+    order: -1;
+  }
+}
+
+/* Responsive adjustments for hero, problem, features, and footer on tablets/mobile */
+@media (max-width: 768px) {
+  .hero {
+    min-height: 80vh;
+    gap: 25px;
+  }
+  
+  .hero > .hero-heading {
+    font-size: clamp(2rem, 8vw, 2.5rem);
+  }
+  
+  .hero > .hero-sub-heading {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+  }
+  
+  .hero > .cta-btn-container {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .problem-section,
+  .features-section {
+    padding: 40px 0;
+    gap: 40px;
+  }
+  
+  .problem-content,
+  .solution-content,
+  .feature-content {
+    margin: 0 20px;
+  }
+  
+  .problem-items-container,
+  .features-card-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 0 10px;
+  }
+  
+  .sp-section,
+  .closing-section {
+    height: 70vh;
+    padding: 40px 0;
+  }
+  
+  .sp-section > .sp-container {
+    padding: 30px;
+    max-width: 95%;
+  }
+  
+  .sp-container > h2 {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+  
+  .sp-container > p {
+    font-size: clamp(1rem, 3vw, 1.3rem);
+  }
+  
+  .closing-section h2 {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+  
+  .closing-section p {
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
+  }
+  
+  footer {
+    padding: 2rem 1.5rem;
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+}
+
+/* Responsive adjustments for smallest screens (mobile) */
+@media (max-width: 480px) {
+  .hero {
+    min-height: 70vh;
+    gap: 20px;
+  }
+  
+  .hero > .hero-heading {
+    font-size: clamp(1.8rem, 8vw, 2.2rem);
+  }
+  
+  .hero > .hero-sub-heading {
+    font-size: clamp(0.8rem, 3vw, 1rem);
+  }
+  
+  .cta-btn-container > .cta-main-btn,
+  .cta-btn-container > .cta-secondary-btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+  
+  .problem-section,
+  .features-section {
+    padding: 30px 0;
+    gap: 30px;
+  }
+  
+  .problem-content,
+  .solution-content,
+  .feature-content {
+    margin: 0 15px;
+  }
+  
+  .problem-items-container,
+  .features-card-container {
+    gap: 15px;
+  }
+  
+  .problem-items-container > .problem-item,
+  .features-card-container > .feature-card {
+    padding: 20px;
+  }
+  
+  .sp-section,
+  .closing-section {
+    height: 60vh;
+    padding: 30px 0;
+  }
+  
+  .sp-section > .sp-container {
+    padding: 20px;
+  }
+  
+  .sp-container > .custommer-detailes {
+    padding: 15px;
+  }
+  
+  .custommer-detailes p {
+    font-size: 1rem;
+  }
+}
+
+/* Hero Section: Centered headline, subheading, and CTA buttons with background gradients */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative radial gradient background for hero section */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
+  z-index: -1;
+}
+
+/* Hero Headline: Large, bold, animated on load */
+.hero > .hero-heading {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  max-width: 800px;
+  text-align: center;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+/* Fade-in-up animation for hero and other sections */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accent color and underline for highlighted text in hero headline */
+.hero > .hero-heading > span {
+  color: var(--color-accent);
+  position: relative;
+  display: inline-block;
+}
+
+/* Animated underline for hero headline accent */
+.hero > .hero-heading > span::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--color-accent);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+/* Show underline on hover for hero headline accent */
+.hero:hover > .hero-heading > span::after {
+  transform: scaleX(1);
+}
+
+/* Hero Subheading: Centered, muted color, animated */
+.hero > .hero-sub-heading {
+  max-width: 700px;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  text-align: center;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  color: var(--color-text-secondary);
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+/* Container for main and secondary CTA buttons in hero section */
+.hero > .cta-btn-container {
+  margin-top: 30px;
+  display: flex;
+  gap: 20px;
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+/* Main CTA button: prominent, with animated shine on hover */
+.cta-btn-container > .cta-main-btn {
+  padding: 14px 32px;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-btn-container > .cta-main-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.cta-btn-container > .cta-main-btn:hover::before {
+  left: 100%;
+}
+
+/* Secondary CTA button: outlined, accent color, hover effect */
+.cta-btn-container > .cta-secondary-btn {
+  margin-left: 0;
+  padding: 14px 32px;
+  color: var(--color-accent);
+  background-color: transparent;
+  border: 2px solid var(--color-accent);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-btn-container > .cta-secondary-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.3s ease;
+  z-index: -1;
+}
+
+.cta-btn-container > .cta-secondary-btn:hover::before {
+  width: 100%;
+}
+
+.cta-btn-container > .cta-secondary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3);
+  color: var(--color-text-primary);
+}
+
+.cta-btn-container > .cta-secondary-btn:active {
+  transform: translateY(-1px);
+}
+
+/* Problem Section: Highlights business pain points, uses gradient background */
+.problem-section {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+  position: relative;
+  background: linear-gradient(180deg, transparent 0%, rgba(30, 41, 59, 0.1) 100%);
+  padding: 60px 0;
+}
+
+/* Problem Section Content: Centered headline and description */
+.problem-content {
+  margin: 0 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+.problem-content > h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.problem-content > p {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 700px;
+}
+
+/* Grid of individual problem items/cards */
+.problem-items-container {
+  margin-top: 60px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+/* Individual Problem Card: Gradient, shadow, hover effect */
+.problem-items-container > .problem-item {
+  padding: 30px;
+  background: linear-gradient(135deg, var(--color-surface) 0%, rgba(30, 41, 59, 0.5) 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(51, 65, 85, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.problem-items-container > .problem-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.problem-items-container > .problem-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: var(--color-accent);
+}
+
+.problem-items-container > .problem-item:hover::before {
+  transform: scaleX(1);
+}
+
+.problem-items-container > .problem-item > h3 {
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.problem-items-container > .problem-item > p {
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Solution Section: Explains how FeedbackAI solves problems, with image and features */
+.solution-section {
+  margin-top: 7rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  position: relative;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.02) 0%, rgba(30, 41, 59, 0.05) 100%);
+  padding: 80px 0;
+}
+
+/* Solution Section Content: Centered headline and description */
+.solution-section > .solution-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  text-align: center;
+  animation: fadeInUp 0.8s ease-out 0.8s both;
+}
+
+.solution-content > h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.solution-content > p {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 700px;
+}
+
+/* Grid layout for solution image and feature list */
+.solutions-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-content: space-between;
+  gap: 60px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Container for solution image, with hover effect */
+.solution-img-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.solution-img-container > .solution-img {
+  max-width: 450px;
+  height: auto;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(56, 189, 248, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.solution-img-container > .solution-img::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.solution-img-container:hover > .solution-img {
+  transform: scale(1.05);
+  box-shadow: 0 30px 80px rgba(56, 189, 248, 0.4);
+}
+
+.solution-img-container:hover > .solution-img::before {
+  opacity: 1;
+}
+
+/* solution image */
+/* Solution image styling: responsive, rounded */
+.solution-img > img {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  object-fit: cover;
+}
+
+/* List of solution feature cards */
+.solution-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* Individual Solution Card: Gradient, shadow, hover effect */
+.solution-items-container > .solution-item {
+  padding: 30px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.9) 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.solution-items-container > .solution-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.solution-items-container > .solution-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: var(--color-accent);
+}
+
+.solution-items-container > .solution-item:hover::before {
+  transform: scaleX(1);
+}
+
+.solution-item > h3 {
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.solution-item > p {
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.6;
 }
 
 
-:root {
-  --color-black: #141414;
-  --color-pixie-powder: #28148c;
-  --color-persian-indigo: #281478;
-  --color-turquoise: #50f0dc;
-  --color-deep-violet: #281464;
-  --color-eerie-black: #141428;
+/* Features Section: Grid of product features, gradient background */
+.features-section {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  position: relative;
+  background: linear-gradient(180deg, transparent 0%, rgba(30, 41, 59, 0.1) 100%);
+  padding: 80px 0;
+}
+
+/* Features Section Content: Centered headline */
+.features-section > .feature-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: fadeInUp 0.8s ease-out 1s both;
+}
+
+.feature-content > h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Grid layout for feature cards */
+.features-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+/* Individual Feature Card: Gradient, shadow, hover effect */
+.features-card-container > .feature-card {
+  padding: 35px;
+  background: linear-gradient(135deg, var(--color-surface) 0%, rgba(30, 41, 59, 0.5) 100%);
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(51, 65, 85, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.8s ease-out 1.2s both;
+}
+
+.features-card-container > .feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.features-card-container > .feature-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  border-color: var(--color-accent);
+}
+
+.features-card-container > .feature-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Feature Card Headline: accent underline on hover */
+.feature-card > h3 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  position: relative;
+  display: inline-block;
+}
+
+.feature-card > h3::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: var(--color-accent);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.features-card-container > .feature-card:hover > h3::after {
+  transform: scaleX(1);
+}
+
+/* Feature Card Description: muted color, readable */
+.feature-card > p {
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+
+/* Social Proof Section: Testimonial card with gradient background */
+.sp-section {
+  margin-top: 5rem;
+  width: 100%;
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.05) 0%, rgba(30, 41, 59, 0.1) 100%);
+  padding: 60px 0;
+}
+
+/* Testimonial Card: Centered, shadow, accent border */
+.sp-section > .sp-container {
+  padding: 50px;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.95) 100%);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.8s ease-out 1.4s both;
+}
+
+.sp-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+}
+
+/* Testimonial Headline: gradient text */
+.sp-container > h2 {
+  text-align: center;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Testimonial Text: muted color, readable */
+.sp-container > p {
+  color: var(--color-text-secondary);
+  text-align: center;
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+  line-height: 1.6;
+  max-width: 700px;
+}
+
+/* Customer Details: name and role, accent background */
+.sp-container > .custommer-detailes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+/* Customer name styling */
+.custommer-detailes p {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+/* Customer role accent color */
+.custommer-detailes .color {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+
+/* Closing Section: Final CTA, gradient background, centered */
+.closing-section {
+  width: 100%;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  position: relative;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.1) 0%, rgba(30, 41, 59, 0.15) 100%);
+  padding: 80px 0;
+  animation: fadeInUp 0.8s ease-out 1.6s both;
+}
+
+/* Closing Headline: gradient text */
+.closing-section h2 {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-align: center;
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Closing Description: muted color, readable */
+.closing-section p {
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  color: var(--color-text-secondary);
+  text-align: center;
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+
+/* Footer: repeats logo, links, copyright, with gradient and blur */
+
+footer {
+  padding: 3rem 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(51, 65, 85, 0.3);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.98) 100%);
+  backdrop-filter: blur(10px);
+  animation: fadeInUp 0.8s ease-out 1.8s both;
+}
+
+/* Copyright text styling in footer */
+footer .mg {
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Copyright text accent color on hover */
+footer .mg:hover {
+  color: var(--color-accent);
+  transition: color 0.3s ease;
 }
