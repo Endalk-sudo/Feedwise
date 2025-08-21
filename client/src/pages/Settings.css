@@ -1,0 +1,427 @@
+/*
+ * Settings Page Styles - Modern, responsive design with enhanced UX
+ *
+ * This CSS file provides comprehensive styling for the Settings page component.
+ * It follows modern CSS best practices with:
+ * - CSS custom properties for consistent theming
+ * - Responsive design with mobile-first approach
+ * - Smooth transitions and hover effects
+ * - Accessible color contrast and focus states
+ * - Organized CSS structure with clear comments
+ *
+ * Design System:
+ * - Uses CSS variables defined in index.css for consistent theming
+ * - Implements card-based layout with subtle shadows
+ * - Provides clear visual hierarchy with typography and spacing
+ * - Includes loading states and interactive feedback
+ */
+
+/* === LAYOUT & CONTAINERS === */
+
+/* Main settings container - provides overall page structure */
+.setting {
+    padding: 40px 20px; /* Generous padding for desktop, reduced on mobile */
+    background-color: var(--color-secondary-bg); /* Uses theme background color */
+    min-height: 100vh; /* Ensures full viewport height */
+    font-family: 'Inter', sans-serif; /* Clean, modern font from Google Fonts */
+}
+
+/* Settings header section - page title and description */
+.settings-header {
+    text-align: center;
+    margin-bottom: 40px; /* Spacing below header */
+    padding: 0 20px; /* Horizontal padding for smaller screens */
+}
+
+.settings-header h1 {
+    font-size: 2.5rem; /* Large, prominent title */
+    font-weight: 700; /* Bold weight for emphasis */
+    margin-bottom: 10px; /* Spacing below title */
+    background: linear-gradient(120deg, var(--color-text-primary), var(--color-accent)); /* Gradient text effect */
+    -webkit-background-clip: text; /* Clip background to text (WebKit) */
+    -webkit-text-fill-color: transparent; /* Make text transparent to show background */
+    background-clip: text; /* Standard CSS property */
+    color: transparent; /* Fallback for older browsers */
+}
+
+.settings-header p {
+    font-size: 1.1rem; /* Readable description text */
+    color: var(--color-text-secondary); /* Muted color for secondary text */
+    font-weight: 400; /* Normal weight */
+}
+
+/* Main settings form container - constrains width and centers content */
+.settings-form {
+    max-width: 800px; /* Maximum width for large screens */
+    margin: 0 auto; /* Center horizontally */
+    display: flex; /* Flexbox for layout */
+    flex-direction: column; /* Stack sections vertically */
+    gap: 30px; /* Consistent spacing between sections */
+}
+
+/* === SECTION STYLING === */
+
+/* Individual settings sections - card-based design */
+.settings-section {
+    background: var(--color-surface); /* Surface color for cards */
+    border-radius: 16px; /* Large border radius for modern look */
+    padding: 30px; /* Generous internal spacing */
+    border: 1px solid var(--color-border); /* Subtle border definition */
+    box-shadow: var(--shadow-lg); /* Consistent shadow from theme */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover animations */
+}
+
+.settings-section:hover {
+    transform: translateY(-2px); /* Lift effect on hover */
+    box-shadow: var(--shadow-xl); /* Enhanced shadow on hover */
+}
+
+/* Section headers - provide visual grouping */
+.section-header {
+    margin-bottom: 25px; /* Spacing below header */
+    padding-bottom: 15px; /* Creates visual separation */
+    border-bottom: 1px solid var(--color-border); /* Divider line */
+}
+
+.section-header h2 {
+    font-size: 1.5rem; /* Prominent section title */
+    font-weight: 600; /* Semi-bold for emphasis */
+    margin-bottom: 8px; /* Spacing below title */
+    color: var(--color-text-primary); /* Primary text color */
+}
+
+.section-description {
+    color: var(--color-text-secondary); /* Muted color for descriptions */
+    font-size: 0.95rem; /* Slightly smaller than body text */
+    line-height: 1.5; /* Improved readability */
+}
+
+/* === FORM ELEMENTS === */
+
+/* Form groups - consistent spacing and structure */
+.form-group {
+    margin-bottom: 25px; /* Consistent spacing between form elements */
+}
+
+.form-group label {
+    display: block; /* Makes label full width */
+    margin-bottom: 8px; /* Spacing below label */
+    font-weight: 500; /* Medium weight for emphasis */
+    color: var(--color-text-primary); /* Primary text color */
+    font-size: 0.95rem; /* Slightly smaller than body text */
+}
+
+.field-description {
+    color: var(--color-text-secondary); /* Muted color for helper text */
+    font-size: 0.85rem; /* Small text for descriptions */
+    margin-bottom: 12px; /* Spacing below description */
+    line-height: 1.4; /* Compact line height */
+}
+
+/* Input field styling - modern, clean appearance */
+.form-group input[type="text"] {
+    width: 100%; /* Full width within form group */
+    max-width: 500px; /* Maximum width for readability */
+    padding: 12px 16px; /* Comfortable padding for touch targets */
+    border-radius: 8px; /* Slightly rounded corners */
+    font-size: 1rem; /* Standard font size */
+    color: var(--color-text-primary); /* Primary text color */
+    background-color: var(--color-secondary-bg); /* Secondary background */
+    border: 2px solid var(--color-border); /* Visible border */
+    outline: none; /* Remove default outline */
+    transition: all 0.2s ease; /* Smooth transitions */
+    box-shadow: var(--shadow-sm); /* Subtle shadow for depth */
+}
+
+/* Input hover state - provides visual feedback */
+.form-group input[type="text"]:hover {
+    border-color: var(--color-accent-hover); /* Highlight border on hover */
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1); /* Subtle glow effect */
+}
+
+/* Input focus state - indicates active input */
+.form-group input[type="text"]:focus {
+    border-color: var(--color-accent); /* Accent color for focus */
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); /* Enhanced glow effect */
+}
+
+/* Input error state - indicates validation issues */
+.form-group input[type="text"].error {
+    border-color: var(--color-error); /* Error color for validation */
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); /* Subtle red glow */
+}
+
+/* Character counter - shows input length limits */
+.char-count {
+    display: block; /* Full width element */
+    text-align: right; /* Right-aligned text */
+    font-size: 0.8rem; /* Small text */
+    color: var(--color-text-secondary); /* Muted color */
+    margin-top: 4px; /* Minimal spacing above */
+}
+
+/* === LOGO UPLOAD STYLING === */
+
+/* Logo upload container - wraps upload area */
+.logo-upload-container {
+    margin-top: 12px; /* Spacing above container */
+}
+
+/* Upload placeholder area - visual upload target */
+.logo-upload-placeholder {
+    border: 2px dashed var(--color-border); /* Dashed border for upload area */
+    border-radius: 12px; /* Rounded corners */
+    padding: 40px 20px; /* Generous padding for click area */
+    text-align: center; /* Centered content */
+    cursor: pointer; /* Indicates clickable area */
+    transition: all 0.2s ease; /* Smooth transitions */
+    background: var(--color-secondary-bg); /* Background color */
+}
+
+/* Upload placeholder hover state */
+.logo-upload-placeholder:hover {
+    border-color: var(--color-accent); /* Highlight border on hover */
+    background: rgba(56, 189, 248, 0.05); /* Subtle accent background */
+}
+
+/* Upload icon styling */
+.logo-upload-placeholder .upload-icon {
+    font-size: 2rem; /* Large, visible icon */
+    margin-bottom: 10px; /* Spacing below icon */
+}
+
+/* Upload placeholder text */
+.logo-upload-placeholder p {
+    color: var(--color-text-primary); /* Primary text color */
+    font-weight: 500; /* Medium weight */
+    margin-bottom: 4px; /* Spacing below text */
+}
+
+/* Upload subtext styling */
+.upload-subtext {
+    color: var(--color-text-secondary); /* Muted color */
+    font-size: 0.85rem; /* Small text */
+}
+
+/* Logo preview container - wraps preview image */
+.logo-preview-container {
+    position: relative; /* Enables absolute positioning for remove button */
+    display: inline-block; /* Fits content size */
+}
+
+/* Logo preview image styling */
+.logo-preview {
+    max-width: 200px; /* Maximum width */
+    max-height: 200px; /* Maximum height */
+    border-radius: 8px; /* Rounded corners */
+    object-fit: contain; /* Maintains aspect ratio */
+    border: 2px solid var(--color-border); /* Border for definition */
+    background: var(--color-secondary-bg); /* Background for transparency */
+}
+
+/* Remove button styling */
+.remove-logo-btn {
+    position: absolute; /* Positioned relative to preview container */
+    top: -8px; /* Positioned above image */
+    right: -8px; /* Positioned to the right */
+    background: var(--color-error); /* Error color for remove action */
+    color: white; /* White text for contrast */
+    border: none; /* No border */
+    border-radius: 50%; /* Circular button */
+    width: 24px; /* Fixed width */
+    height: 24px; /* Fixed height */
+    cursor: pointer; /* Indicates clickable */
+    font-size: 14px; /* Appropriate icon size */
+    display: flex; /* Flexbox for centering */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    transition: all 0.2s ease; /* Smooth transitions */
+}
+
+/* Remove button hover state */
+.remove-logo-btn:hover {
+    background: #dc2626; /* Darker red on hover */
+    transform: scale(1.1); /* Slight scale effect */
+}
+
+/* === BUTTONS & ACTIONS === */
+
+/* Form actions container - wraps action buttons */
+.form-actions {
+    display: flex; /* Flexbox for button layout */
+    gap: 12px; /* Consistent spacing between buttons */
+    justify-content: flex-end; /* Align buttons to right */
+    margin-top: 30px; /* Spacing above buttons */
+    padding-top: 20px; /* Creates visual separation */
+    border-top: 1px solid var(--color-border); /* Divider line */
+}
+
+/* Base button styling - shared by all buttons */
+.btn-primary, .btn-secondary {
+    padding: 12px 24px; /* Comfortable padding */
+    border-radius: 8px; /* Slightly rounded corners */
+    font-size: 0.95rem; /* Readable text size */
+    font-weight: 500; /* Medium weight */
+    border: none; /* No border */
+    cursor: pointer; /* Indicates clickable */
+    transition: all 0.2s ease; /* Smooth transitions */
+    display: inline-flex; /* Flexbox for icon + text */
+    align-items: center; /* Center vertically */
+    gap: 8px; /* Spacing between icon and text */
+}
+
+/* Primary button styling - main action */
+.btn-primary {
+    background: var(--color-accent); /* Accent color from theme */
+    color: white; /* White text for contrast */
+}
+
+/* Primary button hover state */
+.btn-primary:hover:not(:disabled) {
+    background: var(--color-accent-hover); /* Darker accent on hover */
+    transform: translateY(-1px); /* Slight lift effect */
+    box-shadow: var(--shadow-md); /* Enhanced shadow */
+}
+
+/* Primary button disabled state */
+.btn-primary:disabled {
+    background: var(--color-border); /* Muted color when disabled */
+    cursor: not-allowed; /* Indicates not clickable */
+    opacity: 0.6; /* Reduced opacity */
+}
+
+/* Secondary button styling - secondary action */
+.btn-secondary {
+    background: var(--color-secondary-bg); /* Secondary background */
+    color: var(--color-text-primary); /* Primary text color */
+    border: 1px solid var(--color-border); /* Subtle border */
+}
+
+/* Secondary button hover state */
+.btn-secondary:hover:not(:disabled) {
+    background: var(--color-border); /* Highlight background on hover */
+    border-color: var(--color-accent-hover); /* Highlight border */
+}
+
+/* Secondary button disabled state */
+.btn-secondary:disabled {
+    opacity: 0.6; /* Reduced opacity */
+    cursor: not-allowed; /* Indicates not clickable */
+}
+
+/* === LOADING & FEEDBACK === */
+
+/* Loading spinner animation */
+.spinner {
+    width: 16px; /* Fixed width */
+    height: 16px; /* Fixed height */
+    border: 2px solid rgba(255, 255, 255, 0.3); /* Light border */
+    border-radius: 50%; /* Circular spinner */
+    border-top-color: white; /* Top border in white for rotation effect */
+    animation: spin 0.8s linear infinite; /* Continuous rotation */
+}
+
+/* Keyframe animation for spinner rotation */
+@keyframes spin {
+    to { transform: rotate(360deg); } /* Full rotation */
+}
+
+/* Error message styling */
+.error-message {
+    color: var(--color-error); /* Error color from theme */
+    font-size: 0.85rem; /* Small text */
+    margin-top: 6px; /* Spacing above message */
+    display: block; /* Full width element */
+}
+
+/* Success message styling */
+.success-message {
+    background: rgba(34, 197, 94, 0.1); /* Light green background */
+    color: var(--color-success); /* Success color from theme */
+    padding: 12px 16px; /* Comfortable padding */
+    border-radius: 8px; /* Rounded corners */
+    border: 1px solid rgba(34, 197, 94, 0.2); /* Subtle border */
+    margin-top: 16px; /* Spacing above message */
+    font-size: 0.9rem; /* Readable text size */
+}
+
+/* Coming soon placeholder styling */
+.coming-soon {
+    text-align: center; /* Centered content */
+    padding: 40px 20px; /* Generous padding */
+    color: var(--color-text-secondary); /* Muted color */
+    background: var(--color-secondary-bg); /* Secondary background */
+    border-radius: 8px; /* Rounded corners */
+    border: 1px solid var(--color-border); /* Subtle border */
+}
+
+.coming-soon p {
+    font-size: 1.1rem; /* Readable text size */
+}
+
+/* === RESPONSIVE DESIGN === */
+
+/* Tablet and mobile responsive styles */
+@media (max-width: 768px) {
+    .setting {
+        padding: 20px 15px; /* Reduced padding for smaller screens */
+    }
+    
+    .settings-header h1 {
+        font-size: 2rem; /* Slightly smaller title */
+    }
+    
+    .settings-section {
+        padding: 20px; /* Reduced padding for sections */
+    }
+    
+    .form-actions {
+        flex-direction: column; /* Stack buttons vertically */
+    }
+    
+    .btn-primary, .btn-secondary {
+        width: 100%; /* Full width buttons */
+        justify-content: center; /* Center button content */
+    }
+    
+    .form-group input[type="text"] {
+        max-width: 100%; /* Full width inputs */
+    }
+}
+
+/* Mobile responsive styles */
+@media (max-width: 480px) {
+    .settings-header h1 {
+        font-size: 1.5rem; /* Even smaller title for very small screens */
+    }
+    
+    .settings-section {
+        padding: 15px; /* Minimal padding for very small screens */
+    }
+    
+    .section-header h2 {
+        font-size: 1.2rem; /* Smaller section titles */
+    }
+    
+    .logo-upload-placeholder {
+        padding: 30px 15px; /* Reduced padding for upload area */
+    }
+}
+
+/* === UTILITY CLASSES === */
+
+/* Hidden element utility class - completely hides elements while maintaining functionality */
+.hidden {
+    display: none !important; /* Force hidden state with !important */
+    visibility: hidden; /* Additional hiding method */
+    position: absolute; /* Remove from document flow */
+    width: 0 !important; /* Zero width */
+    height: 0 !important; /* Zero height */
+    padding: 0 !important; /* No padding */
+    margin: 0 !important; /* No margin */
+    border: none !important; /* No border */
+    overflow: hidden !important; /* No overflow */
+    clip: rect(0, 0, 0, 0) !important; /* Clip to zero size */
+    clip-path: inset(50%) !important; /* Modern clipping method */
+    white-space: nowrap !important; /* No whitespace */
+}

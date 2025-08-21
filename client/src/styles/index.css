@@ -15,7 +15,7 @@ html {
   --color-primary-bg: #0F172A;         /* Deep Navy - main background */
   --color-secondary-bg: #1E293B;       /* Slate Blue-Gray - for secondary sections */
   --color-surface: #1E293B;            /* Surface background for components like cards */
-  --color-border: #334155;             /* Border color for inputs, dividers */
+  --color-border: #334155;              /* Border color for inputs, dividers */
 
   /* === Text Colors === */
   --color-text-primary: #F1F5F9;       /* Soft White - for main text on dark backgrounds */

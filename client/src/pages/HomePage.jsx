@@ -327,8 +327,8 @@ const HomePage = () => {
             <div className="footer-group">
               <h4>Product</h4>
               <ul>
-                <li><a href="#">Features</a></li>
-                <li><a href="#">Pricing</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#pricing">Pricing</a></li>
                 <li><a href="#">Demo</a></li>
               </ul>
             </div>

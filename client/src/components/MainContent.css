@@ -11,6 +11,7 @@
   It uses a responsive grid system to create a flexible and visually appealing layout.
 */
 .content {
+  margin-top: 0px;
   display: grid;
   grid-template-columns: 2fr 1fr;
   grid-template-rows: auto auto 1fr;
