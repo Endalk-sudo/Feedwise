@@ -6,6 +6,10 @@
     box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* === Base Colors === */
   --color-primary-bg: #0F172A;         /* Deep Navy - main background */

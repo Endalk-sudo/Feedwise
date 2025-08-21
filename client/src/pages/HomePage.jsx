@@ -2,11 +2,17 @@
 import "./HomePage.css";
 // Import the AI image asset used in the solution section
 import aiImage from "../assets/Gemini_Generated_Image_d20azfd20azfd20a.png"
+import { useState } from "react";
 
 
 
 // HomePage component renders the main landing page for the FeedbackAI app
 const HomePage = () => {
+  const [isOpen ,setIsOpen] = useState(false);
+
+  const toggle =()=>{
+    setIsOpen((p)=>!p);
+  }
   return (
     <>
       {/* Navigation Bar: Contains logo, navigation links, and CTA button */}
@@ -14,12 +20,46 @@ const HomePage = () => {
         <div class="ai-logo">
             Feedback<span class="logo-color">AI</span>
         </div>
-        <ul class="nav-links">
-            <li><a>Features</a></li>
-            <li><a>Pricing</a></li>
-            <li><a>Login</a></li>
+        <ul className={`nav-links ${isOpen ? "expand" : ""}`}>
+          <li><a href="#features" onClick={() => setIsOpen(false)}>Features</a></li>
+          <li><a href="#pricing" onClick={() => setIsOpen(false)}>Pricing</a></li>
+          <li><a href="#login" onClick={() => setIsOpen(false)}>Login</a></li>
+          <button className="btn cta-primary-btn">Get Started →</button>
         </ul>
-        <button class="btn cta-primary-btn">Get Started →</button>
+        <button
+          onClick={toggle}
+          className="open"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isOpen}
+          aria-controls="nav-links"
+          tabIndex={0}
+          role="button"
+        >
+          {isOpen ? (
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"   /* 1 */
+              strokeWidth="2"         /* 2 */
+              strokeLinecap="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          ) : (
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          )}
+        </button>
       </nav>
 
       <main>
@@ -127,7 +167,7 @@ const HomePage = () => {
         </section>
 
         {/* Features Section: Details all the main features of FeedbackAI */}
-        <section className="features-section">
+        <section className="features-section" id="features">
               <div className="feature-content">
                   <h2>Everything You Need to Become a Customer-Centric Business</h2>
               </div>
@@ -201,6 +241,64 @@ const HomePage = () => {
           </div>
         </section>
 
+        {/* Pricing Section: Outlines the pricing plans available */}
+        <section className="pricing-section" id="pricing">
+          <div className="pricing-content">
+            <h2>Choose the Plan That Grows With You</h2>
+            <p>Simple, transparent pricing. No hidden fees. Cancel anytime.</p>
+          </div>
+
+          <div className="pricing-cards-container">
+            {/* Starter Plan */}
+            <div className="pricing-card">
+              <div className="card-header">
+                <h3 className="plan-name">Starter</h3>
+                <p className="plan-description">Perfect for getting started with customer feedback.</p>
+                <p className="price">$0</p>
+              </div>
+              <ul className="features-list">
+                <li>Collect up to 50 feedbacks/month</li>
+                <li>Basic AI Summaries</li>
+                <li>1 Dashboard User</li>
+              </ul>
+              <button className="btn cta-primary-btn pricing-cta-btn">Start for Free</button>
+            </div>
+
+            {/* Pro Plan (Most Popular) */}
+            <div className="pricing-card popular">
+              <div className="card-header">
+                <h3 className="plan-name">Pro</h3>
+                <p className="plan-description">For businesses ready to turn insights into action.</p>
+                <p className="price">$29 <span>/ month</span></p>
+              </div>
+              <ul className="features-list">
+                <li>Unlimited Feedback Collection</li>
+                <li>AI Chat Consultant</li>
+                <li>Actionable Insights & Guides</li>
+                <li>Unlimited Dashboard Users</li>
+              </ul>
+              <button className="btn cta-primary-btn pricing-cta-btn">Start Your Pro Trial</button>
+            </div>
+
+            {/* Business Plan */}
+            <div className="pricing-card">
+              <div className="card-header">
+                <h3 className="plan-name">Business</h3>
+                <p className="plan-description">For teams that need advanced analytics and support.</p>
+                <p className="price">$79 <span>/ month</span></p>
+              </div>
+              <ul className="features-list">
+                <li>Everything in Pro, plus:</li>
+                <li>Advanced AI Consulting Features</li>
+                <li>API Access & Integrations</li>
+                <li>Priority Support</li>
+              </ul>
+              <button className="btn cta-primary-btn pricing-cta-btn">Talk to Sales</button>
+            </div>
+          </div>
+          
+        </section>
+
         {/* Closing Section: Final call-to-action for users to sign up */}
         <section className="closing-section">
             <h2>
@@ -215,18 +313,55 @@ const HomePage = () => {
         </section>
       </main>
 
-      {/* Footer: Repeats logo, navigation links, and copyright */}
-      <footer>
-        <div class="ai-logo">
-            Feedback<span class="logo-color">AI</span>
+      {/* Footer: Modern minimalist design with great UI/UX */}
+      <footer className="footer">
+        <div className="footer-container">
+          {/* Brand Section */}
+          <div className="footer-logo">
+            <h2>Feedback<span className='logo-color'>AI</span></h2>
+            <p>Stop Guessing. Start Growing.</p>
+          </div>
+          
+          {/* Quick Links */}
+          <div className="footer-links">
+            <div className="footer-group">
+              <h4>Product</h4>
+              <ul>
+                <li><a href="#">Features</a></li>
+                <li><a href="#">Pricing</a></li>
+                <li><a href="#">Demo</a></li>
+              </ul>
+            </div>
+            <div className="footer-group">
+              <h4>Company</h4>
+              <ul>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </div>
+            <div className="footer-group">
+              <h4>Legal</h4>
+              <ul>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Social Links */}
+          <div className="footer-social">
+            <h4>Follow Us</h4>
+            <div className="social-icons">
+              <a href="#"><i className="fab fa-twitter"></i></a>
+              <a href="#"><i className="fab fa-linkedin"></i></a>
+              <a href="#"><i className="fab fa-facebook"></i></a>
+            </div>
+          </div>
         </div>
-        <ul class="nav-links">
-            <li><a>Features</a></li>
-            <li><a>Pricing</a></li>
-            <li><a>Login</a></li>
-        </ul>
-        <div className="mg">
-          © 2025 FeedbackAl. All rights reserved.
+        
+        {/* Copyright Line */}
+        <div className="footer-bottom">
+          <p>© 2025 FeedbackAI. All rights reserved.</p>
         </div>
       </footer>
     </>
