@@ -33,7 +33,9 @@ function MainContent() {
   const totalFeedbacks = feedbacks.length
 
   useState(()=>{
-    fetch("http://localhost:5000/api/feedback/me/demo-cafe")
+    const slug = 'demo-cafe'
+    
+    fetch(`http://localhost:5000/api/feedback/me/${slug}`)
     .then((res)=> res.json())
     .then((data)=>{
       const sortedFeedbacks = sortFeedbackByTime(data);

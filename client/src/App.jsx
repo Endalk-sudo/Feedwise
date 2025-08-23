@@ -7,25 +7,50 @@ import MainContent from './components/MainContent';
 import AllFeedbacks from './components/AllFeedbacks';
 import AiPage from './pages/AiPage';
 import { Settings } from './pages/Settings';
+import ProtectedRoute from './components/ProtectedRoute';
 
+// Main App Component
+// This is the root component that sets up all the routes for the application
+// It defines the navigation structure and protects certain routes with authentication
 function App() {
   return (
+   // BrowserRouter enables client-side routing
    <BrowserRouter>
-
+    {/* Routes component defines all possible routes in the application */}
     <Routes>
+      {/* Public route - Home page accessible to everyone */}
       <Route path='/' element={ <HomePage />}/>
+      
+      {/* Public route - Authentication page for login/registration */}
       <Route path='/auth' element={ <AuthPage />}/>
+      
+      {/* Public route - Feedback collection page */}
       <Route path='/feedback' element={ <Feedback />}/>
-      <Route path='/dashborad' element={ <Dashborad />}>
+      
+      {/* Protected route - Dashboard and all its sub-routes require authentication */}
+      {/* The /* wildcard allows for nested routes like /dashborad/feedbackes */}
+      <Route path='/dashborad/*'
+       element={ 
+        // ProtectedRoute component checks if user is authenticated
+        // If not, it redirects to /auth
+        // If authenticated, it renders the Dashboard component
+        <ProtectedRoute>
+          <Dashborad />
+        </ProtectedRoute>
+       }>
+        {/* Nested routes inside the dashboard */}
+        {/* Default dashboard view */}
         <Route path='' element={<MainContent />}/>
+        {/* All feedback view */}
         <Route path='feedbackes' element={<AllFeedbacks />}/>
+        {/* Categories view */}
         <Route path='categories' element={<MainContent />}/>
+        {/* AI chat view */}
         <Route path='chat-ai' element={<AiPage />}/>
+        {/* Settings view */}
         <Route path='settings' element={<Settings />}/>
       </Route>
     </Routes>
-
-    
    </BrowserRouter>
   );
 }

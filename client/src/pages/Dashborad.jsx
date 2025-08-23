@@ -1,15 +1,26 @@
 import logo from "../assets/logo.png";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import "./Dashborad.css";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import AuthContext from "../AuthContext.jsx";
+import OrganizationModal from "../components/OranizationModal";
 
 // The Dashboard component serves as the main layout for the application after a user logs in.
 // It includes a persistent header and sidebar, with a main content area that renders nested routes.
+// NEW FEATURE: It also handles showing the OrganizationModal to new users before accessing the dashboard.
 
 const Dashborad = () => {
     // Sidebar open/close state for mobile screens
     // When true, sidebar slides in; when false, sidebar is hidden (on small screens)
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    
+    // Hook for programmatic navigation
+    const navigate = useNavigate();
+
+    // NEW: Get the `showOrgModal` state and `closeOrgModal` function from the AuthContext.
+    // showOrgModal: boolean that determines if the organization modal should be shown
+    // closeOrgModal: function to close the organization modal
+    const { showOrgModal, closeOrgModal } = useContext(AuthContext);
 
     // Handles user logout (placeholder)
     const handleLogout = () => {
@@ -29,6 +40,22 @@ const Dashborad = () => {
     const handleNavClick = () => {
         setSidebarOpen(false);
     };
+
+    // Handle navigation after organization setup is complete
+    // This function is called when the OrganizationModal is closed
+    const handleOrgModalClose = () => {
+        // Close the organization modal in the AuthContext
+        closeOrgModal();
+        // Navigate to the dashboard main page to show the regular dashboard interface
+        navigate("/dashborad");
+    };
+
+    // NEW: If `showOrgModal` is true, render the OrganizationModal instead of the dashboard.
+    // This happens when a new user registers and needs to set up their organization.
+    // The `onClose` prop is passed to the modal to allow it to navigate to the dashboard after closing.
+    if (showOrgModal) {
+        return <OrganizationModal onClose={handleOrgModalClose} />;
+    }
 
     return (
         <section className="app">
@@ -108,6 +135,9 @@ const Dashborad = () => {
 export default Dashborad;
 
 
+// ToggleButton Component
+// A reusable button component that shows either a hamburger menu or close icon
+// depending on whether the sidebar is open or closed
 const ToggleButton = ({sidebarOpen, handleSidebarToggle})=>{
     return(
         <button

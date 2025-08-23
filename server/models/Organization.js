@@ -20,6 +20,15 @@ const orgSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+  qrContent: {
+     type: String, 
+     required: true,
+     unique: true, 
+    },
+  qrDataUrl: { 
+    type: String, 
+    required: true 
+  },
   createdAt: {
     type: Date,
     default: Date.now
