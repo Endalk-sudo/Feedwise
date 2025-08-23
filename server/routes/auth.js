@@ -23,4 +23,7 @@ router.post('/refresh-token', authController.refreshToken);
 // @access  Public (requires refresh token)
 router.post('/logout', authController.logout);
 
+
+router.post('/organization',authController.setOrganization)
+
 export default router;

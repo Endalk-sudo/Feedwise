@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import feedbackRoutes from "./routes/feedback.js";
 import userRoutes from "./routes/user.js";
+import authRoutes from "./routes/auth.js"; // Import auth routes
 import aiRoutes from "./routes/ai.js"; // Import AI routes
 
 // Load environment variables from .env file
@@ -43,8 +44,8 @@ const connectDB = async () => {
 // These are like different departments in your building
 
 // Authentication routes (login, register, logout)
-// All routes starting with /api/auth go to userRoutes
-app.use("/api/auth", userRoutes);
+// All routes starting with /api/auth go to authRoutes
+app.use("/api/auth", authRoutes);
 
 // Feedback routes (submit feedback, get feedback)
 // All routes starting with /api/feedback go to feedbackRoutes

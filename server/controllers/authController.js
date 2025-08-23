@@ -1,9 +1,11 @@
+import QRCode from 'qrcode';
 import jwt from 'jsonwebtoken'; // For creating and verifying JWTs
 import User from '../models/User.js'; // User model (MongoDB)
 import RefreshToken from '../models/RefreshToken.js'; // Refresh token model
 import Organization from "../models/Organization.js"
 import dotenv from "dotenv";
 import ms from 'ms';
+
 
 dotenv.config();
 
@@ -63,11 +65,7 @@ const  register = async (req, res) => {
 
         await user.save(); // Save user to database
 
-        await Organization.create({
-            ownerId: user._id,
-            name :"cafe",
-            slug :"demo-cafe"
-        })
+       
         // Generate tokens for the new user
         const { accessToken, refreshToken } = generateTokens(user);
 
@@ -91,6 +89,46 @@ const  register = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+
+
+const setOrganization = async (req,res)=>{
+    const {name,slug,userId} = req.body
+    try{
+
+        const org = await Organization.findOne({ slug }); // Use findOne for a single match
+        if (org) {
+            return res.status(400).send({ ok: false, message: "Slug is already taken, it has to be unique" });
+        }
+
+        const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+        const content = `${baseUrl}/api/feedback/${slug}`;
+
+        const qrDataUrl = await QRCode.toDataURL(content, {
+            width: 300,
+            margin: 2,
+            errorCorrectionLevel: 'H'
+        });   
+        
+
+        const newOrganization = await Organization.create({
+              ownerId: userId,
+              name :name,
+              slug : slug,
+              content: content,
+              qrDataUrl: qrDataUrl
+          })
+
+
+        return  res.status(201).send({ ok:true, id:newOrganization._id})
+
+    } catch(err){
+        console.log("error",err.message);
+        res.status(500).send('Server Error');
+    }
+}
+
+
 
 
 // =====================
@@ -218,5 +256,5 @@ const logout = async (req, res) => {
     }
 };
 
-export default {register,login,refreshToken,logout}
+export default {register,login,refreshToken,logout,setOrganization}
 
