@@ -278,74 +278,119 @@
 }
 
 /*
-    MOBILE RESPONSIVE STYLES (max-width: 900px)
-    - Hides the sidebar by default on mobile devices
-    - Implements a slide-in sidebar that can be toggled
-    - Adds backdrop blur and shadow effects for better visual hierarchy
-    - Uses CSS transitions for smooth animations
-  */
-  @media (max-width: 900px) {
-    .app {
-      grid-template-columns: 0 1fr; /* Hide sidebar column */
-    }
-    .sidebar {
-      position: fixed;
-      left: -260px; /* Hide sidebar off-screen */
-      /* top: 72px; */
-      top: 0px;
-      width: 260px;
-      height: 100vh;
-      /* height: calc(100vh - 72px); */
-      background: rgba(15, 23, 42, 0.98); /* Semi-transparent dark background */
-      box-shadow: 2px 0 12px rgba(0,0,0,0.08); /* Subtle shadow */
-      z-index: 200; /* Ensure sidebar appears above other content */
-      transition: left 0.3s; /* Smooth slide animation */
-      border-right: 1px solid var(--color-border);
-    }
-    .sidebar.open {
-      left: 0 ; /* Show sidebar when open */
-    }
-    .sidebar-header{
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .sidebar-toggle-btn {
-      display: inline-flex;
-      background: rgba(148, 163, 184, 0.1);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      margin-left: 8px;
-      cursor: pointer;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      border-radius: 10px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    .sidebar-toggle-btn:hover {
-      background: rgba(148, 163, 184, 0.2);
-      border-color: rgba(148, 163, 184, 0.3);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
-    }
-    .sidebar-toggle-btn:active {
-      transform: translateY(0);
-    }
+  MOBILE RESPONSIVE STYLES (max-width: 750px)
+  - Hides the sidebar by default on mobile devices
+  - Implements a slide-in sidebar that can be toggled
+  - Adds backdrop blur and shadow effects for better visual hierarchy
+  - Uses CSS transitions for smooth animations
+*/
+@media (max-width: 750px) {
+  .app {
+    grid-template-columns: 0 1fr; /* Hide sidebar column */
+  }
+  .sidebar {
+    position: fixed;
+    left: -260px; /* Hide sidebar off-screen by default */
+    top: 0;
+    width: 260px;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.98);
+    box-shadow: 2px 0 12px rgba(0,0,0,0.08);
+    z-index: 200;
+    transition: left 0.3s;
+    border-right: 1px solid var(--color-border);
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .sidebar.open {
+    left: 0;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sidebar-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-border);
   }
 
-  /*
-    DESKTOP RESPONSIVE STYLES (min-width: 901px)
-    - Hides the sidebar toggle button on desktop devices
-    - Shows the sidebar permanently on larger screens
-  */
-  @media (min-width: 901px) {
-    .sidebar-toggle-btn {
-      display: none; /* Hide toggle button on desktop */
-    }
+  .sidebar-toggle-btn {
+    display: inline-flex; /* Always show toggle button below 750px */
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    margin-left: 8px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
   }
+  .sidebar-toggle-btn:hover {
+    background: rgba(148, 163, 184, 0.2);
+    border-color: rgba(148, 163, 184, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
+  }
+  .sidebar-toggle-btn:active {
+    transform: translateY(0);
+  }
+}
+
+/*
+  DESKTOP RESPONSIVE STYLES (min-width: 751px)
+  - Hides the sidebar toggle button on desktop devices
+  - Shows the sidebar permanently on larger screens
+*/
+@media (min-width: 751px) {
+  .sidebar-toggle-btn {
+    display: none; /* Hide toggle button on desktop */
+  }
+}
+
+  /* Overlay for mobile sidebar */
+.sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 750px) {
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 150;
+    transition: opacity 0.3s;
+  }
+  .sidebar-header-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .qr-content{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+@media (min-width: 751px) {
+  .sidebar-header-mobile {
+    display: none;
+  }
+  .sidebar-overlay {
+    display: none;
+  }
+}

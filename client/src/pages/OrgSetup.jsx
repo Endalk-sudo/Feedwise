@@ -1,73 +1,51 @@
-import "./OranizationModal.css"
+import "./OrgSetup.css"
 import { useContext, useState } from "react";
+import axios from "axios";
 import AuthContext from "../AuthContext";
+import { useNavigate } from "react-router-dom";
+
 
 // OrganizationModal Component
 // This component is shown to new users after registration to set up their organization
 // It collects organization name and slug, then sends this data to the backend
-const OranizationModal = ({ onClose }) => {
+const OrgSetup = () => {
+  const [orgName, setOrgName] = useState("");
+  const [orgSlug, setOrgSlug] = useState("");
+
   // State for tracking form submission status
   const [isSubmitting, setIsSubmitting] = useState(false);
   // State for displaying server errors
-  const [serverError, setServerError] = useState('');
-  // State for managing form input values
-  const [formData, setFormData] = useState({
-    orgName: '',
-    orgSlug: ''
-  });
-  
-  // Access user data and closeOrgModal function from AuthContext
-  const { user, closeOrgModal } = useContext(AuthContext);
+  const [error, setError] = useState('');
+  const { token,login } = useContext(AuthContext);
 
-  // Handle form input changes
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [id]: value
-    }));
-  };
+  const navigate = useNavigate();
 
   // Handle form submission
   const handleSubmit = async (e) => {
-    // Prevent default form submission behavior
     e.preventDefault();
-    
+
     // Set submitting state and clear previous errors
     setIsSubmitting(true);
-    setServerError('');
-    
-    try {
-      // Send organization data to backend API
-      // Note: You'll need to update this URL to match your actual API endpoint
-      const response = await fetch('http://localhost:5000/api/organizations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          name: formData.orgName, 
-          slug: formData.orgSlug, 
-          userId: user?.id 
-        }),
-      });
+    setError('');
 
-      const data = await response.json();
-      
-      // If successful, close the modal and navigate to dashboard
-      if (response.ok) {
-        // Close the modal after successful submission
-        closeOrgModal();
-        // Call the onClose prop if provided (this will navigate to dashboard)
-        if (onClose) onClose();
-      } else {
-        // Display error message from server
-        setServerError(data.message || 'Failed to create organization. Please try again.');
-      }
-    } catch (error) {
-      // Handle network errors
-      console.log("Error creating organization:", error);
-      setServerError('Failed to create organization. Please try again.');
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/organization",
+        { orgName, orgSlug },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // backend should return updated user (with hasOrganization = true)
+      login(res.data.user, token);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to create organization. Please try again.');
+
     } finally {
       // Reset submitting state
       setIsSubmitting(false);
@@ -100,8 +78,7 @@ const OranizationModal = ({ onClose }) => {
             id="orgName" 
             type="text" 
             placeholder="Acme Inc." 
-            value={formData.orgName}
-            onChange={handleChange}
+            onChange={(e) => setOrgName(e.target.value)}
             required
           />
 
@@ -111,23 +88,13 @@ const OranizationModal = ({ onClose }) => {
             id="orgSlug" 
             type="text" 
             placeholder="acme-corp" 
-            value={formData.orgSlug}
-            onChange={handleChange}
+            onChange={(e) => setOrgSlug(e.target.value)}
             required
           />
           <div className="hint">Letters, numbers, hyphens only. Example: <code>my-store</code></div>
           
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-            {/* Skip button - closes modal without saving */}
-            <button 
-              type="button" 
-              className="btn-secondary" 
-              onClick={closeOrgModal}
-              disabled={isSubmitting}
-            >
-              Skip for now
-            </button>
             {/* Submit button - saves organization and closes modal */}
             <button 
               type="submit" 
@@ -140,7 +107,7 @@ const OranizationModal = ({ onClose }) => {
           </div>
           
           {/* Error message display */}
-          {serverError && <div style={erroStyle} className="error">{serverError}</div>}
+          {error && <div style={erroStyle} className="error">{error}</div>}
           {/* Loading indicator */}
           {isSubmitting && <div style={{color: 'green', padding: '10px', textAlign: 'center'}} className="loading">Creating organization...</div>}
         </form>
@@ -149,4 +116,4 @@ const OranizationModal = ({ onClose }) => {
   );
 };
 
-export default OranizationModal;
+export default OrgSetup;

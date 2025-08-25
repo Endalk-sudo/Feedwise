@@ -16,11 +16,6 @@ export function AuthProvider({ children }) {
   // Initialize from localStorage so users stay logged in after refresh
   const [accessToken, setAccessToken] = useState(() => localStorage.getItem("accessToken") || "");
   
-  // NEW: State to control the visibility of the organization modal.
-  // This is set to true when a new user registers and needs to set up their organization.
-  // When true, the Dashboard component will show the OrganizationModal instead of the regular dashboard.
-  const [showOrgModal, setShowOrgModal] = useState(false);
-
   // This effect runs whenever accessToken changes
   // It keeps localStorage in sync with our state
   useEffect(() => {
@@ -36,36 +31,22 @@ export function AuthProvider({ children }) {
   // This function runs after successful login
   // NEW: It now accepts an `isNew` flag to handle new user registration.
   // When isNew is true, it shows the organization modal to new users.
-  const login = (userData, token, isNew = false) => {
+  const login = (userData, token) => {
     setUser(userData);        // Save user info (username, email, etc.)
     setAccessToken(token);    // Save the access token
     // If the user is new, show the organization modal.
-    if (isNew) {
-      setShowOrgModal(true);
-    }
-  };
-
-  // NEW: Function to close the organization modal.
-  // This is called when the user completes or skips the organization setup.
-  // After calling this, the Dashboard component will show the regular dashboard interface.
-  const closeOrgModal = () => {
-    setShowOrgModal(false);
   };
 
   // This function runs when user clicks "logout"
   const logout = () => {
     setUser(null);            // Clear user info
     setAccessToken("");       // Clear the token
-    setShowOrgModal(false);   // Ensure modal is closed on logout
+    localStorage.removeItem("accessToken"); // Remove token from localStorage
   };
 
   // Provide auth functions to all child components
-  // NEW: `showOrgModal` and `closeOrgModal` are now provided to the context.
-  // This allows the Dashboard component to:
-  // 1. Check if it should show the OrganizationModal (showOrgModal)
-  // 2. Close the modal when setup is complete (closeOrgModal)
   return (
-    <AuthContext.Provider value={{ user, accessToken, login, logout, showOrgModal, closeOrgModal }}>
+    <AuthContext.Provider value={{ user, accessToken, login, logout}}>
       {children}
     </AuthContext.Provider>
   );

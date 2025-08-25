@@ -2,17 +2,22 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AuthPage from "./pages/AuthPage";
 import Feedback from "./components/Feedback";
 import HomePage from './pages/HomePage';
-import Dashborad from "./pages/Dashborad"
+import Dashboard from "./pages/Dashboard"
 import MainContent from './components/MainContent';
 import AllFeedbacks from './components/AllFeedbacks';
 import AiPage from './pages/AiPage';
 import { Settings } from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
+import OrgSetup from './pages/OrgSetup';
+import { useContext } from 'react';
+import AuthContext from './AuthContext';
+
 
 // Main App Component
 // This is the root component that sets up all the routes for the application
 // It defines the navigation structure and protects certain routes with authentication
 function App() {
+  const { user } = useContext(AuthContext);
   return (
    // BrowserRouter enables client-side routing
    <BrowserRouter>
@@ -26,16 +31,23 @@ function App() {
       
       {/* Public route - Feedback collection page */}
       <Route path='/feedback' element={ <Feedback />}/>
-      
+      <Route
+          path="/setup-organization"
+          element={
+            <ProtectedRoute>
+              <OrgSetup />
+            </ProtectedRoute>
+          }
+        />
       {/* Protected route - Dashboard and all its sub-routes require authentication */}
-      {/* The /* wildcard allows for nested routes like /dashborad/feedbackes */}
-      <Route path='/dashborad/*'
+      {/* The /* wildcard allows for nested routes like /dashboard/feedbackes */}
+      <Route path='/dashboard/*'
        element={ 
         // ProtectedRoute component checks if user is authenticated
         // If not, it redirects to /auth
         // If authenticated, it renders the Dashboard component
         <ProtectedRoute>
-          <Dashborad />
+          {user?.hasOrganization ? <Dashboard /> : <OrgSetup />}
         </ProtectedRoute>
        }>
         {/* Nested routes inside the dashboard */}

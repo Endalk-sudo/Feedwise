@@ -24,6 +24,8 @@ router.post('/refresh-token', authController.refreshToken);
 router.post('/logout', authController.logout);
 
 
+// @route   POST /api/auth/organization
+// @desc    Set organization for the user
 router.post('/organization',authController.setOrganization)
 
 export default router;

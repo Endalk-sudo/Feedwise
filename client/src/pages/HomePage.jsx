@@ -3,6 +3,7 @@ import "./HomePage.css";
 // Import the AI image asset used in the solution section
 import aiImage from "../assets/Gemini_Generated_Image_d20azfd20azfd20a.png"
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 
 
@@ -10,21 +11,23 @@ import { useState } from "react";
 const HomePage = () => {
   const [isOpen ,setIsOpen] = useState(false);
 
-  const toggle =()=>{
+  const toggle =()=> {
     setIsOpen((p)=>!p);
   }
   return (
     <>
       {/* Navigation Bar: Contains logo, navigation links, and CTA button */}
       <nav className="navbar">
-        <div class="ai-logo">
-            Feedback<span class="logo-color">AI</span>
+        <div className="ai-logo">
+            Feedback<span className="logo-color">AI</span>
         </div>
         <ul className={`nav-links ${isOpen ? "expand" : ""}`}>
           <li><a href="#features" onClick={() => setIsOpen(false)}>Features</a></li>
           <li><a href="#pricing" onClick={() => setIsOpen(false)}>Pricing</a></li>
           <li><a href="#login" onClick={() => setIsOpen(false)}>Login</a></li>
-          <button className="btn cta-primary-btn">Get Started →</button>
+         <Link to="/auth" className="link" onClick={() => setIsOpen(false)}>
+             <button className="btn cta-primary-btn">Get Started →</button>
+         </Link>
         </ul>
         <button
           onClick={toggle}
@@ -72,9 +75,9 @@ const HomePage = () => {
             FeedbackAI captures the honest, anonymous feedback you're missing and transforms it into your personal AI business consultant. Get instant summaries, deep insights, and clear, step-by-step action plans to improve your business today.
           </p>
           <div className="cta-btn-container">
-              <button className="btn cta-primary-btn cta-main-btn">Get Started for Free →</button>
+             <Link className="btn cta-primary-btn cta-main-btn" to="/auth">Get Started for Free →</Link> 
               <button className="btn cta-secondary-btn"> Watch a 2-Min Demo</button>
-          </div>
+          </div> 
         </section>
 
         {/* Problem Section: Highlights common issues businesses face with customer feedback */}

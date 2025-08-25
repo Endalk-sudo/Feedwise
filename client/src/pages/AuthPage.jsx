@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import AuthContext from "../AuthContext.jsx";
 import { loginUser, registerUser } from "../services/api.js";
 import "./Auth.css";
-import OranizationModal from "../components/OranizationModal.jsx";
 
 // --- Reusable Components ---
 
@@ -225,7 +224,7 @@ const Login = ({ onSwitch }) => {
         // Then navigate to the dashboard
         (data) => {
             login(data.user, data.accessToken);
-            navigate('/dashborad'); // Navigate to dashboard after successful login
+            navigate('/dashboard'); // Navigate to dashboard after successful login
         }
     );
     const submitButtonRef = useRef();
@@ -315,7 +314,7 @@ const Register = ({ onSwitch }) => {
         // Then navigate to the dashboard
         (data) => {
             login(data.user, data.accessToken, true);
-            navigate('/dashborad'); // Navigate to dashboard after successful registration
+            navigate('/dashboard'); // Navigate to dashboard after successful registration
         }
     );
     const submitButtonRef = useRef();

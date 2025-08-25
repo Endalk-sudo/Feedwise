@@ -80,7 +80,7 @@
 }
 
 /* Individual nav link styles: rounded, color, hover transition */
-.nav-links a {
+.nav-links a:not(.link) {
   font-size: 1rem;
   font-weight: 500;
   padding: 8px 16px;
@@ -92,7 +92,7 @@
   color: var(--color-text-secondary);
 }
 
-.nav-links a::before {
+.nav-links a::before:not(.link) {
   content: '';
   position: absolute;
   top: 0;
@@ -105,14 +105,16 @@
   z-index: -1;
 }
 
-.nav-links a:hover::before {
+.nav-links a:hover::before:not(.link) {
   width: 100%;
 }
 
-.nav-links a:hover {
+.nav-links a:hover:not(.link) {
   color: var(--color-accent);
   transform: translateY(-2px);
 }
+
+
 
 /* Primary Call-to-Action Button: Gradient, shadow, hover animation */
 .cta-primary-btn {
@@ -153,6 +155,64 @@
 
 .cta-primary-btn:active {
   transform: translateY(-1px);
+}
+
+/* client/src/pages/HomePage.css */
+
+/* Style the CTA button container */
+.cta-btn-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px; /* Adjust the gap between buttons */
+  padding: 20px; /* Add some padding to the container */
+  border-radius: 12px; /* Add a subtle border radius */
+}
+
+/* Style the primary CTA button */
+.cta-primary-btn {
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  color: var(--color-text-primary);
+  padding: 14px 32px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Style the secondary CTA button */
+.cta-secondary-btn {
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
+  position: relative;
+  overflow: hidden;
+  background-color: transparent;
+  border: 2px solid var(--color-accent);
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Add a hover effect to the primary CTA button */
+.cta-primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4);
+}
+
+/* Add a hover effect to the secondary CTA button */
+.cta-secondary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4);
+  background-color: var(--color-accent);
+  color: var(--color-text-primary);
 }
 
 .open{
@@ -218,24 +278,28 @@ main {
   animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
-/* Container for main and secondary CTA buttons in hero section */
-.hero > .cta-btn-container {
-  margin-top: 30px;
-  display: flex;
-  gap: 20px;
-  animation: fadeInUp 0.8s ease-out 0.4s both;
-}
+
 
 /* Main CTA button: prominent, with animated shine on hover */
-.cta-btn-container > .cta-main-btn {
+.cta-main-btn {
   padding: 14px 32px;
   font-size: 1.1rem;
   box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
   position: relative;
   overflow: hidden;
+  animation: pulse 2s infinite;
 }
 
-.cta-btn-container > .cta-main-btn::before {
+.cta-main-btn:hover {
+  animation-play-state: paused;
+}
+
+.cta-main-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 15px rgba(56, 189, 248, 0.2);
+}
+
+.cta-main-btn::before {
   content: '';
   position: absolute;
   top: 0;
@@ -246,7 +310,7 @@ main {
   transition: left 0.5s ease;
 }
 
-.cta-btn-container > .cta-main-btn:hover::before {
+.cta-main-btn:hover::before {
   left: 100%;
 }
 
@@ -1300,10 +1364,16 @@ main {
     padding: 6px 12px;
   }
 
-  .nav-links > .cta-primary-btn {
+  .nav-links .link {
+    width: 100%;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .nav-links  .cta-primary-btn {
     margin-top: 20px;
     width: 100%;
-  }
+  } 
   
   .cta-primary-btn {
     padding: 10px 20px;
@@ -1643,4 +1713,19 @@ main {
 /* Show underline on hover for hero headline accent */
 .hero:hover > .hero-heading > span::after {
   transform: scaleX(1);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(56, 189, 248, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
+  }
 }

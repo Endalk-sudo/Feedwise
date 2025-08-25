@@ -1,27 +1,17 @@
 import logo from "../assets/logo.png";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import "./Dashborad.css";
-import { useState, useContext } from "react";
-import AuthContext from "../AuthContext.jsx";
-import OrganizationModal from "../components/OranizationModal";
+import { NavLink, Outlet } from "react-router-dom";
+import "./Dashboard.css";
+import { useState } from "react";
 
 // The Dashboard component serves as the main layout for the application after a user logs in.
 // It includes a persistent header and sidebar, with a main content area that renders nested routes.
 // NEW FEATURE: It also handles showing the OrganizationModal to new users before accessing the dashboard.
 
-const Dashborad = () => {
+const Dashboard = () => {
     // Sidebar open/close state for mobile screens
     // When true, sidebar slides in; when false, sidebar is hidden (on small screens)
     const [sidebarOpen, setSidebarOpen] = useState(false);
     
-    // Hook for programmatic navigation
-    const navigate = useNavigate();
-
-    // NEW: Get the `showOrgModal` state and `closeOrgModal` function from the AuthContext.
-    // showOrgModal: boolean that determines if the organization modal should be shown
-    // closeOrgModal: function to close the organization modal
-    const { showOrgModal, closeOrgModal } = useContext(AuthContext);
-
     // Handles user logout (placeholder)
     const handleLogout = () => {
         console.log("User logged out");
@@ -41,21 +31,7 @@ const Dashborad = () => {
         setSidebarOpen(false);
     };
 
-    // Handle navigation after organization setup is complete
-    // This function is called when the OrganizationModal is closed
-    const handleOrgModalClose = () => {
-        // Close the organization modal in the AuthContext
-        closeOrgModal();
-        // Navigate to the dashboard main page to show the regular dashboard interface
-        navigate("/dashborad");
-    };
 
-    // NEW: If `showOrgModal` is true, render the OrganizationModal instead of the dashboard.
-    // This happens when a new user registers and needs to set up their organization.
-    // The `onClose` prop is passed to the modal to allow it to navigate to the dashboard after closing.
-    if (showOrgModal) {
-        return <OrganizationModal onClose={handleOrgModalClose} />;
-    }
 
     return (
         <section className="app">
@@ -95,44 +71,44 @@ const Dashborad = () => {
             </header>
 
             {/* Sidebar navigation: collapsible on mobile, always visible on desktop */}
-            {/* 'open' class is added when sidebarOpen is true, sliding sidebar in on mobile */}
-            <aside className={`sidebar ${sidebarOpen ? " open" : ""}`}>
-                  {sidebarOpen && (<div className="sidebar-header">
-                    <h1>Dashborad</h1>
-                    <ToggleButton sidebarOpen={sidebarOpen} handleSidebarToggle={handleSidebarToggle} />
-                  </div> )} 
+            <aside className={`sidebar${sidebarOpen ? " open" : ""}`}>
+                <div className="sidebar-header-mobile">
+                    <h1>Dashboard</h1>
+                </div>
                 <nav>
                     {/* Enhanced navigation items with emoji icons and better UX */}
-                    <NavLink className="nav-item" data-icon="dashboard" to="/dashborad" end onClick={handleNavClick}>
+                    <NavLink className="nav-item" data-icon="dashboard" to="/dashboard" end onClick={handleNavClick}>
                         <span>📊</span>
                         Dashboard
                     </NavLink>
-                    <NavLink className="nav-item" data-icon="feedback" to="/dashborad/feedbackes" onClick={handleNavClick}>
+                    <NavLink className="nav-item" data-icon="feedback" to="/dashboard/feedbackes" onClick={handleNavClick}>
                         <span>💬</span>
                         All Feedback
                     </NavLink>
-                    <NavLink className="nav-item" data-icon="categories" to="/dashborad/categories" onClick={handleNavClick}>
-                        <span>📁</span>
-                        Categories
-                    </NavLink>
-                    <NavLink className="nav-item" data-icon="chat" to="/dashborad/chat-ai" onClick={handleNavClick}>
+                    <NavLink className="nav-item" data-icon="chat" to="/dashboard/chat-ai" onClick={handleNavClick}>
                         <span>🤖</span>
                         Chat With AI
                     </NavLink>
-                    <NavLink className="nav-item" data-icon="settings" to="/dashborad/settings" onClick={handleNavClick}>
+                    <NavLink className="nav-item" data-icon="settings" to="/dashboard/settings" onClick={handleNavClick}>
                         <span>⚙️</span>
                         Settings
                     </NavLink>
                 </nav>
             </aside>
-
+            {/* Overlay for mobile sidebar */}
+            {sidebarOpen && (
+                <div
+                    className="sidebar-overlay"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
             {/* Main content area for nested routes (renders child pages) */}
             <Outlet />
         </section>
     );
 };
 
-export default Dashborad;
+export default Dashboard;
 
 
 // ToggleButton Component

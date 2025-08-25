@@ -5,7 +5,6 @@ const UserSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
-        // unique: true, // Removed unique constraint as email is already unique
         trim: true,
     },
     email: {
@@ -20,6 +19,15 @@ const UserSchema = new mongoose.Schema({
         required: true,
         minlength: 6,
     },
+    hasOrganization:{
+        type: Boolean,
+        default: false,
+    },
+    organizationId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Organization',
+        default: null,
+    }
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt fields
 });
