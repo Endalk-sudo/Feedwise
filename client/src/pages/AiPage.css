@@ -1,339 +1,438 @@
-/*
- * AI Page Styles - Enhanced UI/UX Design
- *
- * This file contains comprehensive styling for the AI assistant page with modern design principles.
- * Key improvements include: glass-morphism effects, smooth animations, responsive design,
- * and enhanced user experience with proper visual hierarchy and feedback.
- * 
- * Updated to fix input alignment issues and separate concerns for message cards.
- */
-
-/* Main container for the AI page */
+/* AiPage.css - Modern Redesign */
 .ai-app {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Full viewport height */
+    min-height: 100vh;
     background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-secondary-bg) 100%);
     padding: 20px;
-    /* Gradient background creates depth and visual interest */
+    position: relative;
+    overflow: hidden;
 }
 
-/* Main grid container for the AI chat interface */
+/* Aurora background effect */
+.ai-app::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(129, 140, 248, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(192, 132, 252, 0.1) 0%, transparent 50%);
+    z-index: -1;
+}
+
 .ai-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 100px auto auto;
-    /* Using CSS Grid for layout with named areas */
-    grid-template-areas:
-        "header"      /* Header section at the top */
-        "play-ground" /* Chat messages in the middle */
-        "input";      /* Input form at the bottom */
-    align-items: stretch; /* Stretch items to fill height */
-    max-width: 800px; /* Maximum width for larger screens */
+    display: flex;
+    flex-direction: column;
+    max-width: 900px;
     width: 100%;
-    height: 90vh; /* 90% of viewport height */
-    max-height: 700px; /* Maximum height limit */
-    gap: 20px; /* Space between grid items */
+    height: 90vh;
+    max-height: 800px;
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: 24px;
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--layered-shadow);
+    overflow: hidden;
 }
 
-/* Header section styling */
 .ai-chat-header {
-    grid-area: header;
-    height: 100px;
-    width: 100%;
+    padding: 20px 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.5);
 }
 
-/* Header content with bot avatar and text */
 .header-content {
     display: flex;
     align-items: center;
-    gap: 15px; /* Space between avatar and text */
-    padding: 20px;
-    background: linear-gradient(135deg, var(--color-secondary-bg) 0%, rgba(30, 41, 59, 0.8) 100%);
-    border-radius: 16px; /* Rounded corners */
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-lg); /* Shadow for depth */
-    backdrop-filter: blur(10px); /* Glass-morphism effect */
+    gap: 15px;
 }
 
-/* Bot avatar with animated pulse effect */
 .bot-avatar {
+    position: relative;
     width: 50px;
     height: 50px;
-    border-radius: 50%; /* Circular avatar */
+    border-radius: 50%;
     background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 0 20px var(--color-accent-rbg-shadow);
-    animation: pulse 2s infinite; /* Continuous pulse animation */
 }
 
-/* Bot icon styling with shadow effect */
+.avatar-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--color-accent);
+    opacity: 0.5;
+    animation: pulse 2s infinite;
+}
+
 .bot-icon {
     font-size: 24px;
-    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.3)); /* Icon shadow */
+    position: relative;
+    z-index: 2;
 }
 
-/* Pulse animation for bot avatar - creates a breathing effect */
-@keyframes pulse {
-    0% { box-shadow: 0 0 20px var(--color-accent-rbg-shadow); }
-    50% { box-shadow: 0 0 30px var(--color-accent-rbg-shadow), 0 0 40px var(--color-accent-rbg-shadow); }
-    100% { box-shadow: 0 0 20px var(--color-accent-rbg-shadow); }
-}
-
-/* Header text styling */
 .header-text h1 {
     margin-bottom: 5px;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    /* Gradient text effect for visual appeal */
 }
 
 .header-text p {
     color: var(--color-text-secondary);
-    font-size: 0.95rem;
-    margin: 0;
-    /* Subdued description text */
+    font-size: 0.9rem;
+    margin-bottom: 8px;
 }
 
-/* Chat playground area - main chat interface */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-success);
+    animation: pulse 2s infinite;
+}
+
+.status-indicator span {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
 .ai-play-ground {
-    
-    grid-area: play-ground;
-    background: linear-gradient(135deg, var(--color-secondary-bg) 0%, rgba(30, 41, 59, 0.6) 100%);
-    border-radius: 16px;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(10px); /* Glass-morphism effect */
-    overflow: hidden; /* Hide overflow content */
+    flex: 1;
+    overflow: hidden;
     display: flex;
-    flex-direction: column; /* Vertical layout */
+    flex-direction: column;
 }
 
-/* Container for chat messages */
 .chat-messages {
-    flex: 1; /* Take available space */
-    padding: 20px;
-    overflow-y: auto; /* Enable vertical scrolling */
+    flex: 1;
+    padding: 25px;
+    overflow-y: auto;
     display: flex;
-    flex-direction: column; /* Stack messages vertically */
-    gap: 15px; /* Space between messages */
-    
+    flex-direction: column;
+    gap: 20px;
 }
 
-/* Enhanced input form styling - FIXED POSITIONING FOR BETTER UX */
 .ai-form {
-   
+    padding: 20px 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.5);
+}
+
+.input-container {
     display: flex;
-    align-self: center;
-    gap: 15px; /* Space between input and button */
-    padding: 15px;
-    background: rgba(15, 23, 42, 0.3); /* Semi-transparent background */
-    border-radius: 16px; /* Rounded corners */
-    border: 1px solid var(--color-border);
-    backdrop-filter: blur(10px); /* Glass-morphism effect */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Added shadow for depth */
+    gap: 12px;
+    align-items: center;
 }
 
-/* Chat input field styling */
 #chat-input {
-    flex: 1; /* Take available space */
+    flex: 1;
     font-size: 1rem;
-    padding: 12px 20px; /* Comfortable padding */
-    border-radius: 12px; /* Rounded corners */
-    border: 2px solid transparent; /* Transparent border */
-    background: rgba(30, 41, 59, 0.8); /* Semi-transparent background */
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(30, 41, 59, 0.8);
     color: var(--color-text-primary);
-    outline: none; /* Remove default outline */
-    transition: all 0.3s ease; /* Smooth transitions */
-    backdrop-filter: blur(5px); /* Subtle glass effect */
-    box-shadow: 0px 0px 8px var(--color-accent-rbg-shadow);
+    outline: none;
+    transition: all 0.3s ease;
 }
 
-/* Input placeholder styling */
 #chat-input::placeholder {
     color: var(--color-text-secondary);
-    /* Muted placeholder text */
 }
 
-/* Input hover effect */
-#chat-input:hover {
-    border-color: var(--color-accent);
-    box-shadow: 0 0 20px var(--color-accent-rbg-shadow);
-    /* Highlight on hover */
-}
-
-/* Input focus effect */
 #chat-input:focus {
     border-color: var(--color-accent);
-    box-shadow: 0 0 25px var(--color-accent-rbg-shadow), 0 0 0 3px rgba(56, 189, 248, 0.1);
-    /* Strong highlight on focus */
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
 
-/* Enhanced send button styling */
 .ai-chat-send-btn {
     background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
     color: white;
-    border: none; /* Remove default border */
-    border-radius: 12px; /* Rounded corners */
-    padding: 12px 20px; /* Comfortable padding */
-    font-size: 1rem;
-    font-weight: 600; /* Semi-bold text */
-    cursor: pointer; /* Pointer cursor */
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    font-weight: 600;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between text and icon */
-    transition: all 0.3s ease; /* Smooth transitions */
+    justify-content: center;
+    transition: all 0.3s ease;
     box-shadow: 0 4px 15px var(--color-accent-rbg-shadow);
-    min-width: 80px; /* Minimum width */
-    justify-content: center; /* Center content */
-    white-space: nowrap; /* Prevent button text from wrapping */
+    min-width: 50px;
 }
 
-/* Send button hover effect */
 .ai-chat-send-btn:hover {
-    transform: translateY(-2px); /* Lift up effect */
+    transform: translateY(-2px);
     box-shadow: 0 6px 20px var(--color-accent-rbg-shadow);
-    /* Enhanced shadow on hover */
 }
 
-/* Send button active/click effect */
-.ai-chat-send-btn:active {
-    transform: translateY(0); /* Reset position */
-    /* Button press effect */
+.ai-response-message {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    animation: slideIn 0.4s ease-out;
+    max-width: 85%;
 }
 
-/* Button text styling */
-.btn-text {
-    font-size: 0.9rem;
+.ai-response-message.loading {
+    opacity: 0.8;
 }
 
-/* Button icon styling */
-.btn-icon {
-    font-size: 1.1rem;
-    font-weight: bold;
+.ai-response-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 0 15px var(--color-accent-rbg-shadow);
 }
 
-/* Custom scrollbar styling for chat messages */
+.ai-response-content {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.4);
+    padding: 16px 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.ai-response-text {
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.suggestion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.chip {
+    padding: 8px 16px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 16px;
+    font-size: 0.85rem;
+    color: var(--color-accent);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chip:hover {
+    background: rgba(56, 189, 248, 0.2);
+    transform: translateY(-2px);
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 20px;
+}
+
+.typing-indicator span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-text-secondary);
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+.user-message-container {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    justify-content: flex-end;
+    animation: slideIn 0.4s ease-out;
+    max-width: 85%;
+    margin-left: auto;
+}
+
+.user-message-content {
+    flex: 1;
+    background: rgba(13, 30, 65, 0.7);
+    padding: 16px 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    text-align: left;
+}
+
+.user-message-text {
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.user-message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { 
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% { 
+        transform: scale(1.5);
+        opacity: 0.2;
+    }
+    100% { 
+        transform: scale(1);
+        opacity: 0.5;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes typing {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Scrollbar styling */
 .chat-messages::-webkit-scrollbar {
-    width: 6px; /* Narrow scrollbar */
+    width: 6px;
 }
 
-/* Scrollbar track styling */
 .chat-messages::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.3); /* Semi-transparent track */
-    border-radius: 3px; /* Rounded corners */
+    background: rgba(15, 23, 42, 0.3);
+    border-radius: 3px;
 }
 
-/* Scrollbar thumb styling */
 .chat-messages::-webkit-scrollbar-thumb {
-    background: var(--color-accent); /* Accent color thumb */
-    border-radius: 3px; /* Rounded corners */
+    background: var(--color-accent);
+    border-radius: 3px;
 }
 
-/* Scrollbar thumb hover effect */
 .chat-messages::-webkit-scrollbar-thumb:hover {
     background: var(--color-accent-hover);
-    /* Darker accent on hover */
 }
 
-/* Responsive Design for Tablets (768px and below) */
+/* Responsive Design */
 @media (max-width: 768px) {
-    .ai-container {
-        height: 85vh; /* Slightly smaller height */
-        max-height: none; /* Remove max height limit */
-        gap: 15px; /* Reduced spacing */
-        padding: 0 15px; /* Reduced padding */
+    .ai-app {
+        padding: 10px;
     }
     
-    .header-content {
-        padding: 15px; /* Reduced padding */
-        gap: 12px; /* Reduced spacing */
+    .ai-container {
+        height: 95vh;
+        max-height: none;
+        border-radius: 20px;
+    }
+    
+    .ai-chat-header {
+        padding: 15px 20px;
     }
     
     .bot-avatar {
-        width: 40px; /* Smaller avatar */
+        width: 40px;
         height: 40px;
     }
     
-    .bot-icon {
-        font-size: 20px; /* Smaller icon */
-    }
-    
     .header-text h1 {
-        font-size: 1.5rem; /* Smaller title */
-    }
-    
-    .ai-play-ground {
-        min-height: 300px; /* Minimum height for chat area */
+        font-size: 1.3rem;
     }
     
     .chat-messages {
-        padding: 15px; /* Reduced padding */
-        padding-bottom: 100px; /* Adjusted for mobile */
+        padding: 15px;
+    }
+    
+    .ai-response-message,
+    .user-message-container {
+        max-width: 90%;
     }
     
     .ai-form {
-        padding: 12px; /* Reduced padding */
-        gap: 10px; /* Reduced spacing */
-        bottom: 10px; /* Adjusted for mobile */
+        padding: 15px 20px;
     }
     
     #chat-input {
-        padding: 10px 15px; /* Reduced padding */
-        font-size: 0.9rem; /* Smaller font */
-    }
-    
-    .ai-chat-send-btn {
-        padding: 10px 15px; /* Reduced padding */
-        min-width: 70px; /* Smaller minimum width */
-        font-size: 0.9rem; /* Smaller font */
+        padding: 14px 16px;
     }
 }
 
-/* Responsive Design for Mobile Phones (480px and below) */
 @media (max-width: 480px) {
-    .ai-app {
-        padding: 10px; /* Reduced padding */
-    }
-    
-    .ai-container {
-        gap: 10px; /* Reduced spacing */
-    }
-    
     .header-content {
-        flex-direction: column; /* Stack avatar and text vertically */
-        text-align: center; /* Center text */
-        gap: 10px; /* Reduced spacing */
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
     }
     
     .header-text h1 {
-        font-size: 1.3rem; /* Even smaller title */
+        font-size: 1.2rem;
     }
     
     .header-text p {
-        font-size: 0.85rem; /* Smaller description */
+        font-size: 0.8rem;
     }
     
-    .ai-form {
-        flex-direction: column; /* Stack input and button vertically */
-        gap: 10px; /* Reduced gap */
-        padding: 10px; /* Reduced padding */
-        bottom: 10px; /* Adjusted for mobile */
+    .ai-response-message,
+    .user-message-container {
+        max-width: 100%;
     }
     
-    .ai-chat-send-btn {
-        width: 100%; /* Full width button */
-        padding: 12px; /* Adjusted padding */
-    }
-    
-    #chat-input {
-        width: 100%; /* Full width input */
+    .suggestion-chips {
+        flex-direction: column;
     }
 }

@@ -1,36 +1,25 @@
-import {useState} from "react"
+import { useState, useRef, useEffect } from "react"
 import AiResponseCard from "../components/AiResponseCard"
 import UserPromptCard from "../components/UserPromptCard"
 import "./AiPage.css"
 
-/**
- * AI Assistant Page Component
- *
- * This component renders the AI assistant interface with a modern, professional design.
- * Features include:
- * - Glass-morphism effects with backdrop filters
- * - Smooth animations and transitions
- * - Responsive design for mobile and desktop
- * - Professional chat interface with message bubbles
- * - Enhanced form controls with visual feedback
- * - Properly aligned input form with improved UX
- *
- * The design follows the existing color scheme from the design system,
- * using navy blue backgrounds with sky blue accents for a cohesive look.
- */
 
 const WelcomeMessage = () => {
     return (
         <div className="ai-response-message">
-            {/* Message avatar (AI bot icon) */}
-            <div className="ai-response-avatar">🤖</div>
+            <div className="ai-response-avatar">
+                <div className="avatar-icon">🤖</div>
+            </div>
             
-            {/* Message content container */}
             <div className="ai-response-content">
-                {/* Welcome message text introducing the AI assistant */}
                 <div className="ai-response-text">
-                    Hello! I'm InsightBot, your AI assistant for customer feedback.
-                    I can help you analyze trends, extract insights, and answer questions about your feedback data.
+                    <p>Hello! I'm InsightBot, your AI assistant for customer feedback analysis.</p>
+                    <p>I can help you analyze trends, extract insights, and answer questions about your feedback data.</p>
+                </div>
+                <div className="suggestion-chips">
+                    <div className="chip">Show me recent feedback trends</div>
+                    <div className="chip">Analyze sentiment from last week</div>
+                    <div className="chip">What are customers complaining about?</div>
                 </div>
             </div>
         </div>
@@ -38,102 +27,131 @@ const WelcomeMessage = () => {
 }
 
 const AiPage = () => {
-    const [message, setMessage] = useState([]);
-    // const [error, setError] = useState("");
+    const [messages, setMessages] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     const handleSubmit = (event) => {
-        event.preventDefault();  // Prevent form from submitting normally
+        event.preventDefault();
         const formData = new FormData(event.target);
         const prompt = formData.get('user-prompt');
         
-        setMessage((mg)=>{
-            return [...mg, <UserPromptCard key={new Date()} prompt={prompt}/>]
-        })
-         // Clear the input field
+        if (!prompt.trim()) return;
+        
+        // Add user message
+        setMessages(prev => [...prev, { type: 'user', content: prompt, id: Date.now() }]);
+        setIsLoading(true);
+        
+        // Clear the input field
         event.target.reset();
-
-        fetch("http://localhost:5000/api/ai",{
+        
+        // Simulate API call
+        fetch("http://localhost:5000/api/ai", {
             method: "POST",
-            headers :{
+            headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({prompt})
+            body: JSON.stringify({ prompt })
         })
-        .then((res)=> res.json())
-        .then((resData)=>{
-            setMessage((mg)=>{
-                return [...mg, <AiResponseCard key={new Date()} res={resData}/>]
-            })
+        .then((res) => res.json())
+        .then((resData) => {
+            setMessages(prev => [...prev, { type: 'ai', content: resData, id: Date.now() + 1 }]);
         })
-        .catch((err)=>{
+        .catch((err) => {
             console.log("error from ai", err.message);
-            // setError(err.message)
+            setMessages(prev => [...prev, { 
+                type: 'ai', 
+                content: { error: "Sorry, I'm having trouble connecting right now. Please try again." }, 
+                id: Date.now() + 1 
+            }]);
         })
-
-        
+        .finally(() => {
+            setIsLoading(false);
+        });
     }
-
-    
-
 
     return (
         <section className="ai-app">
-            {/* Main container for the AI chat interface */}
             <div className="ai-container">
-                
-                {/* Header section with bot avatar and title */}
                 <div className="ai-chat-header">
-                    {/* Header content container with flex layout */}
                     <div className="header-content">
-                        {/* Bot avatar with animated pulse effect */}
                         <div className="bot-avatar">
-                            {/* Bot icon using emoji for simplicity */}
+                            <div className="avatar-pulse"></div>
                             <div className="bot-icon">🤖</div>
                         </div>
                         
-                        {/* Header text section */}
                         <div className="header-text">
-                            {/* Main title with gradient text effect */}
-                            <h1>Ask InsightBot</h1>
-                            {/* Description text explaining the AI assistant's purpose */}
-                            <p>Your AI assistant for customer feedback analysis</p>
+                            <h1>InsightBot AI Assistant</h1>
+                            <p>Analyze customer feedback and extract valuable insights</p>
+                            <div className="status-indicator">
+                                <div className="status-dot"></div>
+                                <span>Online</span>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                {/* Chat playground area - main chat interface */}
                 <div className="ai-play-ground">
-                    {/* Container for chat messages with scrolling capability */}
                     <div className="chat-messages">
                         <WelcomeMessage />
                         
-                        {message}
+                        {messages.map((msg) => (
+                            msg.type === 'user' ? 
+                                <UserPromptCard key={msg.id} prompt={msg.content} /> : 
+                                <AiResponseCard key={msg.id} res={msg.content} />
+                        ))}
+                        
+                        {isLoading && (
+                            <div className="ai-response-message loading">
+                                <div className="ai-response-avatar">
+                                    <div className="avatar-icon">🤖</div>
+                                </div>
+                                <div className="ai-response-content">
+                                    <div className="typing-indicator">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div ref={messagesEndRef} />
                     </div>
                 </div>
                 
-                {/* Enhanced input form for user messages - fixed positioning for better UX */}
                 <form onSubmit={handleSubmit} id="ai-form" className="ai-form">
-                    {/* Text input field for user messages */}
-                    <input
-                        type="text"
-                        name="user-prompt"
-                        id="chat-input"
-                        placeholder="Ask something about your feedback..."
-                        autoComplete="off"  // Disable browser autocomplete for better UX
-                    />
-                    
-                    {/* Send button with icon and text */}
-                    <button type="submit" className="ai-chat-send-btn btn">
-                        {/* Button text for accessibility */}
-                        <span className="btn-text">Send</span>
-                        {/* Arrow icon indicating sending action */}
-                        <span className="btn-icon">→</span>
-                    </button>
+                    <div className="input-container">
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            name="user-prompt"
+                            id="chat-input"
+                            placeholder="Ask something about your feedback..."
+                            autoComplete="off"
+                        />
+                        <button type="submit" className="ai-chat-send-btn">
+                            <span className="btn-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
                 </form>
             </div>
         </section>
     )
 }
 
-// Export the component for use in the application
 export default AiPage

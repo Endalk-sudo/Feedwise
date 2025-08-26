@@ -1,65 +1,108 @@
-/*
- * User Prompt Card Styles
- *
- * This file contains styling for the user's message prompts.
- * It features a clean, modern design with glass-morphism effects and
- * proper alignment to distinguish user messages from AI responses.
- * User messages are right-aligned to create a clear visual distinction.
- */
-
-/* User message container - right-aligned for user messages */
+/* Enhanced User Prompt Card Styles */
 .user-message-container {
     display: flex;
-    gap: 12px; /* Space between avatar and message */
+    gap: 15px;
     align-items: flex-start;
-    justify-content: flex-end; /* Align to the right */
-    animation: slideIn 0.5s ease-out; /* Smooth entrance animation */
-    max-width: 70%;
-    margin-left: auto; /* Auto margin on the left */
-    margin-right: 0; /* No margin on the right */
+    justify-content: flex-end;
+    animation: slideIn 0.4s ease-out;
+    max-width: 85%;
+    margin-left: auto;
+    margin-bottom: 20px;
 }
 
-/* User message content container */
 .user-message-content {
-    flex: 1; /* Take remaining space */
-    background: rgba(13, 30, 65, 0.7); /* Semi-transparent background with different color for user messages */
-    padding: 15px;
-    border-radius: 12px; /* Rounded corners */
-    border: 1px solid var(--color-border);
-    backdrop-filter: blur(5px); /* Subtle glass effect */
-    text-align: left; /* Align text to the left within the message bubble */
+    flex: 1;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.1) 100%);
+    padding: 16px 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
 }
 
-/* User message text styling */
+.user-message-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4), transparent);
+}
+
 .user-message-text {
     color: var(--color-text-primary);
     font-size: 0.95rem;
-    line-height: 1.5; /* Readable line height */
+    line-height: 1.6;
     margin-bottom: 8px;
 }
 
-/* User message avatar styling */
+.message-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+/* .message-time {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+} */
+
+.read-indicator {
+    width: 14px;
+    height: 14px;
+    color: var(--color-accent);
+}
+
 .user-message-avatar {
     width: 36px;
     height: 36px;
-    border-radius: 50%; /* Circular avatar */
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.8) 0%, rgba(99, 102, 241, 0.8) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0; /* Prevent shrinking */
-    box-shadow: 0 0 15px var(--color-accent-rbg-shadow);
+    flex-shrink: 0;
+    box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
 }
 
 /* Slide-in animation for messages */
 @keyframes slideIn {
     from {
-        opacity: 0; /* Start invisible */
-        transform: translateY(20px); /* Start lower */
+        opacity: 0;
+        transform: translateY(20px);
     }
     to {
-        opacity: 1; /* Fully visible */
-        transform: translateY(0); /* Move to normal position */
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .user-message-container {
+        max-width: 90%;
+    }
+    
+    .user-message-content {
+        padding: 14px 16px;
+    }
+    
+    .user-message-text {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-message-container {
+        max-width: 100%;
+    }
+    
+    .user-message-avatar {
+        width: 32px;
+        height: 32px;
     }
 }
