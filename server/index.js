@@ -54,6 +54,9 @@ app.use("/api/feedback", feedbackRoutes);
 
 app.use("/api/ai", aiRoutes);
  
+
+app.use("/api/user", userRoutes);
+
 // Health check endpoint
 // This is like a "ping" to check if the server is alive
 // Visit http://localhost:5000/health to see if server is running

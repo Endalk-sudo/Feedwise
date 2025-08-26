@@ -1,4 +1,6 @@
+import axios from "axios"
 import { useState } from "react";
+import { useParams } from 'react-router-dom';
 // Import component-scoped, mobile-first stylesheet
 import "./Feedback.css";
 
@@ -16,7 +18,9 @@ const Feedback = () => {
     const [error, setError] = useState('');
     const [feedback, setFeedback] = useState('');
   
-    // Constants
+    const {slug} = useParams();
+
+    
     const MIN_LEN = 15; // Minimum characters for feedback text
 
   /**
@@ -30,46 +34,23 @@ const Feedback = () => {
 
     // Prefer the form's POSTed value; fallback to controlled state for robustness
     const text = formData.get('feedback') ?? feedback;
+    text.trim();
 
-    // ======================
-    // FEEDBACK SUBMISSION
-    // ======================
+    const submitFeedback = async()=>{
+      try {
+        const res = await axios.post(`http://localhost:5000/api/feedback/${slug}`,{text})
+        
+        setIsSubmited(true)
+        // Return the server's response (usually includes success message and feedback ID)
+        console.log("feedback", res.data);
+      } catch (error) {
+         // If anything goes wrong (network error, server down, etc.)
+        console.log("Error submitting Feedback", error.message);
+        setError(error.message)
+      }
+    }
 
-    // This is the main function that sends feedback to your server
-    // It takes the user's feedback text and sends it to the "demo-cafe" organization
-
-    try {
-    // Send POST request to create new feedback
-    const res = await fetch("http://localhost:5000/api/feedback/demo-cafe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }) // Send only the feedback text
-    });
-
-    setIsSubmited(true)
-    // Return the server's response (usually includes success message and feedback ID)
-    const data = await res.json()
-    console.log("feedback", data);
-    
-  } catch (error) {
-    // If anything goes wrong (network error, server down, etc.)
-    console.log("Error submitting Feedback", error.message);
-    setError(error.message)
-  }
-
-    // try {
-    //     await submitFeedback({
-    //         'comment': feedbackText.trim(),
-    //     });
-    //     setIsSubmited(true); // show thank you message
-    //     setFeedback(''); // reset form
-    // } catch (e) {
-    //     setError(`Something went wrong. Please try again. ${e.message}`);
-    // } finally {
-    //     setSubmitting(false);
-    // }
-   
-  
+   submitFeedback();
 };
 
   const handleReset = () => {
@@ -142,7 +123,7 @@ const Feedback = () => {
               disabled={submitting || feedback.trim().length < MIN_LEN}
               aria-busy={submitting}
             >
-              {submitting ? "Submitting..." : "Submit Feedback"}
+              {submitting ? " Submitting..." : "Submit Feedback"}
             </button>
           </form>
         </article>
@@ -150,6 +131,7 @@ const Feedback = () => {
     </section>
   );
 };
+
 
 /**
  * SuccessIcon component

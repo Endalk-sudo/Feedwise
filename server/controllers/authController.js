@@ -102,8 +102,8 @@ const setOrganization = async (req,res)=>{
         return res.status(400).send({ ok: false, message: "Slug is already taken, it has to be unique" });
     }
 
-    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
-    const content = `${baseUrl}/api/feedback/${orgSlug}`;
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const content = `${baseUrl}/feedback/${orgSlug}`;
 
     const qrDataUrl = await QRCode.toDataURL(content, {
             width: 300,

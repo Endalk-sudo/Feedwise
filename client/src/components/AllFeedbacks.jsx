@@ -1,6 +1,8 @@
+import axios from "axios"
 import "./AllFeedbacks.css"
 import FeedbackCard from "./FeedbackCard"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
+import AuthContext from "../AuthContext"
 
 // The AllFeedbacks component is responsible for fetching and displaying a list of all feedback entries.
 // It includes a header with metadata and controls, and a grid of feedback cards.
@@ -11,36 +13,35 @@ const AllFeedbacks = () => {
   const [isLoading, setIsLoading] = useState(true);
   // State to store any potential error messages from the API request.
   const [error, setError] = useState(null);
+
+  const {accessToken} = useContext(AuthContext);
   
   // The useEffect hook runs once when the component mounts to fetch the feedback data.
   useEffect(() => {
-    // Defines the API endpoint for fetching feedback.
-    const feedbackApiUrl = "http://localhost:5000/api/feedback/me/demo-cafe";
 
-    // Fetches data from the API.
-    fetch(feedbackApiUrl)
-      .then((res) => {
-        // If the response is not ok, it throws an error to be caught by the catch block.
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
+    const fetchAllFeedback = async ()=>{
+
+      try {
+        const res = await axios.get("http://localhost:5000/api/feedback/me",{
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
         // On success, it updates the feedbacks state with the fetched data.
-        setFeedbacks(data);
+        setFeedbacks(res.data);
         setError(null);
-      })
-      .catch((err) => {
-        // On failure, it logs the error and updates the error state.
-        console.error("Error fetching feedbacks:", err);
+      } catch (error) {
+         // On failure, it logs the error and updates the error state.
+        console.error("Error fetching feedbacks:", error);
         setError("Failed to load feedback. Please try again later.");
-      })
-      .finally(() => {
-        // This block runs regardless of success or failure, ensuring the loading state is turned off.
+      }finally{
         setIsLoading(false);
-      });
-  }, []); // The empty dependency array ensures this effect runs only once on mount.
+      }
+    }
+
+    fetchAllFeedback()
+
+  }, [accessToken]); 
  
   // Renders a loading message while the data is being fetched.
   if (isLoading) {

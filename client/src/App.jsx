@@ -30,7 +30,7 @@ function App() {
       <Route path='/auth' element={ <AuthPage />}/>
       
       {/* Public route - Feedback collection page */}
-      <Route path='/feedback' element={ <Feedback />}/>
+      <Route path='/feedback/:slug' element={ <Feedback />}/>
 
       {/* Protected route - Dashboard and all its sub-routes require authentication */}
       {/* The /* wildcard allows for nested routes like /dashboard/feedbackes */}

@@ -1,22 +1,27 @@
-import qrCode from "../assets/qr code.png"
-import { useState } from "react"
+import qrcode from "../assets/qr code.png"
+import axios from "axios"
+import { useState,useContext } from "react"
 import "./MainContent.css"
 import FeedbackCard from "./FeedbackCard"
 import { formatTimeAgo, sortFeedbackByTime } from "../utils/timeUtils";
+import AuthContext from "../AuthContext"
 
 // The MainContent component serves as the landing page of the dashboard.
 // It provides a summary of feedback activity and tools for sharing the feedback link.
 function MainContent() {
     // A hardcoded array of feedback objects. In a real application, this data would be fetched from an API.
   const [feedbacks ,setFeedbacks] = useState([])
+  const [qrCode, setQrCode] = useState(qrcode)
+  const [feedbackLink, setFeedbackLink] = useState('http://localhost:5173/feedback')
   
    // State to manage the "Copied!" confirmation message visibility.
   const [copied, setCopied] = useState(false)
   const [error ,setError] = useState("")
 
+  const {accessToken} = useContext(AuthContext);
    // Copies the feedback link to the user's clipboard and shows a confirmation message.
   const copyLink = () => {
-    navigator.clipboard.writeText('http://localhost:5173/feedback')
+    navigator.clipboard.writeText(feedbackLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -33,18 +38,26 @@ function MainContent() {
   const totalFeedbacks = feedbacks.length
 
   useState(()=>{
-    const slug = 'demo-cafe'
-    
-    fetch(`http://localhost:5000/api/feedback/me/${slug}`)
-    .then((res)=> res.json())
-    .then((data)=>{
-      const sortedFeedbacks = sortFeedbackByTime(data);
-      setFeedbacks(sortedFeedbacks)
-    })
-    .catch((err)=>{
-      console.log("error",err.message);
-      setError(err.message)
-    })
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/user/dashboard`,{
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const data = response.data;
+
+        console.log("data =>",data)
+        setQrCode(data.org.qrDataUrl)
+        setFeedbackLink(data.org.content)
+        const sortedFeedbacks = sortFeedbackByTime(data.feedbacks);
+        setFeedbacks(sortedFeedbacks)
+      } catch (error) {
+        console.error(error);
+        setError(error.message);
+      }
+    }
+    fetchData();
   },[])
 
   return (
@@ -53,12 +66,6 @@ function MainContent() {
         {/* The header displays the main title and a summary of total feedback. */}
       <div className="dashboard-header card">
         <h1 className="main-heading">Dashboard</h1>
-        {/* <div className="stats-summary">
-          <div className="stat-item">
-            <span className="stat-value">{totalFeedbacks}</span>
-            <span className="stat-label">Total Feedback</span>
-          </div>
-        </div> */}
       </div>
 
        {/* This section provides tools for sharing the feedback link via QR code or a direct link. */}
@@ -107,7 +114,7 @@ function MainContent() {
                 {error}
               </p>
             )}
-          {feedbacks.slice(0, 3).map((feedback) => (
+          {feedbacks.map((feedback) => (
             <FeedbackCard
               key={feedback._id}
               feedbackText={feedback.text}
