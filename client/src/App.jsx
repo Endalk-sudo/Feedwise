@@ -31,17 +31,10 @@ function App() {
       
       {/* Public route - Feedback collection page */}
       <Route path='/feedback' element={ <Feedback />}/>
-      <Route
-          path="/setup-organization"
-          element={
-            <ProtectedRoute>
-              <OrgSetup />
-            </ProtectedRoute>
-          }
-        />
+
       {/* Protected route - Dashboard and all its sub-routes require authentication */}
       {/* The /* wildcard allows for nested routes like /dashboard/feedbackes */}
-      <Route path='/dashboard/*'
+      <Route path='/dashboard/'
        element={ 
         // ProtectedRoute component checks if user is authenticated
         // If not, it redirects to /auth

@@ -16,7 +16,7 @@ const OrgSetup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // State for displaying server errors
   const [error, setError] = useState('');
-  const { token,login } = useContext(AuthContext);
+  const { accessToken, login } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
@@ -34,13 +34,13 @@ const OrgSetup = () => {
         { orgName, orgSlug },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
 
       // backend should return updated user (with hasOrganization = true)
-      login(res.data.user, token);
+      login(res.data.user, accessToken);
       navigate("/dashboard");
     } catch (err) {
       console.error(err);

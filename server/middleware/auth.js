@@ -1,31 +1,28 @@
+// middleware/verifyToken.js
 import jwt from "jsonwebtoken";
 
-// This is like a security guard at the door
-// It checks if you have a valid key card (JWT token) before letting you in
-
-export const authenticateToken = (req, res, next) => {
-  // Get the token from the Authorization header
-  // Expected format: "Bearer your-token-here"
+export const verifyToken = (req, res, next) => {
+  // Check for "Authorization" header
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Get the part after "Bearer"
-
-  // If no token provided, deny access
-  if (!token) {
-    return res.status(401).json({ message: "Access token required" });
+  if (!authHeader) {
+    return res.status(401).json({ message: "No token provided" });
   }
 
-  // Verify the token is valid and not expired
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      // Token is invalid or expired
-      return res.status(403).json({ message: "Invalid or expired token" });
-    }
+  // Extract token: "Bearer TOKEN"
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Invalid token format" });
+  }
 
-    // Token is valid - add organization info to the request
-    // This is like stamping your hand at a concert - now everyone knows you're allowed in
-    req.organizationId = decoded.organizationId;
-    
-    // Continue to the next step (the actual route handler)
-    next();
-  });
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_ACCESS || "secretkey123");
+
+    // Attach user payload to request (so routes can access req.user)
+    req.user = decoded.user;
+
+    next(); // proceed to the route
+  } catch (err) {
+    return res.status(403).json({ message: "Token is invalid or expired" });
+  }
 };

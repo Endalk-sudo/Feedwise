@@ -1,6 +1,5 @@
 import express from "express";
 import { getFeedback, submitFeedback } from "../controllers/feedbackController.js";
-import { authenticateToken } from "../middleware/auth.js";
 
 
 const router = express.Router();

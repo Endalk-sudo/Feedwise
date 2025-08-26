@@ -62,16 +62,6 @@ const AllFeedbacks = () => {
             {/* The feedback count is dynamically updated based on the number of items fetched. */}
             <span className="feedback-count">{feedbacks.length}</span>
           </div>
-
-          {/* These buttons are placeholders for future functionality like sorting and filtering. */}
-          <div className="feedback-actions">
-            <button className="feedback-action-btn" type="button" aria-label="Sort">
-              ⏱ Sort
-            </button>
-            <button className="feedback-action-btn" type="button" aria-label="Filter">
-              🔎 Filter
-            </button>
-          </div>
         </div>
 
         {/* The main content area where feedback cards are rendered in a responsive grid. */}

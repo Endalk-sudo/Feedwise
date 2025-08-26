@@ -11,7 +11,10 @@ const AuthContext = createContext();
 // 3. Organization modal visibility for new users
 export function AuthProvider({ children }) {
   // Store the logged-in user's information (username, email, etc.)
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   // Store the access token (like a "key card" for accessing protected areas)
   // Initialize from localStorage so users stay logged in after refresh
   const [accessToken, setAccessToken] = useState(() => localStorage.getItem("accessToken") || "");
@@ -32,9 +35,13 @@ export function AuthProvider({ children }) {
   // NEW: It now accepts an `isNew` flag to handle new user registration.
   // When isNew is true, it shows the organization modal to new users.
   const login = (userData, token) => {
+    localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);        // Save user info (username, email, etc.)
     setAccessToken(token);    // Save the access token
     // If the user is new, show the organization modal.
+    if (userData.hasOrganization) {
+      setUser(prevUser => ({ ...prevUser, hasOrganization: true }));
+    }
   };
 
   // This function runs when user clicks "logout"
@@ -42,6 +49,7 @@ export function AuthProvider({ children }) {
     setUser(null);            // Clear user info
     setAccessToken("");       // Clear the token
     localStorage.removeItem("accessToken"); // Remove token from localStorage
+    localStorage.removeItem("user"); // Remove user from localStorage
   };
 
   // Provide auth functions to all child components

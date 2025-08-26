@@ -1,5 +1,6 @@
 import express from 'express';
 import authController from '../controllers/authController.js'
+import {verifyToken} from "../middleware/auth.js"
 
 const router = express.Router();
 
@@ -26,6 +27,6 @@ router.post('/logout', authController.logout);
 
 // @route   POST /api/auth/organization
 // @desc    Set organization for the user
-router.post('/organization',authController.setOrganization)
+router.post('/organization', verifyToken, authController.setOrganization)
 
 export default router;

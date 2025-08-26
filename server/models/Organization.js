@@ -20,7 +20,7 @@ const orgSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
-  qrContent: {
+  content: {
      type: String, 
      required: true,
      unique: true, 

@@ -93,38 +93,45 @@ const  register = async (req, res) => {
 
 
 const setOrganization = async (req,res)=>{
-    const {name,slug,userId} = req.body
+    const {orgName,orgSlug,} = req.body
     try{
+    const userId = req.user.id;
 
-        const org = await Organization.findOne({ slug }); // Use findOne for a single match
-        if (org) {
-            return res.status(400).send({ ok: false, message: "Slug is already taken, it has to be unique" });
-        }
+    const isOrg = await Organization.findOne({ slug: orgSlug }); // Use findOne for a single match
+    if (isOrg) {
+        return res.status(400).send({ ok: false, message: "Slug is already taken, it has to be unique" });
+    }
 
-        const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
-        const content = `${baseUrl}/api/feedback/${slug}`;
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+    const content = `${baseUrl}/api/feedback/${orgSlug}`;
 
-        const qrDataUrl = await QRCode.toDataURL(content, {
+    const qrDataUrl = await QRCode.toDataURL(content, {
             width: 300,
             margin: 2,
             errorCorrectionLevel: 'H'
-        });   
-        
+    });
 
-        const newOrganization = await Organization.create({
-              ownerId: userId,
-              name :name,
-              slug : slug,
-              content: content,
-              qrDataUrl: qrDataUrl
-          })
+    // create org
+    const org = await Organization.create({
+      ownerId: userId,
+      name :orgName,
+      slug : orgSlug,
+      content: content,
+      qrDataUrl: qrDataUrl
+    });
 
+    // update user
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { hasOrganization: true, organizationId: org._id },
+      { new: true }
+    );
 
-        return  res.status(201).send({ ok:true, id:newOrganization._id})
+        return  res.status(201).send({ ok:true, user, organization: org})
 
     } catch(err){
         console.log("error",err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ message: "Server error" });
     }
 }
 
@@ -166,7 +173,7 @@ const login = async (req, res) => {
             msg: 'Logged in successfully',
             accessToken,
             refreshToken,
-            user: { id: user.id, username: user.username, email: user.email},
+            user: { id: user.id, username: user.username, email: user.email, hasOrganization: user.hasOrganization },
         });
 
     } catch (err) {
@@ -257,4 +264,3 @@ const logout = async (req, res) => {
 };
 
 export default {register,login,refreshToken,logout,setOrganization}
-

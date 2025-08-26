@@ -1,4 +1,3 @@
-import logo from "../assets/logo.png";
 import { NavLink, Outlet } from "react-router-dom";
 import "./Dashboard.css";
 import { useState } from "react";
@@ -23,7 +22,6 @@ const Dashboard = () => {
     // Toggles sidebar open/close state (used by hamburger/close button on mobile)
     const handleSidebarToggle = () => {
         setSidebarOpen((prev) => !prev);
-        console.log("toggle is fired")
     };
 
     // Closes sidebar when a navigation link is clicked (for better mobile UX)
@@ -41,8 +39,8 @@ const Dashboard = () => {
                     {/* Sidebar toggle button (hamburger/close icon) for mobile screens */}
                     <ToggleButton sidebarOpen={sidebarOpen} handleSidebarToggle={handleSidebarToggle} />
                     {/* Logo */}
-                    <div className="img-container">
-                        <img src={logo} alt="AI Feedback Logo" />
+                    <div className="ai-logo">
+                        Feedback<span className="logo-color">AI</span>
                     </div>
                 </div>
 
