@@ -9,15 +9,23 @@
   z-index: 100;
   height: 70px;
   width: 100%;
-  padding: 20px clamp(1rem, 5vw, 4rem); /* Responsive padding using clamp() */
+  padding: 20px clamp(1rem, 5vw, 4rem);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backdrop-filter: blur(12px); /* Glassmorphism effect */
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%); /* Gradient background */
-  border-bottom: 1px solid rgba(51, 65, 85, 0.3); /* Subtle border */
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); /* Enhanced shadow for depth */
-  animation: slideDown 0.6s ease-out; /* Smooth slide-in animation */
+  backdrop-filter: blur(12px);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.6s ease-out;
+  transition: all 0.3s ease;
+}
+
+.navbar.scrolled {
+  height: 60px;
+  padding: 15px clamp(1rem, 5vw, 4rem);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 /* Logo Styles: Large, bold, with accent underline on hover */
@@ -28,7 +36,8 @@
   letter-spacing: -0.5px;
   position: relative;
   overflow: hidden;
-  text-shadow: 0 0 8px rgba(56, 189, 248, 0.2); /* ADDED */
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+  transition: all 0.3s ease;
 }
 
 /* Animated underline for logo on hover */
@@ -75,7 +84,7 @@
   display: flex;
   gap: 25px;
   align-items: center;
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 1;
 }
 
@@ -99,7 +108,7 @@
   left: 0;
   width: 0;
   height: 100%;
-  background: rgba(56, 189, 248, 0.15); /* MODIFIED */
+  background: rgba(56, 189, 248, 0.15);
   border-radius: 12px;
   transition: width 0.3s ease;
   z-index: -1;
@@ -113,8 +122,6 @@
   color: var(--color-accent);
   transform: translateY(-2px);
 }
-
-
 
 /* Primary Call-to-Action Button: Gradient, shadow, hover animation */
 .cta-primary-btn {
@@ -130,9 +137,11 @@
   box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
   position: relative;
   overflow: hidden;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
 }
 
-/* MODIFIED */
 .cta-primary-btn::before {
   content: '';
   position: absolute;
@@ -150,23 +159,22 @@
 
 .cta-primary-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 35px rgba(56, 189, 248, 0.5); /* MODIFIED */
+  box-shadow: 0 10px 35px rgba(56, 189, 248, 0.5);
 }
 
 .cta-primary-btn:active {
   transform: translateY(-1px);
 }
 
-/* client/src/pages/HomePage.css */
-
 /* Style the CTA button container */
 .cta-btn-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  gap: 20px; /* Adjust the gap between buttons */
-  padding: 20px; /* Add some padding to the container */
-  border-radius: 12px; /* Add a subtle border radius */
+  gap: 20px;
+  padding: 20px;
+  border-radius: 12px;
+  flex-wrap: wrap;
 }
 
 /* Style the primary CTA button */
@@ -184,11 +192,12 @@
   box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
   position: relative;
   overflow: hidden;
+  min-width: 220px;
 }
 
 /* Style the secondary CTA button */
 .cta-secondary-btn {
-  padding: 16px 32px;
+  padding: 14px 32px;
   font-size: 1.1rem;
   box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
   position: relative;
@@ -199,6 +208,8 @@
   font-weight: 600;
   color: var(--color-accent);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  min-width: 220px;
 }
 
 /* Add a hover effect to the primary CTA button */
@@ -215,7 +226,7 @@
   color: var(--color-text-primary);
 }
 
-.open{
+.open {
   display: none;
   cursor: pointer;
   background: transparent;
@@ -223,24 +234,92 @@
   height: 40px;
   color: white;
   border: none;
+  z-index: 101;
 }
 
 /* Main Content Wrapper: Padding and margin to offset navbar */
 main {
   padding: 0 clamp(1rem, 5vw, 5rem);
   margin-top: 70px;
+  overflow-x: hidden;
+}
+
+/* Container for consistent width and padding */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* Hero Section: Centered headline, subheading, and CTA buttons with background gradients */
 .hero {
   display: flex;
   flex-direction: column;
-  gap: 40px;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+  padding: 20px 0;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* Decorative elements for hero section */
+.hero-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.decoration-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.15;
+}
+
+.circle-1 {
+  width: 300px;
+  height: 300px;
+  background: var(--color-accent);
+  top: 10%;
+  left: 5%;
+  animation: float 8s ease-in-out infinite;
+}
+
+.circle-2 {
+  width: 400px;
+  height: 400px;
+  background: var(--aurora-color-2);
+  bottom: 10%;
+  right: 5%;
+  animation: float 12s ease-in-out infinite;
+}
+
+.circle-3 {
+  width: 250px;
+  height: 250px;
+  background: var(--aurora-color-3);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: float 10s ease-in-out infinite;
 }
 
 /* Decorative radial gradient background for hero section */
@@ -251,13 +330,13 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.15) 0%, transparent 50%), /* MODIFIED */
-              radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 50%); /* MODIFIED */
-  z-index: -1;
+  background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 50%);
+  z-index: 0;
 }
 
 /* Hero Headline: Large, bold, animated on load */
-.hero > .hero-heading {
+.hero > .hero-content > .hero-heading {
   font-size: clamp(2.5rem, 5vw, 4rem);
   max-width: 800px;
   text-align: center;
@@ -265,10 +344,11 @@ main {
   line-height: 1.2;
   letter-spacing: -0.02em;
   animation: fadeInUp 0.8s ease-out;
+  margin: 0;
 }
 
 /* Hero Subheading: Centered, muted color, animated */
-.hero > .hero-sub-heading {
+.hero > .hero-content > .hero-sub-heading {
   max-width: 700px;
   font-size: clamp(1rem, 2vw, 1.2rem);
   text-align: center;
@@ -276,9 +356,8 @@ main {
   letter-spacing: 0.01em;
   color: var(--color-text-secondary);
   animation: fadeInUp 0.8s ease-out 0.2s both;
+  margin: 0;
 }
-
-
 
 /* Main CTA button: prominent, with animated shine on hover */
 .cta-main-btn {
@@ -288,6 +367,7 @@ main {
   position: relative;
   overflow: hidden;
   animation: pulse 2s infinite;
+  min-width: 220px;
 }
 
 .cta-main-btn:hover {
@@ -327,6 +407,7 @@ main {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  min-width: 220px;
 }
 
 .cta-btn-container > .cta-secondary-btn::before {
@@ -347,7 +428,7 @@ main {
 
 .cta-btn-container > .cta-secondary-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4); /* MODIFIED */
+  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4);
   color: var(--color-text-primary);
 }
 
@@ -357,21 +438,20 @@ main {
 
 /* Problem Section: Highlights business pain points, uses gradient background */
 .problem-section {
-  min-height: 100vh;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 50px;
-  position: relative; /* MODIFIED */
+  position: relative;
   background: linear-gradient(180deg, transparent 0%, rgba(30, 41, 59, 0.1) 100%);
-  padding: 60px 0;
+  padding: 80px 0;
 }
 
 /* Problem Section Content: Centered headline and description */
 .problem-content {
-  margin: 0 50px;
+  margin-bottom: 4rem;
   display: flex;
   flex-direction: column;
   gap: 30px;
@@ -379,6 +459,7 @@ main {
   justify-content: center;
   text-align: center;
   animation: fadeInUp 0.8s ease-out 0.6s both;
+  width: 100%;
 }
 
 .problem-content > h2 {
@@ -390,6 +471,7 @@ main {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0;
 }
 
 .problem-content > p {
@@ -397,17 +479,18 @@ main {
   line-height: 1.6;
   color: var(--color-text-secondary);
   max-width: 700px;
+  margin: 0;
 }
 
 /* Grid of individual problem items/cards */
 .problem-items-container {
-  margin-top: 60px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
   width: 100%;
   max-width: 1200px;
   padding: 0 20px;
+  margin: 0 auto;
 }
 
 /* Individual Problem Card: Gradient, shadow, hover effect */
@@ -420,6 +503,10 @@ main {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .problem-items-container > .problem-item::before {
@@ -428,7 +515,7 @@ main {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px; /* MODIFIED */
+  height: 4px;
   background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
   transform: scaleX(0);
   transition: transform 0.3s ease;
@@ -436,12 +523,27 @@ main {
 
 .problem-items-container > .problem-item:hover {
   transform: translateY(-8px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4); /* MODIFIED */
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
   border-color: var(--color-accent);
 }
 
 .problem-items-container > .problem-item:hover::before {
   transform: scaleX(1);
+}
+
+/* Problem icon */
+.problem-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 50%;
+  margin-bottom: 20px;
+  color: var(--color-accent);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  flex-shrink: 0;
 }
 
 .problem-items-container > .problem-item > h3 {
@@ -455,29 +557,29 @@ main {
   color: var(--color-text-secondary);
   font-size: 1.1rem;
   line-height: 1.6;
+  margin: 0;
 }
 
 /* Solution Section: Explains how FeedbackAI solves problems, with image and features */
 .solution-section {
-  /* margin-top: 7rem; */
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 60px;
-  position: relative; /* MODIFIED */
+  position: relative;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.02) 0%, rgba(30, 41, 59, 0.05) 100%);
   padding: 80px 0;
 }
 
 /* Solution Section Content: Centered headline and description */
-.solution-section > .solution-content {
+.solution-section  .solution-content {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 30px;
-  text-align: center;
   animation: fadeInUp 0.8s ease-out 0.8s both;
+  width: 100%;
 }
 
 .solution-content > h2 {
@@ -485,10 +587,12 @@ main {
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
+  text-align: center;
   background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0;
 }
 
 .solution-content > p {
@@ -496,13 +600,15 @@ main {
   line-height: 1.6;
   color: var(--color-text-secondary);
   max-width: 700px;
+  text-align: center;
+  margin: 0;
+  margin-bottom: 4rem;
 }
 
 /* Grid layout for solution image and feature list */
 .solutions-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  justify-content: space-between;
   gap: 60px;
   align-items: center;
   max-width: 1200px;
@@ -519,7 +625,7 @@ main {
 }
 
 .solution-img-container > .solution-img {
-  max-width: 400px;
+  max-width: 100%;
   height: auto;
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(56, 189, 248, 0.3);
@@ -535,14 +641,14 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, transparent 100%); /* MODIFIED */
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, transparent 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .solution-img-container:hover > .solution-img {
   transform: scale(1.05);
-  box-shadow: 0 35px 90px rgba(56, 189, 248, 0.5); /* MODIFIED */
+  box-shadow: 0 35px 90px rgba(56, 189, 248, 0.5);
 }
 
 .solution-img-container:hover > .solution-img::before {
@@ -550,12 +656,12 @@ main {
 }
 
 /* solution image */
-/* Solution image styling: responsive, rounded */
 .solution-img > img {
   width: 100%;
   height: 100%;
   border-radius: 20px;
   object-fit: cover;
+  display: block;
 }
 
 /* List of solution feature cards */
@@ -567,7 +673,6 @@ main {
 
 /* Individual Solution Card: Gradient, shadow, hover effect */
 .solution-items-container > .solution-item {
-  min-width: 400px;
   padding: 30px;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.9) 100%);
   border-radius: 16px;
@@ -576,6 +681,9 @@ main {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
 }
 
 .solution-items-container > .solution-item::before {
@@ -584,7 +692,7 @@ main {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px; /* MODIFIED */
+  height: 4px;
   background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
   transform: scaleX(0);
   transition: transform 0.3s ease;
@@ -592,7 +700,7 @@ main {
 
 .solution-items-container > .solution-item:hover {
   transform: translateY(-8px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4); /* MODIFIED */
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
   border-color: var(--color-accent);
 }
 
@@ -600,29 +708,49 @@ main {
   transform: scaleX(1);
 }
 
-.solution-item > h3 {
-  margin-bottom: 15px;
+/* Solution icon */
+.solution-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 50%;
+  color: var(--color-accent);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  flex-shrink: 0;
+}
+
+.solution-text {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.solution-item > .solution-text > h3 {
+  margin-bottom: 0;
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--color-text-primary);
 }
 
-.solution-item > p {
+.solution-item > .solution-text > p {
   color: var(--color-text-secondary);
   font-size: 1.1rem;
   line-height: 1.6;
+  margin: 0;
 }
 
 /* Features Section: Grid of product features, gradient background */
 .features-section {
   width: 100%;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 60px;
-  position: relative; /* MODIFIED */
+  position: relative;
   background: linear-gradient(180deg, transparent 0%, rgba(30, 41, 59, 0.1) 100%);
   padding: 80px 0;
 }
@@ -633,8 +761,8 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
   animation: fadeInUp 0.8s ease-out 1s both;
+  width: 100%;
 }
 
 .feature-content > h2 {
@@ -642,20 +770,24 @@ main {
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
+  text-align: center;
   background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0;
+  margin-bottom: 4rem;
 }
 
 /* Grid layout for feature cards */
 .features-card-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
   width: 100%;
   max-width: 1200px;
   padding: 0 20px;
+  margin: 0 auto;
 }
 
 /* Individual Feature Card: Gradient, shadow, hover effect */
@@ -669,6 +801,11 @@ main {
   position: relative;
   overflow: hidden;
   animation: fadeInUp 0.8s ease-out 1.2s both;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
 }
 
 .features-card-container > .feature-card::before {
@@ -677,7 +814,7 @@ main {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px; /* MODIFIED */
+  height: 4px;
   background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
   transform: scaleX(0);
   transition: transform 0.3s ease;
@@ -685,7 +822,7 @@ main {
 
 .features-card-container > .feature-card:hover {
   transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4); /* MODIFIED */
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
   border-color: var(--color-accent);
 }
 
@@ -693,9 +830,22 @@ main {
   transform: scaleX(1);
 }
 
+/* Feature icon */
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 50%;
+  color: var(--color-accent);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
 /* Feature Card Headline: accent underline on hover */
 .feature-card > h3 {
-  margin-bottom: 20px;
+  margin-bottom: 0;
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-text-primary);
@@ -707,17 +857,17 @@ main {
   content: '';
   position: absolute;
   bottom: -8px;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
   width: 40px;
   height: 3px;
   background: var(--color-accent);
   border-radius: 2px;
-  transform: scaleX(0);
   transition: transform 0.3s ease;
 }
 
 .features-card-container > .feature-card:hover > h3::after {
-  transform: scaleX(1);
+  transform: translateX(-50%) scaleX(1);
 }
 
 /* Feature Card Description: muted color, readable */
@@ -725,23 +875,29 @@ main {
   color: var(--color-text-secondary);
   font-size: 1.1rem;
   line-height: 1.7;
+  margin: 0;
 }
 
 /* Social Proof Section: Testimonial card with gradient background */
 .sp-section {
-  margin-top: 5rem;
   width: 100%;
-  height: 80vh;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.08) 0%, rgba(30, 41, 59, 0.15) 100%); /* MODIFIED */
-  padding: 60px 0;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.08) 0%, rgba(30, 41, 59, 0.15) 100%);
+  padding: 80px 0;
+}
+
+.sp-section > .container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 /* Testimonial Card: Centered, shadow, accent border */
-.sp-section > .sp-container {
+.sp-section > .container > .sp-container {
   padding: 50px;
   max-width: 900px;
   display: flex;
@@ -751,7 +907,7 @@ main {
   gap: 40px;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.95) 100%);
   border-radius: 24px;
-  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4); /* MODIFIED */
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(56, 189, 248, 0.2);
   position: relative;
   overflow: hidden;
@@ -768,6 +924,12 @@ main {
   background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
 }
 
+/* Quote icon */
+.quote-icon {
+  color: var(--color-accent);
+  opacity: 0.5;
+}
+
 /* Testimonial Headline: gradient text */
 .sp-container > h2 {
   text-align: center;
@@ -779,114 +941,159 @@ main {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0;
 }
 
 /* Testimonial Text: muted color, readable */
 .sp-container > p {
   color: var(--color-text-secondary);
   text-align: center;
-  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
   line-height: 1.6;
   max-width: 700px;
+  margin: 0;
+  font-style: italic;
 }
 
 /* Customer Details: name and role, accent background */
-.sp-container > .custommer-detailes {
+.customer-details {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 15px;
   padding: 20px;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.08) 100%); /* MODIFIED */
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.08) 100%);
   border-radius: 16px;
   border: 1px solid rgba(56, 189, 248, 0.2);
+  width: 100%;
+}
+
+/* Customer avatar */
+.customer-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--color-text-primary);
+  margin-bottom: 10px;
+}
+
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Customer info */
+.customer-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
 }
 
 /* Customer name styling */
-.custommer-detailes p {
+.customer-name {
   font-size: 1.2rem;
   font-weight: 500;
   color: var(--color-text-primary);
+  margin: 0;
 }
 
 /* Customer role accent color */
-.custommer-detailes .color {
+.customer-title {
   color: var(--color-accent);
   font-weight: 600;
+  margin: 0;
 }
 
 /* Pricing Section: Outlines the pricing plans available */
-/* This section provides a clear overview of different pricing tiers, designed to be visually appealing and easy to compare. */
 .pricing-section {
   width: 100%;
-  min-height: 100vh; /* Ensures the section takes at least the full viewport height */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 60px; /* Spacing between title/description and pricing cards */
+  gap: 60px;
   position: relative;
-  /* Subtle gradient background to distinguish it from other sections while maintaining theme */
   background: linear-gradient(180deg, rgba(30, 41, 59, 0.05) 0%, rgba(15, 23, 42, 0.1) 100%);
-  padding: 80px 0; /* Vertical padding for content */
-  animation: fadeInUp 0.8s ease-out 1.6s both; /* Smooth fade-in animation */
+  padding: 80px 0;
+  animation: fadeInUp 0.8s ease-out 1.6s both;
+}
+
+.pricing-section > .container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Container for the main title and subtitle of the pricing section */
 .pricing-content {
+  align-self: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 20px; /* Spacing between title and subtitle */
-  max-width: 900px; /* Limits width for readability */
-  padding: 0 20px; /* Horizontal padding */
+  gap: 20px;
+  max-width: 900px;
+  padding: 0 20px;
+  width: 100%;
+  margin-bottom: 5rem;
 }
 
 /* Styling for the main pricing section heading */
 .pricing-content h2 {
-  font-size: clamp(2rem, 4vw, 3rem); /* Responsive font size */
+  font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  /* Gradient text effect for a premium look, consistent with other headings */
   background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0;
 }
 
 /* Styling for the pricing section subtitle/description */
 .pricing-content p {
-  font-size: clamp(1rem, 2vw, 1.2rem); /* Responsive font size */
+  font-size: clamp(1rem, 2vw, 1.2rem);
   line-height: 1.6;
-  color: var(--color-text-secondary); /* Muted text color for secondary information */
+  color: var(--color-text-secondary);
+  margin: 0;
 }
 
 /* Container for the individual pricing cards, arranged in a responsive grid */
 .pricing-cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid columns */
-  gap: 40px; /* Spacing between cards */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
   width: 100%;
-  max-width: 1100px; /* Max width for the card grid */
-  padding: 0 20px; /* Horizontal padding */
+  max-width: 1100px;
+  padding: 0 20px;
+  margin: 0 auto;
 }
 
 /* Styling for each individual pricing plan card */
 .pricing-card {
   padding: 35px;
-  /* Glassmorphism-like background with a subtle gradient */
   background: linear-gradient(135deg, var(--color-surface) 0%, rgba(30, 41, 59, 0.5) 100%);
-  border-radius: 20px; /* Rounded corners */
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
-  border: 1px solid rgba(51, 65, 85, 0.3); /* Subtle border */
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition for hover effects */
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(51, 65, 85, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   display: flex;
-  flex-direction: column; /* Stacks content vertically */
+  flex-direction: column;
   align-items: center;
   text-align: center;
 }
@@ -898,39 +1105,54 @@ main {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px; /* Thickness of the accent border */
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover)); /* Gradient accent color */
-  transform: scaleX(0); /* Hidden by default */
-  transition: transform 0.3s ease; /* Smooth animation for border appearance */
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
 }
 
 /* Hover effect for pricing cards: lifts, adds shadow, and reveals accent border */
 .pricing-card:hover {
-  transform: translateY(-12px) scale(1.02); /* Lifts and slightly scales the card */
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4); /* More pronounced shadow on hover */
-  border-color: var(--color-accent); /* Changes border color to accent */
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
+  border-color: var(--color-accent);
 }
 
 .pricing-card:hover::before {
-  transform: scaleX(1); /* Makes the accent border fully visible on hover */
+  transform: scaleX(1);
 }
 
 /* Special styling for the "Most Popular" pricing card to make it stand out */
 .pricing-card.popular {
-  border-color: var(--color-accent); /* Accent border color */
-  box-shadow: 0 20px 50px rgba(56, 189, 248, 0.3); /* Stronger shadow with accent color */
-  transform: scale(1.05); /* Slightly larger to emphasize popularity */
-  /* More prominent background gradient with accent color */
+  border-color: var(--color-accent);
+  box-shadow: 0 20px 50px rgba(56, 189, 248, 0.3);
+  transform: scale(1.05);
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(30, 41, 59, 0.7) 100%);
+  z-index: 1;
 }
 
 .pricing-card.popular::before {
-  transform: scaleX(1); /* Always show accent border for the popular card */
+  transform: scaleX(1);
+}
+
+/* Popular badge */
+.popular-badge {
+  position: absolute;
+  top: 20px;
+  right: -30px;
+  background: var(--color-accent);
+  color: var(--color-text-primary);
+  padding: 5px 30px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transform: rotate(45deg);
+  width: 150px;
 }
 
 /* Header section within each pricing card */
 .card-header {
   margin-bottom: 20px;
+  width: 100%;
 }
 
 /* Plan name (e.g., Starter, Pro, Business) */
@@ -952,7 +1174,7 @@ main {
 .price {
   font-size: 3rem;
   font-weight: 800;
-  color: var(--color-accent); /* Accent color for the price */
+  color: var(--color-accent);
   margin-bottom: 20px;
 }
 
@@ -965,14 +1187,14 @@ main {
 
 /* List of features for each plan */
 .features-list {
-  list-style: none; /* Removes default list bullets */
+  list-style: none;
   padding: 0;
   margin: 0 0 30px 0;
-  flex-grow: 1; /* Allows list to take up available space, pushing button to bottom */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Spacing between list items */
-  align-items: flex-start; /* Aligns text to the left within the list */
+  gap: 15px;
+  align-items: flex-start;
   width: 100%;
 }
 
@@ -982,22 +1204,23 @@ main {
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
-  gap: 10px; /* Space between checkmark and text */
+  gap: 10px;
   text-align: left;
+  width: 100%;
 }
 
 /* Custom checkmark icon for list items */
 .features-list li::before {
-  content: '✓'; /* Unicode checkmark character */
-  color: var(--color-accent); /* Accent color for the checkmark */
+  content: '✓';
+  color: var(--color-accent);
   font-weight: bold;
   font-size: 1.2em;
 }
 
 /* Call-to-action button within each pricing card */
 .pricing-cta-btn {
-  width: 100%; /* Full width button */
-  margin-top: auto; /* Pushes button to the bottom of the card */
+  width: 100%;
+  margin-top: auto;
   padding: 14px 24px;
   font-size: 1.1rem;
 }
@@ -1005,16 +1228,33 @@ main {
 /* Closing Section: Final CTA, gradient background, centered */
 .closing-section {
   width: 100%;
-  height: 80vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 40px;
   position: relative;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.15) 0%, rgba(30, 41, 59, 0.2) 100%); /* MODIFIED */
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.15) 0%, rgba(30, 41, 59, 0.2) 100%);
   padding: 80px 0;
   animation: fadeInUp 0.8s ease-out 1.6s both;
+}
+
+.closing-section > .container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.closing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 30px;
+  max-width: 800px;
+  padding: 0 20px;
+  width: 100%;
 }
 
 /* Closing Headline: gradient text */
@@ -1028,6 +1268,7 @@ main {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0;
 }
 
 /* Closing Description: muted color, readable */
@@ -1037,10 +1278,10 @@ main {
   text-align: center;
   max-width: 700px;
   line-height: 1.6;
+  margin: 0;
 }
 
 /* Footer: Modern minimalist design with great UI/UX */
-
 .footer {
   padding: 2.5rem clamp(1rem, 5vw, 4rem);
   display: flex;
@@ -1164,6 +1405,7 @@ main {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   padding-left: 1rem;
+  display: inline-block;
 }
 
 .footer-group a::before {
@@ -1257,7 +1499,7 @@ main {
   z-index: 0;
 }
 
-.social-icons a i {
+.social-icons a svg {
   position: relative;
   z-index: 1;
   transition: color 0.3s ease;
@@ -1273,7 +1515,7 @@ main {
   opacity: 1;
 }
 
-.social-icons a:hover i {
+.social-icons a:hover svg {
   color: var(--color-text-primary);
 }
 
@@ -1307,7 +1549,7 @@ main {
     gap: 30px;
   }
   
-  .hero > .cta-btn-container {
+  .hero > .hero-content > .cta-btn-container {
     flex-direction: column;
     gap: 15px;
   }
@@ -1315,10 +1557,15 @@ main {
   .solutions-container {
     grid-template-columns: 1fr;
     gap: 40px;
+    max-width: 800px;
   }
   
   .solution-img-container {
     order: -1;
+  }
+  
+  .solution-items-container > .solution-item {
+    min-width: auto;
   }
 }
 
@@ -1347,15 +1594,16 @@ main {
     border: 1px solid var(--color-border);
     opacity: 0;
     pointer-events: none;
+    z-index: 100;
   }
-
+  
   .nav-links.expand {
     left: 30px;
     opacity: 1;
     pointer-events: auto;
   }
-
-  .expand{
+  
+  .expand {
     left: 30px;
   }
   
@@ -1363,14 +1611,14 @@ main {
     font-size: 1.15rem;
     padding: 6px 12px;
   }
-
+  
   .nav-links .link {
     width: 100%;
     justify-content: center;
     flex: 1;
   }
-
-  .nav-links  .cta-primary-btn {
+  
+  .nav-links .cta-primary-btn {
     margin-top: 20px;
     width: 100%;
   } 
@@ -1379,10 +1627,8 @@ main {
     padding: 10px 20px;
     font-size: 0.9rem;
   }
-
-
-
-  .open{
+  
+  .open {
     display: block;
     transition: all 0.3s ease;
   }
@@ -1392,46 +1638,45 @@ main {
     gap: 25px;
   }
   
-  .hero > .hero-heading {
+  .hero > .hero-content > .hero-heading {
     font-size: clamp(2rem, 8vw, 2.5rem);
   }
   
-  .hero > .hero-sub-heading {
+  .hero > .hero-content > .hero-sub-heading {
     font-size: clamp(0.9rem, 3vw, 1.1rem);
   }
   
-  .hero > .cta-btn-container {
+  .hero > .hero-content > .cta-btn-container {
     width: 100%;
     max-width: 300px;
+    padding: 10px;
   }
   
   .problem-section,
   .features-section {
-    padding: 40px 0;
+    padding: 60px 0;
     gap: 40px;
   }
   
   .problem-content,
   .solution-content,
   .feature-content {
-    margin: 0 20px;
+    padding: 0 15px;
   }
   
   .problem-items-container,
   .features-card-container {
     grid-template-columns: 1fr;
     gap: 20px;
-    padding: 0 10px;
+    padding: 0 15px;
   }
   
-  .sp-section,
-  .closing-section {
-    height: 70vh;
-    padding: 40px 0;
+  .sp-section {
+    padding: 60px 0;
   }
   
-  .sp-section > .sp-container {
-    padding: 30px;
+  .sp-section > .container > .sp-container {
+    padding: 30px 20px;
     max-width: 95%;
   }
   
@@ -1441,6 +1686,10 @@ main {
   
   .sp-container > p {
     font-size: clamp(1rem, 3vw, 1.3rem);
+  }
+  
+  .closing-section {
+    padding: 60px 0;
   }
   
   .closing-section h2 {
@@ -1500,8 +1749,9 @@ main {
   }
   
   .pricing-cards-container {
-    grid-template-columns: 1fr; /* Stacks cards vertically on smaller screens */
+    grid-template-columns: 1fr;
     padding: 0 15px;
+    gap: 25px;
   }
   
   .pricing-card {
@@ -1524,6 +1774,17 @@ main {
     font-size: 1rem;
     padding: 12px 20px;
   }
+  
+  .pricing-card.popular {
+    transform: scale(1.02);
+  }
+  
+  .popular-badge {
+    right: -25px;
+    padding: 4px 25px;
+    font-size: 0.7rem;
+    width: 130px;
+  }
 }
 
 /* Responsive adjustments for smallest screens (mobile) */
@@ -1533,35 +1794,38 @@ main {
     gap: 20px;
   }
   
-  .hero > .hero-heading {
+  .hero > .hero-content > .hero-heading {
     font-size: clamp(1.8rem, 8vw, 2.2rem);
   }
   
-  .hero > .hero-sub-heading {
+  .hero > .hero-content > .hero-sub-heading {
     font-size: clamp(0.8rem, 3vw, 1rem);
   }
   
-  .cta-btn-container > .cta-main-btn,
-  .cta-btn-container > .cta-secondary-btn {
+  .hero > .hero-content > .cta-btn-container > .cta-main-btn,
+  .hero > .hero-content > .cta-btn-container > .cta-secondary-btn {
     padding: 12px 24px;
     font-size: 1rem;
+    min-width: auto;
+    width: 100%;
   }
   
   .problem-section,
   .features-section {
-    padding: 30px 0;
+    padding: 40px 0;
     gap: 30px;
   }
   
   .problem-content,
   .solution-content,
   .feature-content {
-    margin: 0 15px;
+    padding: 0 10px;
   }
   
   .problem-items-container,
   .features-card-container {
     gap: 15px;
+    padding: 0 10px;
   }
   
   .problem-items-container > .problem-item,
@@ -1569,21 +1833,19 @@ main {
     padding: 20px;
   }
   
-  .sp-section,
-  .closing-section {
-    height: 60vh;
-    padding: 30px 0;
+  .sp-section {
+    padding: 40px 0;
   }
   
-  .sp-section > .sp-container {
-    padding: 20px;
+  .sp-section > .container > .sp-container {
+    padding: 20px 15px;
   }
   
-  .sp-container > .custommer-detailes {
+  .sp-container > .customer-details {
     padding: 15px;
   }
   
-  .custommer-detailes p {
+  .customer-details p {
     font-size: 1rem;
   }
   
@@ -1663,6 +1925,24 @@ main {
   .features-list li {
     font-size: 0.95rem;
   }
+  
+  .solution-items-container > .solution-item {
+    padding: 20px;
+    gap: 15px;
+  }
+  
+  .solution-icon, .feature-icon, .problem-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .solution-text > h3, .feature-card > h3, .problem-item > h3 {
+    font-size: 1.2rem;
+  }
+  
+  .solution-text > p, .feature-card > p, .problem-item > p {
+    font-size: 1rem;
+  }
 }
 
 /* Animation for navbar sliding down on page load */
@@ -1690,14 +1970,14 @@ main {
 }
 
 /* Accent color and underline for highlighted text in hero headline */
-.hero > .hero-heading > span {
+.hero > .hero-content > .hero-heading > span {
   color: var(--color-accent);
   position: relative;
   display: inline-block;
 }
 
 /* Animated underline for hero headline accent */
-.hero > .hero-heading > span::after {
+.hero > .hero-content > .hero-heading > span::after {
   content: '';
   position: absolute;
   bottom: -4px;
@@ -1711,8 +1991,21 @@ main {
 }
 
 /* Show underline on hover for hero headline accent */
-.hero:hover > .hero-heading > span::after {
+.hero:hover > .hero-content > .hero-heading > span::after {
   transform: scaleX(1);
+}
+
+/* Floating animation for decorative elements */
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  100% {
+    transform: translateY(0) translateX(0);
+  }
 }
 
 @keyframes pulse {

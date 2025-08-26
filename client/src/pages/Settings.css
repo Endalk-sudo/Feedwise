@@ -21,16 +21,22 @@
 /* Main settings container - provides overall page structure */
 .setting {
     padding: 40px 20px; /* Generous padding for desktop, reduced on mobile */
-    background-color: var(--color-secondary-bg); /* Uses theme background color */
+    background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-secondary-bg) 100%); /* Gradient background */
     min-height: 100vh; /* Ensures full viewport height */
     font-family: 'Inter', sans-serif; /* Clean, modern font from Google Fonts */
 }
 
 /* Settings header section - page title and description */
 .settings-header {
+    background-color: var(--color-secondary-bg);
+    padding: 20px 30px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: start;
+    gap: 20px;
+    align-items: center;
     text-align: center;
     margin-bottom: 40px; /* Spacing below header */
-    padding: 0 20px; /* Horizontal padding for smaller screens */
 }
 
 .settings-header h1 {
@@ -364,6 +370,7 @@
 /* Tablet and mobile responsive styles */
 @media (max-width: 768px) {
     .setting {
+        flex-direction: column; /* Stack content vertically */
         padding: 20px 15px; /* Reduced padding for smaller screens */
     }
     

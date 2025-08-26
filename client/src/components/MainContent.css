@@ -21,6 +21,7 @@
     "latest-feedback  latest-feedback";
   gap: 24px;
   animation: fadeIn 0.5s ease-out;
+  background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-secondary-bg) 100%);
 }
 
 .card {
@@ -48,6 +49,11 @@
 .main-heading {
   font-size: 2rem;
   font-weight: 700;
+  background: linear-gradient(120deg, var(--color-text-primary), var(--color-accent)); /* Gradient text effect */
+    -webkit-background-clip: text; /* Clip background to text (WebKit) */
+    -webkit-text-fill-color: transparent; /* Make text transparent to show background */
+    background-clip: text; /* Standard CSS property */
+    color: transparent; /* Fallback for older browsers */
 }
 
 .stats-summary {
