@@ -202,33 +202,6 @@
     border-bottom-style: solid;
 }
 
-.response-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.action-button {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.action-button:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--color-text-primary);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
 /* Slide-in animation for messages */
 @keyframes slideIn {
     from {

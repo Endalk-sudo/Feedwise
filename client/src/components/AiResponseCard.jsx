@@ -71,30 +71,6 @@ const AiResponseCard = ({res}) => {
             {res.response || "No response available at the moment. Please try again."}
           </ReactMarkdown>
         </div>
-        
-        <div className="response-actions">
-          <button className="action-button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 10C14 11.1046 13.1046 12 12 12C10.8954 12 10 11.1046 10 10C10 8.89543 10.8954 8 12 8C13.1046 8 14 8.89543 14 10Z" stroke="currentColor" strokeWidth="2"/>
-              <path d="M4 10C4 11.1046 4.89543 12 6 12C7.10457 12 8 11.1046 8 10C8 8.89543 7.10457 8 6 8C4.89543 8 4 8.89543 4 10Z" stroke="currentColor" strokeWidth="2"/>
-              <path d="M20 10C20 11.1046 20.8954 12 22 12C23.1046 12 24 11.1046 24 10C24 8.89543 23.1046 8 22 8C20.8954 8 20 8.89543 20 10Z" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-          </button>
-          <button className="action-button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 10C14 11.1046 13.1046 12 12 12C10.8954 12 10 11.1046 10 10C10 8.89543 10.8954 8 12 8C13.1046 8 14 8.89543 14 10Z" stroke="currentColor" strokeWidth="2"/>
-              <path d="M4 10C4 11.1046 4.89543 12 6 12C7.10457 12 8 11.1046 8 10C8 8.89543 7.10457 8 6 8C4.89543 8 4 8.89543 4 10Z" stroke="currentColor" strokeWidth="2"/>
-              <path d="M20 10C20 11.1046 20.8954 12 22 12C23.1046 12 24 11.1046 24 10C24 8.89543 23.1046 8 22 8C20.8954 8 20 8.89543 20 10Z" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-          </button>
-          <button className="action-button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 10C14 11.1046 13.1046 12 12 12C10.8954 12 10 11.1046 10 10C10 8.89543 10.8954 8 12 8C13.1046 8 14 8.89543 14 10Z" stroke="currentColor" strokeWidth="2"/>
-              <path d="M4 10C4 11.1046 4.89543 12 6 12C7.10457 12 8 11.1046 8 10C8 8.89543 7.10457 8 6 8C4.89543 8 4 8.89543 4 10Z" stroke="currentColor" strokeWidth="2"/>
-              <path d="M20 10C20 11.1046 20.8954 12 22 12C23.1046 12 24 11.1046 24 10C24 8.89543 23.1046 8 22 8C20.8954 8 20 8.89543 20 10Z" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-          </button>
-        </div>
       </div>
     </div>
   )

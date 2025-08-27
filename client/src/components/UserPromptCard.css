@@ -46,10 +46,10 @@
     gap: 6px;
 }
 
-/* .message-time {
+.message-time {
     font-size: 0.75rem;
     color: var(--color-text-secondary);
-} */
+}
 
 .read-indicator {
     width: 14px;

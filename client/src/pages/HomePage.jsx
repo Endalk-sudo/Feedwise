@@ -98,7 +98,7 @@ const HomePage = () => {
               FeedbackAI captures the honest, anonymous feedback you're missing and transforms it into your personal AI business consultant. Get instant summaries, deep insights, and clear, step-by-step action plans to improve your business today.
             </p>
             <div className="cta-btn-container">
-              <Link className="btn cta-primary-btn cta-main-btn" to="/auth">Get Started for Free →</Link>
+              <Link className="btn cta-primary-btn cta-main-button" to="/auth">Get Started for Free →</Link>
               <button className="btn cta-secondary-btn">Watch a 2-Min Demo</button>
             </div>
           </div>
