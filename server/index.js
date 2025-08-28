@@ -6,6 +6,7 @@ import feedbackRoutes from "./routes/feedback.js";
 import userRoutes from "./routes/user.js";
 import authRoutes from "./routes/auth.js"; // Import auth routes
 import aiRoutes from "./routes/ai.js"; // Import AI routes
+import settingsRoutes from "./routes/settings.js"
 
 // Load environment variables from .env file
 // This is like reading configuration settings before starting
@@ -56,6 +57,8 @@ app.use("/api/ai", aiRoutes);
  
 
 app.use("/api/user", userRoutes);
+
+app.use("/setting",settingsRoutes)
 
 // Health check endpoint
 // This is like a "ping" to check if the server is alive
