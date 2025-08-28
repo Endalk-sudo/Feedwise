@@ -1,6 +1,8 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useContext } from "react"
 import AiResponseCard from "../components/AiResponseCard"
 import UserPromptCard from "../components/UserPromptCard"
+import AuthContext from "../AuthContext"
+import axios from "axios"
 import "./AiPage.css"
 
 
@@ -32,6 +34,7 @@ const AiPage = () => {
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
+    const {accessToken ,user} = useContext(AuthContext);
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -40,7 +43,7 @@ const AiPage = () => {
         scrollToBottom();
     }, [messages]);
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         const formData = new FormData(event.target);
         const prompt = formData.get('user-prompt');
@@ -54,29 +57,26 @@ const AiPage = () => {
         // Clear the input field
         event.target.reset();
         
-        // Simulate API call
-        fetch("http://localhost:5000/api/ai", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ prompt })
-        })
-        .then((res) => res.json())
-        .then((resData) => {
-            setMessages(prev => [...prev, { type: 'ai', content: resData, id: Date.now() + 1 }]);
-        })
-        .catch((err) => {
+        try{
+            const response = await axios.post("http://localhost:5000/api/ai", { user, prompt },{
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json' // Often needed for POST requests
+                }
+             });
+             console.log("response data =>",response.data)
+            setMessages(prev => [...prev, { type: 'ai', content: response.data, id: Date.now() + 1 }]);
+        }catch(err){
             console.log("error from ai", err.message);
             setMessages(prev => [...prev, { 
                 type: 'ai', 
                 content: { error: "Sorry, I'm having trouble connecting right now. Please try again." }, 
                 id: Date.now() + 1 
             }]);
-        })
-        .finally(() => {
+        }finally{
             setIsLoading(false);
-        });
+        }
+        scrollToBottom();
     }
 
     return (

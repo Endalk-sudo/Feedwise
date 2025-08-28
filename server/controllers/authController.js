@@ -173,7 +173,7 @@ const login = async (req, res) => {
             msg: 'Logged in successfully',
             accessToken,
             refreshToken,
-            user: { id: user.id, username: user.username, email: user.email, hasOrganization: user.hasOrganization },
+            user: { id: user.id, username: user.username, email: user.email, hasOrganization: user.hasOrganization ,organizationId: user.organizationId},
         });
 
     } catch (err) {

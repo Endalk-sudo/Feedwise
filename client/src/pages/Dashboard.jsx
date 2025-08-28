@@ -1,6 +1,7 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet,useNavigate } from "react-router-dom";
 import "./Dashboard.css";
-import { useState } from "react";
+import { useState,useContext } from "react";
+import AuthContext from "../AuthContext";
 
 // The Dashboard component serves as the main layout for the application after a user logs in.
 // It includes a persistent header and sidebar, with a main content area that renders nested routes.
@@ -11,12 +12,15 @@ const Dashboard = () => {
     // When true, sidebar slides in; when false, sidebar is hidden (on small screens)
     const [sidebarOpen, setSidebarOpen] = useState(false);
     
+    const {logout} = useContext(AuthContext)
+
+     const navigate = useNavigate()
+
     // Handles user logout (placeholder)
     const handleLogout = () => {
         console.log("User logged out");
-        // Example: remove token from localStorage and redirect
-        // localStorage.removeItem("authToken");
-        // window.location.href = "/login";
+        logout()
+        navigate("/auth")
     };
 
     // Toggles sidebar open/close state (used by hamburger/close button on mobile)
