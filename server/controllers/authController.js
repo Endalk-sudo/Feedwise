@@ -184,50 +184,61 @@ const login = async (req, res) => {
 
 // ... (imports and generateTokens helper function)
 
+// In authController.js, update the refreshToken function:
 const refreshToken = async (req, res) => {
-    const { refreshToken } = req.body; // <--- Correctly extracts refresh token from body
+  const { refreshToken } = req.body;
 
-    if (!refreshToken) {
-        return res.status(401).json({ msg: 'Refresh Token not provided' });
+  if (!refreshToken) {
+    return res.status(401).json({ msg: 'Refresh Token not provided' });
+  }
+
+  try {
+    // Verify refresh token
+    const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
+
+    // Check if refresh token exists in DB and is valid
+    const storedRefreshToken = await RefreshToken.findOne({ 
+      token: refreshToken, 
+      userId: decoded.user.id 
+    });
+
+    if (!storedRefreshToken) {
+      return res.status(403).json({ msg: 'Invalid or revoked Refresh Token' });
     }
 
-    try {
-        // Verify refresh token
-        const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
-
-        // Check if refresh token exists in DB (for blacklisting)
-        const storedRefreshToken = await RefreshToken.findOne({ token: refreshToken, userId: decoded.user.id });
-
-        if (!storedRefreshToken) {
-            return res.status(403).json({ msg: 'Invalid or revoked Refresh Token' });
-        }
-
-        // Check if refresh token has expired (although jwt.verify should catch this)
-        if (new Date() > storedRefreshToken.expiresAt) {
-             await RefreshToken.deleteOne({ _id: storedRefreshToken._id }); // Clean up expired token
-             return res.status(403).json({ msg: 'Refresh Token expired' });
-        }
-
-        // Get user from decoded token (we only need ID and roles for new access token)
-        const user = await User.findById(decoded.user.id);
-        if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
-        }
-
-        // Generate new access token
-        const newAccessToken = jwt.sign({ user: { id: user.id, roles: user.roles } }, ACCESS_SECRET, { expiresIn: ACCESS_EXPIRATION });
-
-        res.json({
-            accessToken: newAccessToken,
-        });
-
-    } catch (err) {
-        console.error(err.message);
-        if (err.name === 'TokenExpiredError') {
-            return res.status(403).json({ msg: 'Refresh Token expired', code: 'REFRESH_TOKEN_EXPIRED' });
-        }
-        res.status(403).json({ msg: 'Invalid Refresh Token' });
+    // Check if refresh token has expired
+    if (new Date() > storedRefreshToken.expiresAt) {
+      await RefreshToken.deleteOne({ _id: storedRefreshToken._id });
+      return res.status(403).json({ msg: 'Refresh Token expired' });
     }
+
+    // Get user from database
+    const user = await User.findById(decoded.user.id);
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Generate new access token
+    const newAccessToken = jwt.sign(
+      { user: { id: user.id, roles: user.roles } }, 
+      ACCESS_SECRET, 
+      { expiresIn: ACCESS_EXPIRATION }
+    );
+
+    res.json({
+      accessToken: newAccessToken,
+    });
+
+  } catch (err) {
+    console.error(err.message);
+    if (err.name === 'TokenExpiredError') {
+      return res.status(403).json({ msg: 'Refresh Token expired', code: 'REFRESH_TOKEN_EXPIRED' });
+    }
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(403).json({ msg: 'Invalid Refresh Token' });
+    }
+    res.status(500).send('Server Error');
+  }
 };
 
 // ... (other exports)
