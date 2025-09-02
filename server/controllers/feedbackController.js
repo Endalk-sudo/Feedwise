@@ -164,3 +164,20 @@ export const submitFeedback = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+export const getOrgInfo = async (req,res)=>{
+    const {orgSlug} = req.params;
+    try{
+        const org = await Organization.findOne({slug:orgSlug});
+        if(!org){
+            return res.status(404).json({message:"Organization not found"});
+        }
+        
+        res.status(200).json({ orgName:org.name, orgLogo:org.logo });
+
+    }catch(err){
+        console.error(err);
+        res.status(500).json({message:"Server error"});
+    }
+}

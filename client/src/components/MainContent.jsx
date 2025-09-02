@@ -120,6 +120,7 @@ function MainContent() {
               feedbackText={feedback.text}
               date={formatTimeAgo(feedback.createdAt)}
               category={feedback.category}
+              rating={feedback.rating}
             />
           ))}
         </div>

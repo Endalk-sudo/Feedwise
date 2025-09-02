@@ -1,69 +1,70 @@
 import axios from "axios"
-import { useState } from "react";
+import { useState ,useEffect } from "react";
 import { useParams } from 'react-router-dom';
-// Import component-scoped, mobile-first stylesheet
+import Rating from "./Rating";
 import "./Feedback.css";
 
-/**
- * Feedback component
- * - Mobile-first UI optimized for small screens
- * - Semantic markup (section/article/header) for better structure and accessibility
- * - Client-side validation with helpful messages
- * - Async submit state handling and basic error reporting
- */ 
 const Feedback = () => {
-    // Component State
-    const [isSubmited, setIsSubmited] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [feedback, setFeedback] = useState('');
+    const [selectedRating, setSelectedRating] = useState(0);
+
+    const [logo, setLogo] = useState(null);
+    const [orgName, setOrgName] = useState('');
   
     const {slug} = useParams();
+    const MIN_LEN = 15;
 
+
+    useEffect(() => {
+        const fetchOrg = async () => {
+          try {
+            const res = await axios.get(`http://localhost:5000/api/feedback/${slug}`);
+            setOrgName(res.data.orgName);
+            setLogo(res.data.orgLogo);
+          } catch (err) {
+            console.error(err);
+          }
+        };
     
-    const MIN_LEN = 15; // Minimum characters for feedback text
+        fetchOrg();
+      }, []);
 
-  /**
-   * Handles the form submission.
-   * - Uses the Form Actions pattern (form action={handleSubmit}) supported by React Router / modern React
-   * - Progressive enhancement: reads from FormData but falls back to local state
-   */
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError("");
     setSubmitting(true);
 
-    // Prefer the form's POSTed value; fallback to controlled state for robustness
-    const text = formData.get('feedback') ?? feedback;
-    text.trim();
+    const text = feedback.trim();
 
-    const submitFeedback = async()=>{
-      try {
-        const res = await axios.post(`http://localhost:5000/api/feedback/${slug}`,{text})
-        
-        setIsSubmited(true)
-        // Return the server's response (usually includes success message and feedback ID)
-        console.log("feedback", res.data);
-      } catch (error) {
-         // If anything goes wrong (network error, server down, etc.)
-        console.log("Error submitting Feedback", error.message);
-        setError(error.message)
-      }
+    try {
+      const res = await axios.post(`http://localhost:5000/api/feedback/${slug}`, {
+        text,
+        rating: selectedRating
+      });
+      
+      setIsSubmitted(true);
+      console.log("feedback", res.data);
+    } catch (error) {
+      console.log("Error submitting Feedback", error.message);
+      setError(error.response?.data?.message || "Failed to submit feedback. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-
-   submitFeedback();
-};
+  };
 
   const handleReset = () => {
-    setIsSubmited(false);
+    setIsSubmitted(false);
     setSubmitting(false);
-    setFeedback(''); // Reset feedback text
+    setFeedback('');
+    setSelectedRating(0);
   };
 
   return (
-    // aria-live polite announces success to assistive tech without being disruptive
     <section className="feedback-page" aria-live="polite">
-      {isSubmited ? (
-        // Success state: visually distinct card with short thank-you copy
+      {isSubmitted ? (
         <div className="feedback-success" role="status" aria-label="Feedback submitted">
           <SuccessIcon />
           <h2 className="feedback-success-title">Thank you for your feedback</h2>
@@ -75,18 +76,30 @@ const Feedback = () => {
           onClick={handleReset}>Go Back</button>
         </div>
       ) : (
-        // Form card with clear hierarchy and spacing; optimized for mobile-first
-        <article className="feedback-card" aria-labelledby="feedback-title">
+        <section className="feedback-container ">
+
           <header className="feedback-header">
-            <h1 id="feedback-title" className="feedback-title">Share Your Experience</h1>
+            <div className="org-card">
+              <div className="org-logo">
+                <img src={logo} alt="organization logo" />
+              </div>
+              <h1>{orgName}</h1>
+            </div>
+
+            <h2 id="feedback-title" className="feedback-title">Share Your Experience</h2>
             <p className="feedback-subtitle">Your anonymous feedback helps us improve.</p>
           </header>
 
-          {/* Use the action handler for submission; noValidate defers validation to our logic */}
-          <form action={handleSubmit} className="feedback-form" noValidate>
+        <article className="feedback-card" aria-labelledby="feedback-title">
+          
+          <Rating 
+            selectedRating={selectedRating} 
+            setSelectedRating={setSelectedRating} 
+          />
+          
+          <form onSubmit={handleSubmit} className="feedback-form" noValidate>
             <label htmlFor="feedback-input" className="feedback-label">Share your thoughts</label>
 
-            {/* Controlled textarea provides instant validation feedback and better UX on mobile */}
             <textarea
               className="feedback-textarea"
               name="feedback"
@@ -96,47 +109,39 @@ const Feedback = () => {
               minLength={MIN_LEN}
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              // Mark invalid as user types if under minimum length
               aria-invalid={feedback.length > 0 && feedback.length < MIN_LEN}
               aria-describedby="feedback-helper"
               disabled={submitting}
             />
 
-            {/* Helper text communicates validation rules and current state */}
             <p id="feedback-helper" className="feedback-helper">
               {feedback.length < MIN_LEN
                 ? `Please enter at least ${MIN_LEN} characters.`
-                : "Looks good. You can submit now."}
+                : "Looks good. You can submit now." }
             </p>
 
-            {/* Error message region announced to screen readers */}
             {error && (
-              <p role="alert" className="feedback-helper" style={{ color: "var(--color-error)" }}>
+              <p role="alert" className="feedback-error">
                 {error}
               </p>
             )}
 
-            {/* Disable submit while submitting or if below minimum characters */}
             <button
               className="feedback-submit"
               type="submit"
-              disabled={submitting || feedback.trim().length < MIN_LEN}
+              disabled={submitting || feedback.trim().length < MIN_LEN || selectedRating === 0}
               aria-busy={submitting}
             >
               {submitting ? " Submitting..." : "Submit Feedback"}
             </button>
           </form>
         </article>
+        </section>
       )}
     </section>
   );
 };
 
-
-/**
- * SuccessIcon component
- * - Displays a checkmark icon in the success state
- */
 const SuccessIcon = () => (
   <svg
     className="feedback-success-icon"

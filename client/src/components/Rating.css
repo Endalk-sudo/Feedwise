@@ -1,0 +1,148 @@
+/* Rating.css - Modern Compact Design */
+.rating-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 20px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: var(--layered-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.rating-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.rating-container h3 {
+  text-align: center;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.rating-container .rating {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  z-index: 1;
+}
+
+.rating .rating-item {
+  font-size: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  padding: 12px 8px;
+  border-radius: 12px;
+  background: var(--color-secondary-bg);
+  box-shadow: var(--shadow-md);
+  flex: 1;
+  opacity: 0.7;
+  transform: scale(0.95);
+  position: relative;
+  border: 1px solid transparent;
+  min-width: 0;
+  border: none;
+}
+
+.rating .rating-item:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(var(--color-accent-rgb), 0.3);
+}
+
+.rating .rating-item.selected {
+  opacity: 1;
+  transform: scale(1.08);
+  box-shadow: 
+    0 0 0 2px var(--color-accent),
+    var(--shadow-xl);
+  background: linear-gradient(135deg, var(--color-secondary-bg) 0%, rgba(var(--color-accent-rgb), 0.15) 100%);
+  z-index: 2;
+}
+
+.rating .rating-item.selected .emoji {
+  filter: drop-shadow(0 0 5px rgba(var(--color-accent-rgb), 0.5));
+}
+
+.rating .rating-item > p {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: color 0.2s ease;
+  text-align: center;
+}
+
+.rating .rating-item.selected > p {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .rating-container {
+    padding: 16px 12px;
+    gap: 12px;
+  }
+  
+  .rating-container h3 {
+    font-size: 1rem;
+  }
+  
+  .rating .rating-item {
+    padding: 10px 6px;
+    font-size: 1.3rem;
+    border-radius: 10px;
+  }
+  
+  .rating .rating-item > p {
+    font-size: 0.7rem;
+    margin-top: 4px;
+  }
+  
+  .rating-container .rating {
+    gap: 6px;
+  }
+}
+
+@media (min-width: 768px) {
+  .rating-container {
+    padding: 24px 20px;
+  }
+  
+  .rating-container h3 {
+    font-size: 1.2rem;
+  }
+  
+  .rating .rating-item {
+    padding: 14px 10px;
+    font-size: 1.6rem;
+  }
+  
+  .rating .rating-item > p {
+    font-size: 0.8rem;
+  }
+}

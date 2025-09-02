@@ -1,5 +1,5 @@
 import express from "express";
-import { getFeedback, submitFeedback } from "../controllers/feedbackController.js";
+import { getFeedback, submitFeedback ,getOrgInfo } from "../controllers/feedbackController.js";
 import {verifyToken} from '../middleware/auth.js';
 
 const router = express.Router();
@@ -17,6 +17,11 @@ router.get("/me",verifyToken, getFeedback);
 // Who can use: Anyone (no authentication required)
 // What it needs: organizationId, text, and optionally rating/projectKey
 router.post("/:orgSlug", submitFeedback);
+
+
+
+router.get("/:orgSlug", getOrgInfo);
+
 
 export default router;
  

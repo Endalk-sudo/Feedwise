@@ -1,3 +1,4 @@
+import {v2 as cloudinary} from 'cloudinary';
 import QRCode from 'qrcode';
 import jwt from 'jsonwebtoken'; // For creating and verifying JWTs
 import User from '../models/User.js'; // User model (MongoDB)
@@ -5,21 +6,25 @@ import RefreshToken from '../models/RefreshToken.js'; // Refresh token model
 import Organization from "../models/Organization.js"
 import dotenv from "dotenv";
 import ms from 'ms';
-
+import multer from 'multer';
 
 dotenv.config();
 
-  const  ACCESS_SECRET = process.env.JWT_SECRET_ACCESS; // Secret key for signing access tokens
-  const  REFRESH_SECRET = process.env.JWT_SECRET_REFRESH; // Secret key for signing refresh tokens
-  const  ACCESS_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION; // How long access tokens are valid
-  const  REFRESH_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION;
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET 
+});
+
+const ACCESS_SECRET = process.env.JWT_SECRET_ACCESS; // Secret key for signing access tokens
+const REFRESH_SECRET = process.env.JWT_SECRET_REFRESH; // Secret key for signing refresh tokens
+const ACCESS_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION; // How long access tokens are valid
+const REFRESH_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION;
 
 
-
-// A common regular expression for email validation
-// This regex is fairly comprehensive but not exhaustive of all valid email formats (which are very complex)
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+// --- Multer Configuration for In-Memory Storage ---
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 
 // Helper function to generate access and refresh tokens for a user
@@ -93,7 +98,8 @@ const  register = async (req, res) => {
 
 
 const setOrganization = async (req,res)=>{
-    const {orgName,orgSlug,} = req.body
+  console.log("data",req.body)
+    const {orgName,orgSlug} = req.body
     try{
     const userId = req.user.id;
 
@@ -111,14 +117,26 @@ const setOrganization = async (req,res)=>{
             errorCorrectionLevel: 'H'
     });
 
-    // create org
-    const org = await Organization.create({
+    // --- Prepare Organization Data with Logo ---
+    const orgData = {
       ownerId: userId,
       name :orgName,
       slug : orgSlug,
       content: content,
       qrDataUrl: qrDataUrl
-    });
+    };
+
+    if (req.file) {
+      const b64 = Buffer.from(req.file.buffer).toString('base64');
+      let dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
+      const result = await cloudinary.uploader.upload(dataURI, {
+        folder: 'logos'
+      });
+      orgData.logo = result.secure_url;
+    }
+
+    // create org
+    const org = await Organization.create(orgData);
 
     // update user
     const user = await User.findByIdAndUpdate(
@@ -134,6 +152,8 @@ const setOrganization = async (req,res)=>{
         res.status(500).json({ message: "Server error" });
     }
 }
+
+
 
 
 
@@ -158,7 +178,7 @@ const login = async (req, res) => {
         }
 
         // Generate new tokens
-        const { accessToken, refreshToken } = generateTokens(user);
+        const {accessToken, refreshToken } = generateTokens(user);
 
         // Remove old refresh tokens for this user and save the new one
         await RefreshToken.deleteMany({ userId: user.id });
@@ -274,4 +294,4 @@ const logout = async (req, res) => {
     }
 };
 
-export default {register,login,refreshToken,logout,setOrganization}
+export default {register,login,refreshToken,logout,setOrganization, upload}

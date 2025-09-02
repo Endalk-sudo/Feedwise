@@ -27,6 +27,6 @@ router.post('/logout', authController.logout);
 
 // @route   POST /api/auth/organization
 // @desc    Set organization for the user
-router.post('/organization', verifyToken, authController.setOrganization)
+router.post('/organization', verifyToken, authController.upload.single('logo'), authController.setOrganization)
 
 export default router;

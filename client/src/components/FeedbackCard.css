@@ -1,145 +1,156 @@
-
-
 /* Card wrapper:
    - Elevates each feedback item as its own surface using theme tokens.
    - Uses --color-secondary-bg for surface, --color-border for separation.
    - transition provides subtle motion feedback on hover. */
-.feedback-card{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: start;
-    min-height: 120px;
-    position: relative;
-    padding: 20px 20px 16px 20px;
-    background: linear-gradient(135deg, var(--color-secondary-bg) 0%, rgba(30, 41, 59, 0.8) 100%);
-    border: 1px solid rgba(148, 163, 184, 0.1);
-    color: var(--color-text-secondary);
-    border-radius: 16px;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;           /* Ensures accent strip doesn't overflow rounded corners */
-    isolation: isolate;         /* Creates new stacking context so ::before stays behind content */
-    animation: slideIn 0.5s ease-out;
+.feedback-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  padding: 24px;
+  background: var(--color-secondary-bg);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  color: var(--color-text-secondary);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  isolation: isolate;
+  animation: slideIn 0.5s ease-out;
+  gap: 16px;
 }
 
 /* Accent strip:
    - A thin accent gradient at the very top draws the eye without heavy contrast.
    - Stays within brand by using only accent hues with transparency. */
-.feedback-card::before{
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;          /* top:0; left:0; right:0 */
-    height: 3px;
-    background: linear-gradient(90deg, rgba(56,189,248,0.6), rgba(14,165,233,0.3));
-    opacity: 0.9;
+.feedback-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  opacity: 0.8;
 }
 
 /* Hover state:
    - Slight lift and stronger shadow communicate interactivity.
    - Border picks up an accent tint to feel responsive. */
-.feedback-card:hover{
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: var(--shadow-lg);
-    border-color: rgba(56,189,248,0.4);
-    background: linear-gradient(135deg, var(--color-secondary-bg) 0%, rgba(30, 41, 59, 0.95) 100%);
+.feedback-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--layered-shadow);
+  border-color: rgba(56, 189, 248, 0.2);
 }
 
 /* Feedback text:
    - Uses primary text color for readability on dark surfaces.
    - Tighter sizing for dense lists while preserving line-height. */
-.feedback-card > .feedback-text{
-    margin-bottom: 8px;
-    font-size: clamp(0.875rem, 2vw, 1rem);
-    line-height: 1.5;
-    color: var(--color-text-primary);
-    transition: all 0.5s ease;
-}
-
-.feedback-text {
+.feedback-card > .feedback-text {
+  margin: 0;
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  line-height: 1.6;
+  color: var(--color-text-primary);
   transition: all 0.3s ease;
 }
 
-.feedback-card > .feedback-meta-data{
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    gap: 10px;
+/* Rating display */
+.feedback-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-end;
 }
 
-/* Meta row (date):
-   - Styled as a small pill to visually separate metadata from content.
-   - Background/Border maintain low-contrast hierarchy on dark theme. */
-.feedback-meta-data > .feedback-date{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    background: rgba(148,163,184,0.12);
-    border: 1px solid var(--color-border);
-    padding: 4px 10px;
-    border-radius: 999px;
-    transition: all 0.2s ease;
+.feedback-rating svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-warning);
 }
 
-.feedback-meta-data > .feedback-date:hover {
-  background: rgba(148,163,184,0.2);
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star {
+  font-size: 14px;
+  color: #4b5563;
+  position: relative;
+}
+
+.star.full {
+  color: var(--color-warning);
+}
+
+.star.half::before {
+  content: '★';
+  position: absolute;
+  left: 0;
+  width: 50%;
+  overflow: hidden;
+  color: var(--color-warning);
+}
+
+.rating-value {
+  margin-left: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+/* Meta data footer */
+.feedback-meta-data {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: rgba(148, 163, 184, 0.08);
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.meta-item:hover {
+  background: rgba(148, 163, 184, 0.12);
   transform: translateY(-1px);
 }
 
-/* Meta icon:
-   - Decorative only; uses accent color to add a subtle highlight. */
- .feedback-meta-data > .feedback-date::before{
-    content: "⏰";
-    font-size: 0.8rem;
-    color: var(--color-accent);
+.meta-item svg {
+  width: 12px;
+  height: 12px;
+  color: var(--color-accent);
 }
 
-
- .feedback-meta-data > .feedback-category{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-text-primary);
-    background-color: rgba(11, 163, 228, 0.347);
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--color-border);
-    transition: all 0.2s ease;
-}
-
- .feedback-meta-data > .feedback-category:hover {
-  background-color: rgba(11, 163, 228, 0.447);
-  transform: translateY(-1px);
-}
-
- .feedback-meta-data > .feedback-category::before{
-    content : "📃";
-    font-size: 0.8rem;
-    color: var(--color-accent);
- }
-
-
-.expanded-btn{
-    margin-left: 10px;
-    cursor: pointer;
-    color: var(--color-accent);
-    background: transparent;
-    border: none;
-    font-weight: 600;
-    padding: 2px 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+/* Expand/collapse button */
+.expanded-btn {
+  margin-left: 8px;
+  cursor: pointer;
+  color: var(--color-accent);
+  background: transparent;
+  border: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
 .expanded-btn:hover {
-  background: rgba(56,189,248,0.1);
-  color: var(--color-accent);
-  transform: translateY(-1px);
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--color-accent-hover);
 }
 
 .expanded-btn:focus {
@@ -147,6 +158,28 @@
   outline-offset: 2px;
 }
 
-.expanded-btn:active {
-  transform: translateY(0);
+/* Animation for card entrance */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .feedback-meta-data {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .meta-item {
+    width: 100%;
+    justify-content: center;
+  }
 }
