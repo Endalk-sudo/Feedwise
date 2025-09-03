@@ -13,24 +13,37 @@ const Feedback = () => {
 
     const [logo, setLogo] = useState(null);
     const [orgName, setOrgName] = useState('');
+    const [loadingOrg, setLoadingOrg] = useState(true);
+    const [orgError, setOrgError] = useState('');
   
     const {slug} = useParams();
     const MIN_LEN = 15;
 
 
     useEffect(() => {
-        const fetchOrg = async () => {
-          try {
-            const res = await axios.get(`http://localhost:5000/api/feedback/${slug}`);
-            setOrgName(res.data.orgName);
-            setLogo(res.data.orgLogo);
-          } catch (err) {
-            console.error(err);
-          }
-        };
-    
-        fetchOrg();
-      }, []);
+    const fetchOrg = async () => {
+      try {
+        setLoadingOrg(true);
+        setOrgError('');
+        const res = await axios.get(`http://localhost:5000/api/feedback/${slug}`);
+        setOrgName(res.data.orgName);
+        setLogo(res.data.orgLogo);
+      } catch (err) {
+        console.error("Error fetching organization:", err);
+        const errorMessage = err.response?.data?.message || 
+                           err.response?.status === 404 ? 
+                           "Organization not found. Please check the URL." :
+                           "Failed to load organization information. Please try again.";
+        setOrgError(errorMessage);
+      } finally {
+        setLoadingOrg(false);
+      }
+    };
+
+    if (slug) {
+      fetchOrg();
+    }
+  }, [slug]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,6 +75,25 @@ const Feedback = () => {
     setSelectedRating(0);
   };
 
+  const handleRetry = async () => {
+    try {
+      setLoadingOrg(true);
+      setOrgError('');
+      const res = await axios.get(`http://localhost:5000/api/feedback/${slug}`);
+      setOrgName(res.data.orgName);
+      setLogo(res.data.orgLogo);
+    } catch (err) {
+      console.error("Error fetching organization:", err);
+      const errorMessage = err.response?.data?.message || 
+                         err.response?.status === 404 ? 
+                         "Organization not found. Please check the URL." :
+                         "Failed to load organization information. Please try again.";
+      setOrgError(errorMessage);
+    } finally {
+      setLoadingOrg(false);
+    }
+  };
+
   return (
     <section className="feedback-page" aria-live="polite">
       {isSubmitted ? (
@@ -77,65 +109,90 @@ const Feedback = () => {
         </div>
       ) : (
         <section className="feedback-container ">
-
-          <header className="feedback-header">
-            <div className="org-card">
-              <div className="org-logo">
-                <img src={logo} alt="organization logo" />
-              </div>
-              <h1>{orgName}</h1>
+          {loadingOrg ? (
+            <div className="feedback-loading" role="status" aria-label="Loading organization information">
+              <div className="spinner"></div>
+              <p>Loading organization information...</p>
             </div>
+          ) : orgError ? (
+            <div className="feedback-error-container">
+              <h2>Error Loading Organization</h2>
+              <p className="feedback-error">{orgError}</p>
+              <button 
+                className="feedback-back-btn" 
+                onClick={handleRetry}
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <>
+              <header className="feedback-header">
+                <div className="org-card">
+                  <div className="org-logo">
+                    <img src={logo} alt="organization logo" />
+                  </div>
+                  <h1>{orgName}</h1>
+                </div>
 
-            <h2 id="feedback-title" className="feedback-title">Share Your Experience</h2>
-            <p className="feedback-subtitle">Your anonymous feedback helps us improve.</p>
-          </header>
+                <h2 id="feedback-title" className="feedback-title">Share Your Experience</h2>
+                <p className="feedback-subtitle">Your anonymous feedback helps us improve.</p>
+              </header>
 
-        <article className="feedback-card" aria-labelledby="feedback-title">
-          
-          <Rating 
-            selectedRating={selectedRating} 
-            setSelectedRating={setSelectedRating} 
-          />
-          
-          <form onSubmit={handleSubmit} className="feedback-form" noValidate>
-            <label htmlFor="feedback-input" className="feedback-label">Share your thoughts</label>
+              <article className="feedback-card" aria-labelledby="feedback-title">
+                <Rating 
+                  selectedRating={selectedRating} 
+                  setSelectedRating={setSelectedRating} 
+                />
+                
+                <form onSubmit={handleSubmit} className="feedback-form" noValidate>
+                  <label htmlFor="feedback-input" className="feedback-label">Share your thoughts</label>
 
-            <textarea
-              className="feedback-textarea"
-              name="feedback"
-              id="feedback-input"
-              placeholder="Tell us about your experience - what did you enjoy, what could we improve, or any suggestions you have..."
-              required
-              minLength={MIN_LEN}
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              aria-invalid={feedback.length > 0 && feedback.length < MIN_LEN}
-              aria-describedby="feedback-helper"
-              disabled={submitting}
-            />
+                  <textarea
+                    className="feedback-textarea"
+                    name="feedback"
+                    id="feedback-input"
+                    placeholder="Tell us about your experience - what did you enjoy, what could we improve, or any suggestions you have..."
+                    required
+                    minLength={MIN_LEN}
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    aria-invalid={feedback.length > 0 && feedback.length < MIN_LEN}
+                    aria-describedby="feedback-helper"
+                    disabled={submitting}
+                  />
 
-            <p id="feedback-helper" className="feedback-helper">
-              {feedback.length < MIN_LEN
-                ? `Please enter at least ${MIN_LEN} characters.`
-                : "Looks good. You can submit now." }
-            </p>
+                  <p id="feedback-helper" className="feedback-helper">
+                    {feedback.length < MIN_LEN
+                      ? `Please enter at least ${MIN_LEN} characters.`
+                      : "Looks good. You can submit now." }
+                  </p>
 
-            {error && (
-              <p role="alert" className="feedback-error">
-                {error}
-              </p>
-            )}
+                  {submitting && (
+                    <div className="feedback-submitting" role="status" aria-label="Submitting feedback">
+                      <div className="spinner small"></div>
+                      <p>Analyzing your feedback...</p>
+                    </div>
+                  )}
 
-            <button
-              className="feedback-submit"
-              type="submit"
-              disabled={submitting || feedback.trim().length < MIN_LEN || selectedRating === 0}
-              aria-busy={submitting}
-            >
-              {submitting ? " Submitting..." : "Submit Feedback"}
-            </button>
-          </form>
-        </article>
+                  {error && (
+                    <p role="alert" className="feedback-error">
+                      {error}
+                    </p>
+                  )}
+
+                  <button
+                    className="feedback-submit"
+                    type="submit"
+                    disabled={submitting || feedback.trim().length < MIN_LEN || selectedRating === 0}
+                    aria-busy={submitting}
+                  >
+                    {submitting ? "Analyzing & Submitting..." : "Submit Feedback"}
+                  </button>
+                </form>
+              </article>
+            </>
+          )}
         </section>
       )}
     </section>

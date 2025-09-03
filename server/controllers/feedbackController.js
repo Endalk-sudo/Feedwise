@@ -135,7 +135,7 @@ export const getFeedback = async (req, res) => {
  */
 export const submitFeedback = async (req, res) => {
   const { orgSlug } = req.params;
-  const { text } = req.body;
+  const { text, rating } = req.body;
 
   if (!text || typeof text !== 'string' || text.trim() === '') {
     return res.status(400).json({ message: "Feedback text is required and cannot be empty." });
@@ -156,6 +156,7 @@ export const submitFeedback = async (req, res) => {
       organizationId: org._id,
       text: categorizedData.text,
       category: categorizedData.category,
+      rating: rating,
     });
 
     res.status(201).json({ ok: true, id: newFeedback._id });
