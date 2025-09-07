@@ -26,6 +26,7 @@ const Feedback = () => {
         setLoadingOrg(true);
         setOrgError('');
         const res = await axios.get(`http://localhost:5000/api/feedback/${slug}`);
+        console.log("Organization data from API:", res.data); // <-- Add this line
         setOrgName(res.data.orgName);
         setLogo(res.data.orgLogo);
       } catch (err) {

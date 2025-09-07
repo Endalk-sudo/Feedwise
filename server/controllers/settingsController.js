@@ -1,66 +1,87 @@
+import LogoImage from "../models/OrgLogo.js";
 import Organization from '../models/Organization.js';
+import {uploadToCloudinary,deleteFromCloudinary} from '../utils/uploadHelper.js';
 
 /**
  * Update organization settings (business name)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
+
 export const updateOrganizationSettings = async (req, res) => {
   try {
     const { name } = req.body;
     const user = req.user;
+    const file = req.file; // The uploaded file from multer
 
-    // Validate input
+    // Validate business name input
     if (!name || name.trim() === '') {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Business name is required' 
+      return res.status(400).json({
+        success: false,
+        error: 'Business name is required'
       });
     }
 
-    // Find organization by owner ID or create if it doesn't exist
+    // Find the user's organization
     let organization = await Organization.findOne({ ownerId: user.id });
-    
+
     if (!organization) {
-      // Create new organization if it doesn't exist
-      organization = new Organization({
-        ownerId: user.id,
-        name: name.trim(),
-        slug: name.toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, ''),
-        content: "Default content", // You might want to change this
-        qrDataUrl: "Default QR URL" // You might want to change this
+      return res.status(404).json({
+        success: false,
+        error: 'Organization not found'
       });
-    } else {
-      // Update existing organization
-      organization.name = name.trim();
-      
-      // Generate slug if not exists
-      if (!organization.slug) {
-        organization.slug = name.toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '');
+    }
+
+    // --- Logo Update Logic ---
+    // Check if a new logo file has been uploaded
+    if (file) {
+      // Step 1: Upload the new logo to Cloudinary from the buffer
+      const cloudinaryResponse = await uploadToCloudinary(file.buffer);
+
+      // Step 2: Find the existing logo record in the database
+      const existingImage = await LogoImage.findOne({ orgId: organization._id });
+
+      // Step 3: If an old logo exists, delete it from Cloudinary.
+      // This is done *after* the new one is successfully uploaded to prevent data loss.
+      if (existingImage && existingImage.public_id) {
+        await deleteFromCloudinary(existingImage.public_id);
+      }
+
+      // Step 4: Update or create the logo record in the database.
+      if (existingImage) {
+        // If a logo record already exists, update its URL and public_id
+        existingImage.url = cloudinaryResponse.secure_url;
+        existingImage.public_id = cloudinaryResponse.public_id;
+        await existingImage.save();
+      } else {
+        // If no logo record exists, create a new one
+        await LogoImage.create({
+          orgId: organization._id,
+          url: cloudinaryResponse.secure_url,
+          public_id: cloudinaryResponse.public_id,
+        });
       }
     }
 
-    const updatedOrganization = await organization.save();
-    
-    return res.status(200).json({ 
-      success: true, 
-      data: {
-        id: updatedOrganization._id,
-        name: updatedOrganization.name,
-        slug: updatedOrganization.slug,
-        updatedAt: updatedOrganization.updatedAt
-      }
+    // --- Business Name Update Logic ---
+    // Update the organization's name
+    organization.name = name;
+    await organization.save();
+
+    // --- Success Response ---
+    // Send a success response
+    return res.status(200).json({
+      success: true,
+      message: "Settings updated successfully"
     });
 
   } catch (error) {
+    // --- Error Handling ---
+    // Log the error for debugging and send a generic server error response
     console.error('Error updating organization settings:', error);
-    return res.status(500).json({ 
-      success: false, 
-      error: 'Failed to update organization settings' 
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to update organization settings'
     });
   }
 };

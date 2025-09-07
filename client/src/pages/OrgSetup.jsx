@@ -18,16 +18,28 @@ const OrgSetup = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
+    // Reset errors on new file selection
+    setError('');
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image file (e.g., PNG, JPG).");
+      return;
+    }
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+      setError("File is too large. Please select an image under 5MB.");
+      return;
+    }
+
       setLogo(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result);
       };
       reader.readAsDataURL(file);
-    } else {
-      setError("Please select a valid image file.");
-    }
   };
 
   const handleNameChange = (e) => {
@@ -95,8 +107,16 @@ const OrgSetup = () => {
               accept="image/*"
               onChange={handleFileChange}
               ref={fileInputRef}
+              style={{ display: 'none' }}
+              aria-hidden="true"
             />
-            <div className="logo-preview" onClick={() => fileInputRef.current.click()}>
+            <div
+              className="logo-preview"
+              onClick={() => fileInputRef.current.click()}
+              role="button"
+              tabIndex="0"
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && fileInputRef.current.click()}
+            >
               {preview ? (
                 <img src={preview} alt="Organization Logo Preview" />
               ) : (

@@ -225,6 +225,16 @@
     background: var(--color-secondary-bg); /* Background for transparency */
 }
 
+.form-group .update-logo-preview{
+    box-shadow: 0px 0px 4px 1px var(--color-accent-hover),
+                0px 0px 16px var(--color-accent-hover);
+    border: none;
+}
+
+.update-logo-preview:hover{
+    border: none;
+}
+
 /* Remove button styling */
 .remove-logo-btn {
     position: absolute; /* Positioned relative to preview container */

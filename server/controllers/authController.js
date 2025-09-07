@@ -4,9 +4,11 @@ import jwt from 'jsonwebtoken'; // For creating and verifying JWTs
 import User from '../models/User.js'; // User model (MongoDB)
 import RefreshToken from '../models/RefreshToken.js'; // Refresh token model
 import Organization from "../models/Organization.js"
+import orgLogo from "../models/OrgLogo.js"
 import dotenv from "dotenv";
 import ms from 'ms';
 import multer from 'multer';
+import { uploadToCloudinary } from '../utils/uploadHelper.js';
 
 dotenv.config();
 
@@ -20,6 +22,8 @@ const ACCESS_SECRET = process.env.JWT_SECRET_ACCESS; // Secret key for signing a
 const REFRESH_SECRET = process.env.JWT_SECRET_REFRESH; // Secret key for signing refresh tokens
 const ACCESS_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION; // How long access tokens are valid
 const REFRESH_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION;
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 
 // --- Multer Configuration for In-Memory Storage ---
@@ -98,26 +102,33 @@ const  register = async (req, res) => {
 
 
 const setOrganization = async (req,res)=>{
-  console.log("data",req.body)
-    const {orgName,orgSlug} = req.body
+  // Destructure organization name and slug from the request body.
+  const {orgName,orgSlug} = req.body
     try{
+    // Get the user ID from the authenticated user.
     const userId = req.user.id;
 
-    const isOrg = await Organization.findOne({ slug: orgSlug }); // Use findOne for a single match
+    // --- Validation ---
+    // Check if an organization with the given slug already exists to ensure uniqueness.
+    const isOrg = await Organization.findOne({ slug: orgSlug });
     if (isOrg) {
         return res.status(400).send({ ok: false, message: "Slug is already taken, it has to be unique" });
     }
 
+    // --- QR Code Generation ---
+    // Construct the URL that will be encoded into the QR code.
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const content = `${baseUrl}/feedback/${orgSlug}`;
 
+    // Generate a data URL for the QR code image.
     const qrDataUrl = await QRCode.toDataURL(content, {
             width: 300,
             margin: 2,
             errorCorrectionLevel: 'H'
     });
 
-    // --- Prepare Organization Data with Logo ---
+    // --- Organization Creation ---
+    // Prepare the data for the new organization.
     const orgData = {
       ownerId: userId,
       name :orgName,
@@ -125,29 +136,38 @@ const setOrganization = async (req,res)=>{
       content: content,
       qrDataUrl: qrDataUrl
     };
-
-    if (req.file) {
-      const b64 = Buffer.from(req.file.buffer).toString('base64');
-      let dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
-      const result = await cloudinary.uploader.upload(dataURI, {
-        folder: 'logos'
-      });
-      orgData.logo = result.secure_url;
-    }
-
-    // create org
+    
+    // Create the new organization in the database.
     const org = await Organization.create(orgData);
 
-    // update user
+    // --- Logo Handling ---
+    // If a logo file was uploaded, process it.
+    if (req.file) {
+      // Upload the file buffer to Cloudinary using the modular helper function.
+      const result = await uploadToCloudinary(req.file.buffer);
+      
+      // Create a new logo document in the database with the Cloudinary URL.
+      await orgLogo.create({
+        orgId: org._id,
+        url: result.secure_url,
+        public_id: result.public_id,
+      });
+    }
+
+    // --- User Update ---
+    // Update the user document to link it with the new organization.
     const user = await User.findByIdAndUpdate(
       userId,
       { hasOrganization: true, organizationId: org._id },
-      { new: true }
+      { new: true } // Return the updated user document.
     );
 
-        return  res.status(201).send({ ok:true, user, organization: org})
+    // --- Success Response ---
+    // Send a success response with the user and organization data.
+    return  res.status(201).send({ ok:true, user, organization: org})
 
     } catch(err){
+        // --- Error Handling ---
         console.log("error",err.message);
         res.status(500).json({ message: "Server error" });
     }

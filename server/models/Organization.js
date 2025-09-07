@@ -20,9 +20,6 @@ const orgSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
-  logo: {
-    type: String,
-  },
   content: {
      type: String, 
      required: true,

@@ -9,6 +9,7 @@
 import Feedback from "../models/Feedback.js";
 import Organization from "../models/Organization.js";
 import categorizeFeedback from "../services/aiServices.js"
+import OrgLogo from "../models/OrgLogo.js"
 
 
 // --- Route Controllers ---
@@ -77,8 +78,11 @@ export const getOrgInfo = async (req,res)=>{
         if(!org){
             return res.status(404).json({message:"Organization not found"});
         }
-        
-        res.status(200).json({ orgName:org.name, orgLogo:org.logo });
+        const logo = await OrgLogo.findOne({orgId : org._id})
+
+        const logoUrl = logo ? logo.url : null;
+
+        res.status(200).json({ orgName:org.name, orgLogo:logoUrl });
 
     }catch(err){
         console.error(err);

@@ -1,5 +1,5 @@
 import './Settings.css'
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, useRef } from 'react'
 import axios from "axios"
 import AuthContext from '../AuthContext'
 
@@ -8,9 +8,45 @@ export const Settings = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const [successMessage, setSuccessMessage] = useState('')
+
+  const [logoFile, setLogoFile] = useState(null)
+  const [preview,setPreview] = useState(null)
+
+  const fileInputRef = useRef(null)
   
   const {accessToken} = useContext(AuthContext)
 
+  const handleFileChange = (e)=>{
+    const file = e.target.files[0];
+
+    // Reset errors on new file selection
+    setErrors('');
+
+    if(!file) return ;
+
+    if (!file.type.startsWith("image/")) {
+      setErrors("Please select a valid image file (e.g., PNG, JPG).");
+      return;
+    }
+
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if(file.size > MAX_SIZE){
+      setErrors("File is too large. Please select an image under 5MB.")
+      return
+    }
+
+    setLogoFile(file)
+    
+    const reader = new FileReader()
+
+    reader.onloadend =()=>{
+      setPreview(reader.result)
+    }
+
+    reader.readAsDataURL(file)
+    console.log("image is go")
+
+  } 
   const fetchSettings = async () => {
     try {
       const response = await axios.get("/setting", {
@@ -42,6 +78,10 @@ export const Settings = () => {
 
   const handleBusinessNameChange = (e) => {
     const value = e.target.value
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+
     setBusinessName(value)
     
     if (value.trim() === '') {
@@ -70,14 +110,22 @@ export const Settings = () => {
 
     setIsLoading(true)
     setSuccessMessage('')
+
+    const formData = new FormData();
+    formData.append("name",businessName)
+
+    // Append the logo file to the form data if it exists
+    if(logoFile){
+      formData.append("logo",logoFile)
+    }
     
     try {
       const res = await axios.put("/setting", 
-        { name: businessName },
+        formData,
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'multipart/form-data'
           }
         }
       )
@@ -143,16 +191,31 @@ export const Settings = () => {
             <span className="char-count">{businessName.length}/100</span>
           </div>
 
+          
           {/* Logo Upload Section Commented Out */}
           <div className="form-group">
             <label>Business Logo</label>
-            <p className="field-description">Logo upload functionality coming soon</p>
-            
-            <div className="logo-upload-container">
+
+            {preview && 
+            <div className="logo-preview update-logo-preview">
+              <img src={preview} alt={`Business logo`} />
+            </div>
+            }
+
+             <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              aria-hidden="true"
+            />
+
+            <div className="logo-upload-container" onClick={()=>fileInputRef.current.click()}>
               <div className="logo-upload-placeholder">
                 <div className="upload-icon">📷</div>
-                <p>Logo upload disabled</p>
-                <p className="upload-subtext">Check back later for this feature</p>
+                <p>Upload your Business Logo </p>
+                <p className="upload-subtext">Please select an image under 5MB.</p>
               </div>
             </div>
           </div>
