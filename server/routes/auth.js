@@ -29,4 +29,9 @@ router.post('/logout', authController.logout);
 // @desc    Set organization for the user
 router.post('/organization', verifyToken, authController.upload.single('logo'), authController.setOrganization);
 
+// @route   GET /api/auth/profile
+// @desc    Get user profile
+// @access  Private (requires authentication)
+router.get('/profile', verifyToken, authController.getProfile);
+
 export default router;

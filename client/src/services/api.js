@@ -1,38 +1,57 @@
-// This file handles all communication between your React app and the backend server
-// Think of it as a "messenger" that sends requests to your server and brings back responses
+import axios from 'axios';
 
-const API_BASE = "http://localhost:5000/api"; // This is your server's address
+const api = axios.create({
+  baseURL: 'http://localhost:5000/api',
+  withCredentials: true // Important for cookies
+});
 
-// ======================
-// USER AUTHENTICATION
-// ======================
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
-// This function logs in existing users
-// It sends email and password to the server and gets back a token if successful
-export async function loginUser(email, password) {
-  const res = await fetch(`${API_BASE}/auth/login`, {
-    method: "POST", // We're sending data to the server
-    headers: { "Content-Type": "application/json" }, // Tells server we're sending JSON
-    body: JSON.stringify({ email, password }) // Convert JS object to JSON string
-  });
-  
-  // If login fails, throw an error with the server's message
-  if (!res.ok) throw new Error((await res.json()).message || "Login failed");
-  
-  // Return the successful response (includes token and user info)
-  return res.json();
-}
+// Response interceptor to handle token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If error is due to expired access token and we haven't tried refreshing yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        // Try to refresh the token
+        const response = await axios.post('http://localhost:5000/api/auth/refresh-token', {}, {
+          withCredentials: true
+        });
+        
+        const newAccessToken = response.data.accessToken;
+        localStorage.setItem('accessToken', newAccessToken);
+        
+        // Update the authorization header
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        
+        // Retry the original request
+        return api(originalRequest);
+      } catch (refreshError) {
+        // If refresh token fails, redirect to login
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
-// This function creates new user accounts
-// Similar to login, but for new registrations
-export async function registerUser(username, email, password) {
-  const res = await fetch(`${API_BASE}/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, email, password })
-  });
-  
-  if (!res.ok) throw new Error((await res.json()).message || "Registration failed");
-  return res.json();
-}
-
+export default api;

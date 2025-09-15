@@ -9,7 +9,6 @@ import dotenv from "dotenv";
 import ms from 'ms';
 import multer from 'multer';
 import { uploadToCloudinary } from '../utils/uploadHelper.js';
-
 dotenv.config();
 
 cloudinary.config({ 
@@ -18,88 +17,79 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET 
 });
 
+// Check for required environment variables
+if (!process.env.JWT_SECRET_ACCESS || !process.env.JWT_SECRET_REFRESH) {
+  console.error('JWT secrets are not defined in environment variables');
+  process.exit(1);
+}
+
 const ACCESS_SECRET = process.env.JWT_SECRET_ACCESS; // Secret key for signing access tokens
 const REFRESH_SECRET = process.env.JWT_SECRET_REFRESH; // Secret key for signing refresh tokens
-const ACCESS_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION; // How long access tokens are valid
-const REFRESH_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION;
-
+const ACCESS_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION || '15m'; // Default to 15 minutes
+const REFRESH_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d'; // Default to 7 days
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 
 // --- Multer Configuration for In-Memory Storage ---
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-
 // Helper function to generate access and refresh tokens for a user
 const generateTokens = (user) => {
     const payload = {
         user: {
-            id: user.id,
-            roles: user.roles, // Include user roles in the token for authorization
+            id: user._id.toString() // Convert ObjectId to string and use _id instead of id
         },
     };
-
     // Create access and refresh tokens with expiration
     const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: ACCESS_EXPIRATION });
     const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: REFRESH_EXPIRATION });
-
     return { accessToken, refreshToken };
 };
-
 
 // =====================
 // Register a new user
 // =====================
 const  register = async (req, res) => {
     const { username, email, password} = req.body;
-
+    // Input validation
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+    if (password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+    if (username.length < 3) {
+        return res.status(400).json({ message: 'Username must be at least 3 characters long' });
+    }
     try {
         // Check if user already exists
         let user = await User.findOne({ email});
         if (user) {
-            return res.status(400).json({ msg: 'User already exists' });
+            return res.status(400).json({ message: 'User already exists' });
         }
-
-         if (!emailRegex.test(email)) { // <--- Changed this line
-        return res.status(400).json({ msg: 'Please enter a valid email address.' });
+         if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Please enter a valid email address.' });
     }
-
         // Create new user (password will be hashed in the model)
         user = new User({
             username,
             email,
             password,
             });
-
         await user.save(); // Save user to database
-
-       
-        // Generate tokens for the new user
-        const { accessToken, refreshToken } = generateTokens(user);
-
-        // Store refresh token in DB for future validation
-        const newRefreshToken = new RefreshToken({
-            userId: user.id,
-            token: refreshToken,
-            expiresAt: new Date(Date.now() + ms(REFRESH_EXPIRATION)), // Set expiration
+        // Create initial RefreshToken document for the user
+        const refreshTokenDoc = new RefreshToken({
+          userId: user._id,
+          refreshTokens: []
         });
-        await newRefreshToken.save();
-        
-        res.status(201).json({
-            msg: 'User registered successfully',
-            accessToken,
-            refreshToken,
-            user: { id: user.id, username: user.username, email: user.email},
-        });
-
+        await refreshTokenDoc.save();
+        res.status(201).json({ message: 'User registered successfully' });
+         
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('Registration error:', err);
+        res.status(500).json({ message: 'Server Error during registration' });
     }
 };
-
-
 
 const setOrganization = async (req,res)=>{
   // Destructure organization name and slug from the request body.
@@ -107,26 +97,22 @@ const setOrganization = async (req,res)=>{
     try{
     // Get the user ID from the authenticated user.
     const userId = req.user.id;
-
     // --- Validation ---
     // Check if an organization with the given slug already exists to ensure uniqueness.
     const isOrg = await Organization.findOne({ slug: orgSlug });
     if (isOrg) {
         return res.status(400).send({ ok: false, message: "Slug is already taken, it has to be unique" });
     }
-
     // --- QR Code Generation ---
     // Construct the URL that will be encoded into the QR code.
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const content = `${baseUrl}/feedback/${orgSlug}`;
-
     // Generate a data URL for the QR code image.
     const qrDataUrl = await QRCode.toDataURL(content, {
             width: 300,
             margin: 2,
             errorCorrectionLevel: 'H'
     });
-
     // --- Organization Creation ---
     // Prepare the data for the new organization.
     const orgData = {
@@ -139,7 +125,6 @@ const setOrganization = async (req,res)=>{
     
     // Create the new organization in the database.
     const org = await Organization.create(orgData);
-
     // --- Logo Handling ---
     // If a logo file was uploaded, process it.
     if (req.file) {
@@ -153,7 +138,6 @@ const setOrganization = async (req,res)=>{
         public_id: result.public_id,
       });
     }
-
     // --- User Update ---
     // Update the user document to link it with the new organization.
     const user = await User.findByIdAndUpdate(
@@ -161,157 +145,191 @@ const setOrganization = async (req,res)=>{
       { hasOrganization: true, organizationId: org._id },
       { new: true } // Return the updated user document.
     );
-
     // --- Success Response ---
     // Send a success response with the user and organization data.
     return  res.status(201).send({ ok:true, user, organization: org})
-
     } catch(err){
         // --- Error Handling ---
-        console.log("error",err.message);
-        res.status(500).json({ message: "Server error" });
+        console.error("Organization setup error:", err);
+        res.status(500).json({ message: "Server error during organization setup" });
     }
 }
-
-
-
-
-
 
 // =====================
 // Login an existing user
 // =====================
 const login = async (req, res) => {
     const { email, password } = req.body;
-
+    // Input validation
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Please provide email and password' });
+    }
     try {
         // Find user by email
         let user = await User.findOne({ email});
         if (!user) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
+            return res.status(401).json({ message: 'Invalid Credentials' });
         }
-
         // Check if password matches (uses model's comparePassword method)
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
+            return res.status(401).json({ message: 'Invalid Credentials' });
         }
-
         // Generate new tokens
         const {accessToken, refreshToken } = generateTokens(user);
-
-        // Remove old refresh tokens for this user and save the new one
-        await RefreshToken.deleteMany({ userId: user.id });
-        const newRefreshToken = new RefreshToken({
-            userId: user.id,
-            token: refreshToken,
-            expiresAt: new Date(Date.now() + ms(REFRESH_EXPIRATION)),
+        let refresh = await RefreshToken.findOne({ userId: user._id });
+        if (!refresh) {
+          // Create new refresh token document if it doesn't exist
+          refresh = new RefreshToken({
+            userId: user._id,
+            refreshTokens: []
+          });
+        }
+        // Store refresh token in user document
+        refresh.refreshTokens.push({ token: refreshToken });
+        await refresh.save();
+        
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // Adjust for production
+          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
-        await newRefreshToken.save();
-
+        
         res.json({
-            msg: 'Logged in successfully',
-            accessToken,
-            refreshToken,
-            user: { id: user.id, username: user.username, email: user.email, hasOrganization: user.hasOrganization ,organizationId: user.organizationId},
+          message: 'Logged in successfully',
+          accessToken,
+          user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            hasOrganization: user.hasOrganization,
+            organizationId: user.organizationId
+          }
         });
-
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('Login error:', err);
+        res.status(500).json({ message: 'Server Error during login' });
     }
 };
 
-// ... (imports and generateTokens helper function)
-
 // In authController.js, update the refreshToken function:
 const refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
-
-  if (!refreshToken) {
-    return res.status(401).json({ msg: 'Refresh Token not provided' });
+  const refreshTokenFromCookie = req.cookies.refreshToken;
+    
+  if (!refreshTokenFromCookie) {
+    return res.status(401).json({ message: 'Refresh token not found' });
   }
-
   try {
     // Verify refresh token
-    const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
-
+    const decoded = jwt.verify(refreshTokenFromCookie, REFRESH_SECRET);
     // Check if refresh token exists in DB and is valid
-    const storedRefreshToken = await RefreshToken.findOne({ 
-      token: refreshToken, 
-      userId: decoded.user.id 
-    });
-
+    const storedRefreshToken = await RefreshToken.findOne({ userId: decoded.user.id });
+    
     if (!storedRefreshToken) {
-      return res.status(403).json({ msg: 'Invalid or revoked Refresh Token' });
+      return res.status(403).json({ message: 'Refresh token not found for user' });
     }
-
-    // Check if refresh token has expired
-    if (new Date() > storedRefreshToken.expiresAt) {
-      await RefreshToken.deleteOne({ _id: storedRefreshToken._id });
-      return res.status(403).json({ msg: 'Refresh Token expired' });
+    // Check if refresh token exists in user document
+    const tokenExists = storedRefreshToken.refreshTokens.some(
+      tokenObj => tokenObj.token === refreshTokenFromCookie
+    );
+    if (!tokenExists) {
+      // Token might be compromised - remove all refresh tokens
+      storedRefreshToken.refreshTokens = [];
+      await storedRefreshToken.save();
+      return res.status(403).json({ message: 'Invalid or revoked Refresh Token' });
     }
 
     // Get user from database
     const user = await User.findById(decoded.user.id);
     if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
-
     // Generate new access token
     const newAccessToken = jwt.sign(
-      { user: { id: user.id, roles: user.roles } }, 
+      { user: { id: user.id } }, 
       ACCESS_SECRET, 
       { expiresIn: ACCESS_EXPIRATION }
     );
-
     res.json({
       accessToken: newAccessToken,
     });
-
   } catch (err) {
-    console.error(err.message);
+    console.error('Refresh token error:', err);
     if (err.name === 'TokenExpiredError') {
-      return res.status(403).json({ msg: 'Refresh Token expired', code: 'REFRESH_TOKEN_EXPIRED' });
+      return res.status(403).json({ message: 'Refresh Token expired', code: 'REFRESH_TOKEN_EXPIRED' });
     }
     if (err.name === 'JsonWebTokenError') {
-      return res.status(403).json({ msg: 'Invalid Refresh Token' });
+      return res.status(403).json({ message: 'Invalid Refresh Token' });
     }
-    res.status(500).send('Server Error');
+    res.status(500).json({ message: 'Server Error during token refresh' });
   }
 };
 
-// ... (other exports)
-
 const logout = async (req, res) => {
-    // Invalidate the refresh token by deleting it from the database
-    // This assumes the refresh token is sent in the request body for logout
-    const { refreshToken } = req.body; // <--- Correctly extracts refresh token from body
-
-    if (!refreshToken) {
-        return res.status(400).json({ msg: 'Refresh token is required for logout' });
-    }
-
     try {
-        // Optionally verify the refresh token first before deleting
-        const decoded = jwt.verify(refreshToken, REFRESH_SECRET); // This ensures the refresh token format is valid
-
-        // Delete the refresh token from the database
-        const result = await RefreshToken.deleteOne({ token: refreshToken, userId: decoded.user.id });
-
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ msg: 'Refresh token not found or already revoked' });
+        const refreshToken = req.cookies.refreshToken;
+        
+        if (refreshToken) {
+          // Verify token to get user ID
+          const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
+          const storedRefreshToken = await RefreshToken.findOne({ userId: decoded.user.id });
+          
+          if (storedRefreshToken) {
+            // Remove the specific refresh token
+            storedRefreshToken.refreshTokens = storedRefreshToken.refreshTokens.filter(
+              tokenObj => tokenObj.token !== refreshToken
+            );
+            await storedRefreshToken.save();
+          }
         }
-
-        res.status(200).json({ msg: 'Logged out successfully' });
+        
+        // Clear cookie
+        res.clearCookie('refreshToken', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        });
+        
+        res.json({ message: 'Logged out successfully' });
     } catch (err) {
-        console.error(err.message);
+        console.error('Logout error:', err);
         // Catch JWT errors if the refresh token format is invalid or it's expired
         if (err.name === 'TokenExpiredError') {
-             return res.status(400).json({ msg: 'Refresh token provided for logout is expired' });
+             return res.status(400).json({ message: 'Refresh token provided for logout is expired' });
         }
-        res.status(500).send('Server Error during logout');
+        res.status(500).json({ message: 'Server Error during logout' });
     }
 };
 
-export default {register,login,refreshToken,logout,setOrganization, upload}
+// Get user profile
+const getProfile = async (req, res) => {
+  try {
+    // Get user ID from the verified token
+    const userId = req.user.id;
+    
+    // Find user by ID and exclude password field
+    const user = await User.findById(userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Return user data
+    res.json({
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        hasOrganization: user.hasOrganization,
+        organizationId: user.organizationId
+      }
+    });
+  } catch (err) {
+    console.error('Get profile error:', err);
+    res.status(500).json({ message: 'Server Error while fetching profile' });
+  }
+};
+
+export default {register,login,refreshToken,logout,setOrganization, upload, getProfile}

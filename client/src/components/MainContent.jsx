@@ -1,74 +1,59 @@
-import qrcode from "../assets/qr code.png"
-import axios from "axios"
-import { useState,useContext } from "react"
-import "./MainContent.css"
-import FeedbackCard from "./FeedbackCard"
+import qrcode from "../assets/qr code.png";
+import api from "../services/api.js";
+import { useState, useEffect } from "react";
+import "./MainContent.css";
+import FeedbackCard from "./FeedbackCard";
 import { formatTimeAgo, sortFeedbackByTime } from "../utils/timeUtils";
-import AuthContext from "../AuthContext"
 
-// The MainContent component serves as the landing page of the dashboard.
-// It provides a summary of feedback activity and tools for sharing the feedback link.
 function MainContent() {
-    // A hardcoded array of feedback objects. In a real application, this data would be fetched from an API.
-  const [feedbacks ,setFeedbacks] = useState([])
-  const [qrCode, setQrCode] = useState(qrcode)
-  const [feedbackLink, setFeedbackLink] = useState('http://localhost:5173/feedback')
-  
-   // State to manage the "Copied!" confirmation message visibility.
-  const [copied, setCopied] = useState(false)
-  const [error ,setError] = useState("")
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [qrCode, setQrCode] = useState(qrcode);
+  const [feedbackLink, setFeedbackLink] = useState('http://localhost:5173/feedback');
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
 
-  const {accessToken} = useContext(AuthContext);
-   // Copies the feedback link to the user's clipboard and shows a confirmation message.
   const copyLink = () => {
-    navigator.clipboard.writeText(feedbackLink)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+    navigator.clipboard.writeText(feedbackLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-   // Triggers a download of the QR code image.
   const downloadQR = () => {
-    const link = document.createElement('a')
-    link.href = qrCode
-    link.download = 'feedback-qr-code.png'
-    link.click()
-  }
+    const link = document.createElement('a');
+    link.href = qrCode;
+    link.download = 'feedback-qr-code.png';
+    link.click();
+  };
 
-   // Calculates the total number of feedback entries.
-  const totalFeedbacks = feedbacks.length
+  const totalFeedbacks = feedbacks.length;
 
-  useState(()=>{
+  useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/user/dashboard`,{
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        const response = await api.get(`http://localhost:5000/api/user/dashboard`);
+        
         const data = response.data;
-
-        console.log("data =>",data)
-        setQrCode(data.org.qrDataUrl)
-        setFeedbackLink(data.org.content)
+        console.log("data =>", data);
+        
+        setQrCode(data.org.qrDataUrl);
+        setFeedbackLink(data.org.content);
         const sortedFeedbacks = sortFeedbackByTime(data.feedbacks);
-        setFeedbacks(sortedFeedbacks)
+        setFeedbacks(sortedFeedbacks);
       } catch (error) {
         console.error(error);
         setError(error.message);
       }
-    }
+    };
+    
     fetchData();
-  },[])
+  }, []);
 
   return (
-    // The main container uses a grid layout to organize its sections.
     <main className="content">
-        {/* The header displays the main title and a summary of total feedback. */}
       <div className="dashboard-header card">
         <h1 className="main-heading">Dashboard</h1>
       </div>
 
-       {/* This section provides tools for sharing the feedback link via QR code or a direct link. */}
       <div className="qr-container card">
         <div className="qr-content">
           <h2 className="qr-heading">Share your feedback link</h2>
@@ -88,7 +73,6 @@ function MainContent() {
         </div>
       </div>
 
-      {/* A prominent display of the total feedback received. */}
       <div className="feedback-overview card">
         <div className="total-feedback">
           <div className="feedback-icon">📊</div>
@@ -99,21 +83,18 @@ function MainContent() {
         </div>
       </div>
 
-       {/* This section displays a preview of the most recent feedback entries. */}
       <div className="latest-feedback card">
         <div className="feedback-section-header">
           <h3>Latest Feedback</h3>
-           {/* A button to navigate to the full list of feedback. */}
           <button className="view-all-btn">View All</button>
         </div>
         
-         {/* The list renders the first three feedback items using the FeedbackCard component. */}
         <div className="feedback-list">
           {error && (
-              <p role="alert" className="feedback-helper" style={{ color: "var(--color-error)" }}>
-                {error}
-              </p>
-            )}
+            <p role="alert" className="feedback-helper" style={{ color: "var(--color-error)" }}>
+              {error}
+            </p>
+          )}
           {feedbacks.map((feedback) => (
             <FeedbackCard
               key={feedback._id}
@@ -126,7 +107,7 @@ function MainContent() {
         </div>
       </div>
     </main>
-  )
+  );
 }
 
-export default MainContent
+export default MainContent;

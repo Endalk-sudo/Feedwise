@@ -1,7 +1,7 @@
 import "./OrgSetup.css";
-import { useContext, useState, useRef } from "react";
+import {  useState, useRef } from "react";
 import axios from "axios";
-import AuthContext from "../AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const OrgSetup = () => {
@@ -13,7 +13,7 @@ const OrgSetup = () => {
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
 
-  const { accessToken, login } = useContext(AuthContext);
+  const { setUser } = useAuth();
   const navigate = useNavigate();
 
   const handleFileChange = (e) => {
@@ -72,17 +72,22 @@ const OrgSetup = () => {
     }
 
     try {
+      // Get access token from localStorage
+      const token = localStorage.getItem('accessToken');
+      
       const res = await axios.post(
         "http://localhost:5000/api/auth/organization",
         formData,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
         }
       );
-      login(res.data.user, accessToken);
+      
+      // Update user in context with the new organization data
+      setUser(res.data.user);
       navigate("/dashboard");
     } catch (err) {
       console.error(err);

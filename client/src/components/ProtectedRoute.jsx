@@ -1,16 +1,19 @@
-import { useContext } from 'react'
 import { Navigate } from 'react-router-dom';
-import AuthContext from '../AuthContext'
+import { useAuth } from "../context/AuthContext"; 
 
-// ProtectedRoute Component
-// This component wraps around routes that require authentication
-// If the user is not authenticated (no accessToken), they are redirected to the /auth route
-const ProtectedRoute = ({children}) => {
-    // This will be null if the user is not logged in
-    const {accessToken} = useContext(AuthContext)
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
   
-  // If accessToken exists, user is authenticated and can access the requested route
-  return accessToken ?  children : <Navigate to="/auth" replace />
-}
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+  
+  return user ? children : <Navigate to="/login" replace />;
+};
 
-export default ProtectedRoute
+export default ProtectedRoute;

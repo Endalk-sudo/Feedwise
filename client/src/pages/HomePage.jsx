@@ -47,7 +47,7 @@ const HomePage = () => {
           <li><a href="#features" onClick={() => setIsOpen(false)}>Features</a></li>
           <li><a href="#pricing" onClick={() => setIsOpen(false)}>Pricing</a></li>
           <li><a href="#login" onClick={() => setIsOpen(false)}>Login</a></li>
-          <Link to="/auth" className="link" onClick={() => setIsOpen(false)}>
+          <Link to="/register" className="link" onClick={() => setIsOpen(false)}>
             <button className="btn cta-primary-btn">Get Started →</button>
           </Link>
         </ul>
