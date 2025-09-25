@@ -35,6 +35,7 @@ export const useForm = (initialValues, validate, apiCall, onSuccess) => {
                 const data = await apiCall(values);
                 onSuccess(data);
             } catch (err) {
+                console.log('Form submit error:', err.message);
                 setServerError(err.message);
             } finally {
                 setLoading(false);

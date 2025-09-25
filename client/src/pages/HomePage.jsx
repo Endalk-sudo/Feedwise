@@ -2,90 +2,15 @@
 import "./HomePage.css";
 // Import the AI image asset used in the solution section
 import aiImage from "../assets/Gemini_Generated_Image_d20azfd20azfd20a.png"
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import NavBar from "../components/NavBar";
 
 // HomePage component renders the main landing page for the FeedbackAI app
 const HomePage = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  
-  // Handle scroll effect for navbar
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  
-  const toggle = () => {
-    setIsOpen((p) => !p);
-  }
-  
-  // Close mobile menu when resizing to desktop
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768 && isOpen) {
-        setIsOpen(false);
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isOpen]);
   
   return (
     <>
-      {/* Navigation Bar: Contains logo, navigation links, and CTA button */}
-      <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
-        <div className="ai-logo">
-          Feedback<span className="logo-color">AI</span>
-        </div>
-        <ul className={`nav-links ${isOpen ? "expand" : ""}`}>
-          <li><a href="#features" onClick={() => setIsOpen(false)}>Features</a></li>
-          <li><a href="#pricing" onClick={() => setIsOpen(false)}>Pricing</a></li>
-          <li><a href="#login" onClick={() => setIsOpen(false)}>Login</a></li>
-          <Link to="/register" className="link" onClick={() => setIsOpen(false)}>
-            <button className="btn cta-primary-btn">Get Started →</button>
-          </Link>
-        </ul>
-        <button
-          onClick={toggle}
-          className="open"
-          aria-label={isOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isOpen}
-          aria-controls="nav-links"
-          tabIndex={0}
-          role="button"
-        >
-          {isOpen ? (
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          ) : (
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          )}
-        </button>
-      </nav>
+      <NavBar />
       
       <main>
         {/* Hero Section: Main headline, subheading, and primary call-to-action buttons */}
@@ -98,7 +23,7 @@ const HomePage = () => {
               FeedbackAI captures the honest, anonymous feedback you're missing and transforms it into your personal AI business consultant. Get instant summaries, deep insights, and clear, step-by-step action plans to improve your business today.
             </p>
             <div className="cta-btn-container">
-              <Link className="btn cta-primary-btn cta-main-button" to="/auth">Get Started for Free →</Link>
+              <Link className="btn cta-primary-btn cta-main-button" to="/auth">Get Started </Link>
               <button className="btn cta-secondary-btn">Watch a 2-Min Demo</button>
             </div>
           </div>

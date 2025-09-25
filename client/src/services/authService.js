@@ -7,6 +7,7 @@ export const register = async (userData) => {
   } catch (error) {
     // Normalize error message
     const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+    console.log("register-error",errorMessage)
     throw new Error(errorMessage);
   }
 };

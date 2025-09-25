@@ -6,7 +6,6 @@ import RefreshToken from '../models/RefreshToken.js'; // Refresh token model
 import Organization from "../models/Organization.js"
 import orgLogo from "../models/OrgLogo.js"
 import dotenv from "dotenv";
-import ms from 'ms';
 import multer from 'multer';
 import { uploadToCloudinary } from '../utils/uploadHelper.js';
 dotenv.config();
@@ -51,23 +50,30 @@ const generateTokens = (user) => {
 // =====================
 const  register = async (req, res) => {
     const { username, email, password} = req.body;
+    console.log('Registration attempt:', { username, email, password: password ? 'provided' : 'missing' });
     // Input validation
     if (!username || !email || !password) {
+        console.log('Missing fields');
         return res.status(400).json({ message: 'Please provide all required fields' });
     }
     if (password.length < 6) {
+        console.log('Password too short');
         return res.status(400).json({ message: 'Password must be at least 6 characters long' });
     }
     if (username.length < 3) {
+        console.log('Username too short');
         return res.status(400).json({ message: 'Username must be at least 3 characters long' });
     }
     try {
         // Check if user already exists
         let user = await User.findOne({ email});
+        console.log('User lookup result:', user ? 'exists' : 'not found');
         if (user) {
+            console.log('User already exists');
             return res.status(400).json({ message: 'User already exists' });
         }
-         if (!emailRegex.test(email)) {
+          if (!emailRegex.test(email)) {
+        console.log('Invalid email');
         return res.status(400).json({ message: 'Please enter a valid email address.' });
     }
         // Create new user (password will be hashed in the model)

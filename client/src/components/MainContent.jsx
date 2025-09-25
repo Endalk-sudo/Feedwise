@@ -1,4 +1,3 @@
-import qrcode from "../assets/qr code.png";
 import api from "../services/api.js";
 import { useState, useEffect } from "react";
 import "./MainContent.css";
@@ -7,7 +6,7 @@ import { formatTimeAgo, sortFeedbackByTime } from "../utils/timeUtils";
 
 function MainContent() {
   const [feedbacks, setFeedbacks] = useState([]);
-  const [qrCode, setQrCode] = useState(qrcode);
+  const [qrCode, setQrCode] = useState("");
   const [feedbackLink, setFeedbackLink] = useState('http://localhost:5173/feedback');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");

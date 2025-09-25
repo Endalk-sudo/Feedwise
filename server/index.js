@@ -1,12 +1,15 @@
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+import cookieParser from 'cookie-parser';
 import dotenv from "dotenv";
 import feedbackRoutes from "./routes/feedback.js";
 import userRoutes from "./routes/user.js";
 import authRoutes from "./routes/auth.js"; // Import auth routes
 import aiRoutes from "./routes/ai.js"; // Import AI routes
 import settingsRoutes from "./routes/settings.js"
+import paymentRoutes from './routes/payment.js';
+import { handleWebhook } from "./controllers/paymentController.js";
 
 // Load environment variables from .env file
 // This is like reading configuration settings before starting
@@ -23,6 +26,16 @@ app.use(cors({
   origin: process.env.CLIENT_URL || "http://localhost:5173",
   credentials: true
 }));
+
+// Enable cookie parsing
+app.use(cookieParser());
+
+
+// IMPORTANT: Define webhook route BEFORE bodyParser.json()
+app.post('/api/payments/webhook',
+  express.raw({ type: 'application/json' }),
+  handleWebhook
+);
 
 // Enable JSON parsing for incoming requests
 // This tells the server how to read JSON data sent from the frontend
@@ -58,7 +71,9 @@ app.use("/api/ai", aiRoutes);
 
 app.use("/api/user", userRoutes);
 
-app.use("/setting",settingsRoutes)
+app.use("/api/setting",settingsRoutes);
+
+app.use('/api/payments', paymentRoutes);
 
 // Health check endpoint
 // This is like a "ping" to check if the server is alive
@@ -70,6 +85,17 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString()
   });
 }); 
+
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error('Error:', error);
+  res.status(error.status || 500).json({
+    success: false,
+    message: error.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' ? { stack: error.stack } : {})
+  });
+});
 
 // Start the server
 // This is like opening the building for business

@@ -1,0 +1,140 @@
+/* Keyframes for pulse animation */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.payment-status {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--color-background) 0%, var(--color-surface) 100%);
+}
+
+.icon-container {
+    animation: pulse 2s infinite;
+}
+
+.warn-pulse {
+    color: var(--color-error);
+    stroke-width: 2;
+}
+
+.payment-status .payment-status-card {
+    padding: 2.5rem;
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 1.5rem;
+    background-color: var(--color-surface);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.payment-status .payment-status-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.payment-status .payment-status-card h2 {
+    color: var(--color-text-primary);
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.payment-status .payment-status-card p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.payment-actions {
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-actions > .payment-retry-btn {
+    background: linear-gradient(135deg, #203f71 0%, var(--color-accent) 100%);
+    border: none;
+    color: var(--color-text-invert);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(32, 63, 113, 0.3);
+}
+
+.payment-actions > .payment-retry-btn:hover {
+    background: linear-gradient(135deg, var(--color-accent-hover) 0%, #203f71 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(32, 63, 113, 0.4);
+}
+
+.payment-actions > .btn-primary {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-text-invert);
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    background: var(--color-accent);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px var(--color-accent-rgb-shadow);
+}
+
+.payment-actions > .btn-primary:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--color-accent-rgb-shadow);
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .payment-status .payment-status-card {
+        padding: 2rem;
+        gap: 1rem;
+    }
+
+    .payment-status .payment-status-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .payment-status .payment-status-card p {
+        font-size: 0.9rem;
+    }
+
+    .payment-actions {
+        max-width: 250px;
+    }
+
+    .payment-actions > .payment-retry-btn,
+    .payment-actions > .btn-primary {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}

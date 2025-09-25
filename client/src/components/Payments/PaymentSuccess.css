@@ -1,0 +1,197 @@
+/* Keyframes for animations */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.payment-status {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-surface) 100%);
+}
+
+.payment-status .payment-status-card {
+    padding: 2.5rem;
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 1.5rem;
+    background-color: var(--color-surface);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border);
+    text-align: center;
+    animation: fadeIn 0.6s ease-out;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.payment-status .payment-status-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.payment-icon.success {
+    width: 64px;
+    height: 64px;
+    color: var(--color-success);
+    animation: bounce 2s infinite;
+}
+
+.payment-status .payment-status-card h2 {
+    color: var(--color-text-primary);
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.payment-status .payment-status-card p {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--color-accent);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.loading-spinner::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-border);
+    border-top: 2px solid var(--color-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.payment-actions {
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-actions .btn-primary {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-text-invert);
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    background: var(--color-accent);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px var(--color-accent-rgb-shadow);
+    cursor: pointer;
+    border: none;
+}
+
+.payment-actions .btn-primary:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--color-accent-rgb-shadow);
+}
+
+.payment-actions .btn-secondary {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-actions .btn-secondary:hover {
+    background: var(--color-secondary-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.session-info {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--color-secondary-bg);
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+}
+
+.session-info p {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    font-family: monospace;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .payment-status .payment-status-card {
+        padding: 2rem;
+        gap: 1rem;
+    }
+
+    .payment-status .payment-status-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .payment-status .payment-status-card p {
+        font-size: 0.9rem;
+    }
+
+    .payment-actions {
+        max-width: 250px;
+    }
+
+    .payment-actions .btn-primary,
+    .payment-actions .btn-secondary {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .payment-icon.success {
+        width: 48px;
+        height: 48px;
+    }
+}
