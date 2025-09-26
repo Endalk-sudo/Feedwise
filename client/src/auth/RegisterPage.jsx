@@ -28,9 +28,9 @@ export const RegisterPage = () => {
         },
         // Use context's register function directly
         (vals) => contextRegister(vals),
-        // On success, navigate to dashboard
+        // On success, navigate to subscription page
         () => {
-            navigate('/dashboard');
+            navigate('/payment');
         }
     );
 

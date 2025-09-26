@@ -1,6 +1,7 @@
 import express from "express";
 import { getFeedback, submitFeedback ,getOrgInfo } from "../controllers/feedbackController.js";
 import {verifyToken} from '../middleware/auth.js';
+import {requireSubscription} from "../middleware/authorize.js";
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ const router = express.Router();
 // Purpose: Get all feedback for the logged-in organization
 // Who can use: Only authenticated organizations
 // What it returns: Array of feedback objects with text, rating, and date
-router.get("/me",verifyToken, getFeedback);
+router.get("/me",verifyToken, requireSubscription, getFeedback);
 
 // POST /api/feedback
 // Purpose: Submit new feedback from customers

@@ -6,7 +6,7 @@ import { formatTimeAgo, sortFeedbackByTime } from "../utils/timeUtils";
 
 function MainContent() {
   const [feedbacks, setFeedbacks] = useState([]);
-  const [qrCode, setQrCode] = useState("");
+  const [qrCode, setQrCode] = useState(null);
   const [feedbackLink, setFeedbackLink] = useState('http://localhost:5173/feedback');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");

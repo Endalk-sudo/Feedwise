@@ -10,6 +10,7 @@ import { useRipple } from "./hooks/useRipple";
 import "./Auth.css";
 
 export const LoginPage = () => {
+    const {user} = useAuth()
     const { login: contextLogin, clearError } = useAuth();
     const navigate = useNavigate();
     
@@ -24,10 +25,15 @@ export const LoginPage = () => {
         },
         // Use context's login function directly
         (vals) => contextLogin(vals),
-        // On success, navigate to dashboard
+        // On success, navigate to paymetn or the dashboard 
         () => {
-            navigate('/dashboard');
+            if (user?.currentPlan === null || user?.subscriptionStatus === 'inactive') {
+                navigate('/payment');
+            } else {
+                navigate('/dashboard');
+            }
         }
+
     );
 
     const submitButtonRef = useRef();

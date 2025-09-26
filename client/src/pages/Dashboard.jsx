@@ -5,14 +5,16 @@ import { useAuth } from "../context/AuthContext"; // Fixed import
 
 const Dashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
         logout();
         navigate("/login");
     };
-
+    const handleUpgrade = () => {
+        navigate("/payment");
+    }
     const handleSidebarToggle = () => {
         setSidebarOpen((prev) => !prev);
     };
@@ -35,6 +37,9 @@ const Dashboard = () => {
                     <button className="logout-btn" onClick={handleLogout}>
                         Log Out
                     </button>
+                    { user?.currentPlan === "basic" && <button className="logout-btn upgrade-btn" onClick={handleUpgrade}>
+                        Upgrade to <span>PRO</span>
+                    </button>}
                     <div className="user-profile-icon">
                         <svg
                             width="24"
@@ -66,10 +71,12 @@ const Dashboard = () => {
                         <span>💬</span>
                         All Feedback
                     </NavLink>
-                    <NavLink className="nav-item" data-icon="chat" to="/dashboard/chat-ai" onClick={handleNavClick}>
-                        <span>🤖</span>
-                        Chat With AI
-                    </NavLink>
+                    {user?.currentPlan === 'pro' && (
+                        <NavLink className="nav-item" data-icon="chat" to="/dashboard/chat-ai" onClick={handleNavClick}>
+                            <span>🤖</span>
+                            Chat With AI
+                        </NavLink>
+                    )}
                     <NavLink className="nav-item" data-icon="settings" to="/dashboard/settings" onClick={handleNavClick}>
                         <span>⚙️</span>
                         Settings

@@ -211,7 +211,9 @@ const login = async (req, res) => {
             username: user.username,
             email: user.email,
             hasOrganization: user.hasOrganization,
-            organizationId: user.organizationId
+            organizationId: user.organizationId,
+            currentPlan: user.currentPlan,
+            subscriptionStatus : user.subscriptionStatus
           }
         });
     } catch (err) {
@@ -329,7 +331,9 @@ const getProfile = async (req, res) => {
         username: user.username,
         email: user.email,
         hasOrganization: user.hasOrganization,
-        organizationId: user.organizationId
+        organizationId: user.organizationId,
+        currentPlan: user.currentPlan,
+        subscriptionStatus : user.subscriptionStatus
       }
     });
   } catch (err) {

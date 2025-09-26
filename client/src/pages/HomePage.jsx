@@ -23,7 +23,7 @@ const HomePage = () => {
               FeedbackAI captures the honest, anonymous feedback you're missing and transforms it into your personal AI business consultant. Get instant summaries, deep insights, and clear, step-by-step action plans to improve your business today.
             </p>
             <div className="cta-btn-container">
-              <Link className="btn cta-primary-btn cta-main-button" to="/auth">Get Started </Link>
+              <Link className="btn cta-primary-btn cta-main-button" to="/register">Get Started </Link>
               <button className="btn cta-secondary-btn">Watch a 2-Min Demo</button>
             </div>
           </div>
@@ -342,7 +342,7 @@ const HomePage = () => {
                   <li>Basic AI Summaries</li>
                   <li>1 Dashboard User</li>
                 </ul>
-                <button className="btn cta-primary-btn pricing-cta-btn">Start for Free</button>
+                <Link className="btn cta-primary-btn pricing-cta-btn" to="/register">Start for Free</Link>
               </div>
               
               {/* Pro Plan (Most Popular) */}
@@ -359,7 +359,7 @@ const HomePage = () => {
                   <li>Actionable Insights & Guides</li>
                   <li>Unlimited Dashboard Users</li>
                 </ul>
-                <button className="btn cta-primary-btn pricing-cta-btn">Start Your Pro Trial</button>
+                <Link className="btn cta-primary-btn pricing-cta-btn" to="/register">Start Your Pro Trial</Link>
               </div>
               
               {/* Business Plan */}
@@ -391,9 +391,9 @@ const HomePage = () => {
               <p>
                 Unlock them with FeedbackAI. Get your free account today and start listening to what truly matters.
               </p>
-              <button className="closing-btn cta-primary-btn btn">
+              <Link className="closing-btn cta-primary-btn btn" to="/register">
                 Get Your Free Account Now
-              </button>
+              </Link>
             </div>
           </div>
         </section>

@@ -13,6 +13,7 @@ import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 import SubscriptionPlans from "./components/Payments/SubscriptionPlans"
 import PaymentCanceled from './components/Payments/PaymentCanceled';
+import ReactivateSubscription from './components/Payments/ReactivateSubscription';
 import PaymentSuccess from './components/Payments/PaymentSuccess';
 
 
@@ -22,6 +23,7 @@ const PublicRoute = ({ children }) => {
   if (loading) {
     return <div>Loading...</div>;
   }
+
 
   return !user ? children : <Navigate to="/dashboard" />;
 };
@@ -38,6 +40,7 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
+
   
   return user ? children : <Navigate to="/login" replace />;
 };
@@ -50,7 +53,9 @@ function App() {
         <Routes>
           <Route path='/' element={<HomePage />}/>
           <Route path='/login' element={
+            <PublicRoute >
               <LoginPage />
+            </PublicRoute >
           } />
 
           <Route path='/register' element={
@@ -69,6 +74,12 @@ function App() {
           <Route path="/payment-canceled" element={
             <ProtectedRoute>
               <PaymentCanceled />
+            </ProtectedRoute>
+          }
+          />
+          <Route path="/reactivate" element={
+            <ProtectedRoute>
+              <ReactivateSubscription />
             </ProtectedRoute>
           }
           />
@@ -92,10 +103,10 @@ function App() {
   );
 }
 
-// Wrapper component to handle the organization check
+// Wrapper component to handle the organization and subscription check
 function DashboardWrapper() {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -104,8 +115,18 @@ function DashboardWrapper() {
       </div>
     );
   }
-  
-  return user?.hasOrganization ? <Dashboard /> : <OrgSetup />;
+
+  // Check organization first
+  if (!user?.hasOrganization) {
+    return <OrgSetup />;
+  }
+
+  // Check subscription status
+  if (user?.subscriptionStatus !== 'active') {
+    return <ReactivateSubscription />;
+  }
+
+  return <Dashboard />;
 }
 
 export default App;
