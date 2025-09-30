@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import MainContent from './components/MainContent';
 import AllFeedbacks from './components/AllFeedbacks';
 import AiPage from './pages/AiPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import { Settings } from './pages/Settings';
 import OrgSetup from './pages/OrgSetup';
 import { AuthProvider } from './context/AuthContext';
@@ -96,6 +97,7 @@ function App() {
             <Route path='categories' element={<MainContent />}/>
             <Route path='chat-ai' element={<AiPage />}/>
             <Route path='settings' element={<Settings />}/>
+            <Route path='pro-analysis' element={<AnalyticsPage />}/>
           </Route>
         </Routes>
       </BrowserRouter>

@@ -73,12 +73,12 @@
     border-radius: 16px; /* Large border radius for modern look */
     padding: 30px; /* Generous internal spacing */
     border: 1px solid var(--color-border); /* Subtle border definition */
-    box-shadow: var(--shadow-lg); /* Consistent shadow from theme */
+    box-shadow: var(--layered-shadow); /* Consistent shadow from theme */
     transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover animations */
 }
 
 .settings-section:hover {
-    transform: translateY(-2px); /* Lift effect on hover */
+    transform: translateY(-4px); /* Lift effect on hover */
     box-shadow: var(--shadow-xl); /* Enhanced shadow on hover */
 }
 

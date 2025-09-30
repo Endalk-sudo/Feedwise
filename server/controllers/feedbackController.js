@@ -8,7 +8,7 @@
 // Import necessary modules
 import Feedback from "../models/Feedback.js";
 import Organization from "../models/Organization.js";
-import categorizeFeedback from "../services/aiServices.js"
+import analyzeFeedback from "../services/aiServices.js"
 import OrgLogo from "../models/OrgLogo.js"
 
 
@@ -39,7 +39,7 @@ export const getFeedback = async (req, res) => {
  */
 export const submitFeedback = async (req, res) => {
   const { orgSlug } = req.params;
-  const { text, rating } = req.body;
+  const { text } = req.body;
 
   if (!text || typeof text !== 'string' || text.trim() === '') {
     return res.status(400).json({ message: "Feedback text is required and cannot be empty." });
@@ -51,19 +51,27 @@ export const submitFeedback = async (req, res) => {
       return res.status(404).json({ error: 'Organization not found' });
     }
 
-    // Call the AI to categorize the feedback
-    const categorizedData = await categorizeFeedback(text);
+    // Call the AI to analyze the feedback
+    const analyzedData = await analyzeFeedback(text);
 
-    console.log("Categorized Feedback Data:", categorizedData);
-    // Create a new feedback document with the data from the AI
+    console.log("AI Analyzed Feedback Data:", analyzedData);
+
+    // Create a new feedback document with both raw text and AI analysis
     const newFeedback = await Feedback.create({
       organizationId: org._id,
-      text: categorizedData.text,
-      category: categorizedData.category,
-      rating: rating,
+      text: analyzedData.text,              // Original feedback
+      category: analyzedData.category,      // AI-assigned category
+      rating: analyzedData.rating,          // AI-inferred rating
+      sentiment: analyzedData.sentiment,    // AI sentiment
+      urgency: analyzedData.urgency,        // AI urgency
+      keyPoints: analyzedData.keyPoints,    // AI key points
+      keywords: analyzedData.keywords || [],// AI extracted keywords
+      confidence: analyzedData.confidence,  // AI confidence score
+      rawAnalysis: analyzedData             // Full AI JSON dump
     });
 
     res.status(201).json({ ok: true, id: newFeedback._id });
+
 
   } catch (error) {
     res.status(500).json({ message: error.message });

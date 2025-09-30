@@ -72,10 +72,16 @@ const Dashboard = () => {
                         All Feedback
                     </NavLink>
                     {user?.currentPlan === 'pro' && (
-                        <NavLink className="nav-item" data-icon="chat" to="/dashboard/chat-ai" onClick={handleNavClick}>
-                            <span>🤖</span>
-                            Chat With AI
-                        </NavLink>
+                        <>
+                            <NavLink className="nav-item" data-icon="analysis" to="/dashboard/pro-analysis" onClick={handleNavClick}>
+                                <span>📊</span>
+                                Pro Analysis
+                            </NavLink>
+                            <NavLink className="nav-item" data-icon="chat" to="/dashboard/chat-ai" onClick={handleNavClick}>
+                                <span>🤖</span>
+                                Chat With AI
+                            </NavLink>
+                        </>
                     )}
                     <NavLink className="nav-item" data-icon="settings" to="/dashboard/settings" onClick={handleNavClick}>
                         <span>⚙️</span>

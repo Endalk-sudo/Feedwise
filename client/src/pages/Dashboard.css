@@ -44,7 +44,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--layered-shadow);
   min-height: 72px;
 }
 
@@ -223,7 +223,7 @@
   top: 72px; /* Aligns with header height */
   height: calc(100vh - 72px); /* Full viewport height minus header */
   overflow-y: auto; /* Enable scrolling for long content */
-  transition: left 0.3s; /* Smooth slide animation for mobile */
+  transition: left 0.3s, opacity 0.3s; /* Smooth slide animation for mobile */
 }
 
 /* Sidebar scrollbar styling */
@@ -315,11 +315,11 @@
 
 /* Navigation Link Active State */
 .nav-item.active {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(var(--aurora-color-1), 0.2) 0%, rgba(var(--aurora-color-2), 0.2) 100%);
   color: #f1f5f9;
   font-weight: 600;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-  border: 1px solid rgba(102, 126, 234, 0.3);
+  box-shadow: var(--layered-shadow);
+  border: 1px solid rgba(var(--aurora-color-1), 0.3);
 }
 
 .nav-item.active::before {
@@ -444,3 +444,4 @@
     display: none;
   }
 }
+
