@@ -1,7 +1,6 @@
 import express from "express";
 import { verifyToken } from "../middleware/auth.js";
 import {
-  getFeedbackList,
   getCategoryCount,
   getSentimentSnapshot,
   getSentimentTrends,
@@ -14,7 +13,6 @@ import {
 const router = express.Router();
  
 // Basic Analytics Endpoints
-router.get("/basic/feedback", verifyToken, getFeedbackList);
 router.get("/basic/categories", verifyToken, getCategoryCount);
 router.get("/basic/sentiment", verifyToken, getSentimentSnapshot);
 

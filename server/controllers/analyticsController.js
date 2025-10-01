@@ -1,8 +1,9 @@
 import Feedback from "../models/Feedback.js";
 import Organization from "../models/Organization.js";
 
+
 // Basic Analytics Functions
-export const getFeedbackList = async (req, res) => {
+export const getSentimentSnapshot = async (req, res) => {
   try {
     const user = req.user;
     const org = await Organization.findOne({ ownerId: user.id });
@@ -10,28 +11,46 @@ export const getFeedbackList = async (req, res) => {
       return res.status(404).json({ success: false, message: "Organization not found" });
     }
 
-    const { page = 1, limit = 10 } = req.query;
-    const skip = (page - 1) * limit;
+    const {startDate , endDate} = req.query;
 
-    const feedbacks = await Feedback.find({ organizationId: org._id })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit))
-      .select("text sentiment category createdAt");
+    const matchStage = { organizationId: org._id};
 
-    res.status(200).json({
-      success: true,
-      data: feedbacks,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: await Feedback.countDocuments({ organizationId: org._id })
+    if(startDate || endDate){
+      matchStage.createdAt = {};
+      if(startDate){
+        matchStage.createdAt.$gte = new Date(startDate);
+      }
+      if(endDate){
+        matchStage.createdAt.$lte = new Date(endDate);
+      }
+    }
+
+    const sentiments = await Feedback.aggregate([
+      { $match: matchStage },
+      { $group: { _id: "$sentiment", count: { $sum: 1 } } }
+    ]);
+
+    const result = {
+      Positive: 0,
+      Neutral: 0,
+      Negative: 0,
+      Mixed: 0
+    };
+
+    sentiments.forEach(s => {
+      if (result.hasOwnProperty(s._id)) {
+        result[s._id] = s.count;
       }
     });
+
+    const data = Object.entries(result).map(([sentiment, count]) => ({ sentiment, count }));
+
+    res.status(200).json({ success: true, data: data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 export const getCategoryCount = async (req, res) => {
   try {
@@ -41,11 +60,27 @@ export const getCategoryCount = async (req, res) => {
       return res.status(404).json({ success: false, message: "Organization not found" });
     }
 
+    const {startDate , endDate} = req.query;
+
+    const matchStage = { organizationId: org._id }
+
+    if(startDate || endDate){
+      matchStage.createdAt = {};
+      if(startDate){
+        matchStage.createdAt.$gte = new Date(startDate);
+      }
+      if(endDate){
+        matchStage.createdAt.$lte = new Date(endDate);
+      }
+    }
+
     const categories = await Feedback.aggregate([
-      { $match: { organizationId: org._id } },
+      { $match: matchStage },
       { $group: { _id: "$category", count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);
+
+    console.log("categories", categories);
 
     res.status(200).json({
       success: true,
@@ -56,36 +91,7 @@ export const getCategoryCount = async (req, res) => {
   }
 };
 
-export const getSentimentSnapshot = async (req, res) => {
-  try {
-    const user = req.user;
-    const org = await Organization.findOne({ ownerId: user.id });
-    if (!org) {
-      return res.status(404).json({ success: false, message: "Organization not found" });
-    }
 
-    const sentiments = await Feedback.aggregate([
-      { $match: { organizationId: org._id } },
-      { $group: { _id: "$sentiment", count: { $sum: 1 } } }
-    ]);
-
-    const result = {
-      Positive: 0,
-      Neutral: 0,
-      Negative: 0
-    };
-
-    sentiments.forEach(s => {
-      if (result.hasOwnProperty(s._id)) {
-        result[s._id] = s.count;
-      }
-    });
-
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
 
 // Pro Analytics Functions
 export const getSentimentTrends = async (req, res) => {

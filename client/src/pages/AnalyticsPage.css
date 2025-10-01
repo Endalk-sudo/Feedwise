@@ -40,6 +40,13 @@
   margin: 0 auto;
 }
 
+.basic-analytics-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+
 .analytics-grid {
   display: flex;
   flex-direction: column;

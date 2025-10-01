@@ -71,12 +71,12 @@ const Dashboard = () => {
                         <span>💬</span>
                         All Feedback
                     </NavLink>
+                    <NavLink className="nav-item" data-icon="analysis" to="/dashboard/pro-analysis" onClick={handleNavClick}>
+                        <span>📊</span>
+                        {user?.currentPlan === 'pro' ? 'Pro Analysis' : 'Basic Analysis'}
+                    </NavLink>
                     {user?.currentPlan === 'pro' && (
                         <>
-                            <NavLink className="nav-item" data-icon="analysis" to="/dashboard/pro-analysis" onClick={handleNavClick}>
-                                <span>📊</span>
-                                Pro Analysis
-                            </NavLink>
                             <NavLink className="nav-item" data-icon="chat" to="/dashboard/chat-ai" onClick={handleNavClick}>
                                 <span>🤖</span>
                                 Chat With AI

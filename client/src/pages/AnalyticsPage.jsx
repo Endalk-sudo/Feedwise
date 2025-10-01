@@ -6,19 +6,30 @@ import PriorityAlerts from '../components/PriorityAlerts';
 import GrowthRecommendations from '../components/GrowthRecommendations';
 import "./AnalyticsPage.css"
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import BasicCategoryCount from '../components/BasicCategoryCount';
+import BasicSentimentSnapshot from '../components/BasicSentimentSnapshot';
 
 const AnalyticsPage = () => {
+  const {user} = useAuth()
   const [range , setRange] = useState("30")
 
   const startDate = new Date();
   const endDate = new Date();
   startDate.setDate(endDate.getDate() - parseInt(range));
+  
 
   return (
     <main className="analytics-dashboard">
       <div className="dashboard-header">
+        {user?.currentPlan === "basic" ? (<h1>Basic Analysis Dashboard</h1>)
+        : (
+        <>
         <h1>Pro Analysis Dashboard</h1>
         <p>Gain deep insights into your customer feedback with AI-powered analytics</p>
+        </>
+      )
+        }
       </div>
       <div className="time-filter">
         <button className={`time-filter-btn ${range === "7" ? "active" : ""}`} onClick={() => setRange("7")}>Last 7 Days</button>
@@ -26,15 +37,26 @@ const AnalyticsPage = () => {
         <button className={`time-filter-btn ${range === "90" ? "active" : ""}`} onClick={() => setRange("90")}>Last 90 Days</button>
       </div>
 
+      {user?.currentPlan === "basic" && 
+      <div className='basic-analytics-container'>
+        <div className='basic-analytics-overlay'>
+          <BasicSentimentSnapshot startDate={startDate} range={range} endDate={endDate} />
+        </div>
+        <div className='basic-analytics-overlay'>
+         <BasicCategoryCount startDate={startDate} range={range} endDate={endDate} />
+        </div>
+      </div>
+      }
+      {user?.currentPlan === "pro" && 
       <div className="analytics-grid">
         <div className="analytics-row">
-          <SentimentOverviewChart startDate={startDate} range={range} endDate={endDate}/>
-          <CategoryBreakdownChart startDate={startDate} range={range} endDate={endDate}/>
+          <SentimentOverviewChart startDate={startDate} range={range} endDate={endDate} />
+          <CategoryBreakdownChart startDate={startDate} range={range} endDate={endDate} />
         </div>
 
         <div className="analytics-row">
-          <TopRecurringIssues startDate={startDate} range={range} endDate={endDate}/>
-          <SentimentByCategoryHeatmap startDate={startDate} range={range} endDate={endDate}/>
+          <TopRecurringIssues startDate={startDate} range={range} endDate={endDate} />
+          <SentimentByCategoryHeatmap startDate={startDate} range={range} endDate={endDate} />
         </div>
 
         <div className="analytics-row">
@@ -42,6 +64,7 @@ const AnalyticsPage = () => {
           <GrowthRecommendations />
         </div>
       </div>
+      }
     </main>
   );
 };
