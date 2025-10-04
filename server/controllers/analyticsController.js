@@ -1,5 +1,7 @@
 import Feedback from "../models/Feedback.js";
 import Organization from "../models/Organization.js";
+import Insight from '../models/insightModel.js';
+import User from '../models/User.js'; // <-- IMPORT THE USER MODEL
 
 
 // Basic Analytics Functions
@@ -353,13 +355,13 @@ export const getPriorityAlerts = async (req, res) => {
 
     // 2. Calculate the date 7 days ago from now
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 15);
 
     // 3. Find feedback matching the criteria
     const alerts = await Feedback.find({
       organizationId: org._id,
       urgency: { $in: ["High", "Medium"] }, // Your original great idea
-      createdAt: { $gte: sevenDaysAgo } // <-- FIX: Add the 7-day filter
+      createdAt: { $gte: sevenDaysAgo } // <-- FIX: Add the 15-day filter
     })
     .sort({ urgency: -1, createdAt: -1 }) // <-- FIX: Sort by priority, then by newest
     .limit(20)
@@ -378,3 +380,50 @@ export const getPriorityAlerts = async (req, res) => {
   }
 };
 
+
+
+
+/**
+ * @desc    Get cached AI growth recommendations for an organization
+ * @route   GET /api/analytics/growth-recommendations
+ * @access  Private
+ */
+export const getGrowthRecommendations = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+
+    if (user.currentPlan !== 'pro') {
+      return res.status(403).json({ // 403 Forbidden
+        success: false, 
+        message: "AI Growth Recommendations are a Pro feature. Please upgrade your plan to access them.",
+        isProFeature: true
+      });
+    }
+    // ---------------------------------------------------
+
+    // If the user is pro, proceed. We can get the orgId directly from the user object.
+    if (!user.organizationId) {
+        return res.status(404).json({ success: false, message: "User is not linked to an organization." });
+    }
+
+    // Find the cached insights using the orgId from the user object
+    const insights = await Insight.findOne({ organizationId: user.organizationId }).select('recommendations lastUpdated');
+
+    if (!insights) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Insights are being generated for the first time. Please check back in a few hours." 
+      });
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      data: insights.recommendations,
+      lastUpdated: insights.lastUpdated
+    });
+
+  } catch (error) {
+    console.error("Error in getGrowthRecommendations:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

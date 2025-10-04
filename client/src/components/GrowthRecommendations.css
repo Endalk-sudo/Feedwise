@@ -59,6 +59,19 @@
   100% { transform: rotate(360deg); }
 }
 
+.recommendation-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: var(--color-error);
+  font-weight: 500;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+
 .recommendations-list {
   display: flex;
   flex-direction: column;
@@ -135,8 +148,25 @@
   background: linear-gradient(135deg, var(--color-success), #059669);
 }
 
-.recommendation-description {
+.recommendation-reason {
   color: var(--color-text-secondary);
   line-height: 1.5;
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+.recommendation-action {
+  color: var(--color-accent);
+  font-weight: 600;
   margin: 0;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.recommendation-action::before {
+  content: '→';
+  color: var(--aurora-color-3);
+  font-weight: bold;
 }

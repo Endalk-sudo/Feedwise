@@ -1,55 +1,25 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import api from '../services/api.js';
 import './GrowthRecommendations.css';
 
 const GrowthRecommendations = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error,setError] =useState(null)
+  const [message,setMessage] = useState(null)
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('http://localhost:5000/api/pro/recommendations');
+        const response = await api.get('/pro/recommendations');
         if (response.data.success) {
           setRecommendations(response.data.data);
-        } else {
-          // Fallback to static recommendations if endpoint not available
-          setRecommendations([
-            {
-              title: "Improve delivery speed",
-              description: "Partner with local courier services to reduce delivery times",
-              impact: "High"
-            },
-            {
-              title: "Offer loyalty rewards",
-              description: "Implement a customer loyalty program to reduce complaints about pricing",
-              impact: "Medium"
-            },
-            {
-              title: "Train staff on customer service",
-              description: "Provide additional training to improve friendliness scores",
-              impact: "High"
-            }
-          ]);
+        } else{
+          setMessage(response.data.message)
         }
-      } catch {
-        // Fallback to static recommendations
-        setRecommendations([
-          {
-            title: "Improve delivery speed",
-            description: "Partner with local courier services to reduce delivery times",
-            impact: "High"
-          },
-          {
-            title: "Offer loyalty rewards",
-            description: "Implement a customer loyalty program to reduce complaints about pricing",
-            impact: "Medium"
-          },
-          {
-            title: "Train staff on customer service",
-            description: "Provide additional training to improve friendliness scores",
-            impact: "High"
-          }
-        ]);
+      } catch(error) {
+       console.log("Error: ",error.message)
+       setError(error.message)
       } finally {
         setLoading(false);
       }
@@ -59,22 +29,24 @@ const GrowthRecommendations = () => {
   }, []);
 
   if (loading) return <div className="growth-recommendations-loading">Loading AI recommendations...</div>;
+  if (error) return <div className='recommendation-error'>Error fetching growth-recommendation: {error}</div>
 
   return (
     <div className="growth-recommendations-container">
       <h3 className="growth-recommendations-title">AI Growth Recommendations</h3>
       <div className="recommendations-list">
-        {recommendations.map((rec, index) => (
+        {recommendations.length === 0 ?
+         <p>{message}</p>
+         : (recommendations.map((rec, index) => (
           <div key={index} className="recommendation-item">
             <div className="recommendation-header">
               <h4>{rec.title}</h4>
-              <span className={`impact-badge ${rec.impact.toLowerCase()}`}>
-                {rec.impact} Impact
-              </span>
             </div>
-            <p className="recommendation-description">{rec.description}</p>
+            <p className="recommendation-reason">{rec.reason}</p>
+            <p className="recommendation-action">{rec.action}</p>
           </div>
-        ))}
+        )))
+        }
       </div>
     </div>
   );

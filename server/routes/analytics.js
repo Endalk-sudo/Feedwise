@@ -7,7 +7,8 @@ import {
   getCategoryBreakdown,
   getRecurringIssues,
   getSentimentByCategory,
-  getPriorityAlerts
+  getPriorityAlerts,
+  getGrowthRecommendations
 } from "../controllers/analyticsController.js";
 
 const router = express.Router();
@@ -22,6 +23,6 @@ router.get("/pro/category-breakdown", verifyToken, getCategoryBreakdown);
 router.get("/pro/recurring-issues", verifyToken, getRecurringIssues);
 router.get("/pro/sentiment-by-category", verifyToken, getSentimentByCategory);
 router.get("/pro/priority-alerts", verifyToken, getPriorityAlerts);
-// router.get("/pro/recommendations", verifyToken, getRecommendations);
+router.get("/pro/recommendations", verifyToken, getGrowthRecommendations);
 
 export default router;
