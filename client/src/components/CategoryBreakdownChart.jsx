@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BarChart,Bar, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import api from '../services/api';
+import api from '../services/api.js';
 import './CategoryBreakdownChart.css';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];

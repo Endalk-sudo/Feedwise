@@ -1,6 +1,6 @@
 import './Settings.css'
 import { useState, useEffect, useRef } from 'react'
-import axios from "axios"
+import api from '../services/api.js'
 
 export const Settings = () => {
   const [businessName, setBusinessName] = useState('')
@@ -44,12 +44,7 @@ export const Settings = () => {
 
   const fetchSettings = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get("http://localhost:5000/api/setting", {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      const response = await api.get("/setting")
       
       if (response.data.success && response.data.data) {
         const { name } = response.data.data
@@ -114,15 +109,8 @@ export const Settings = () => {
     }
     
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await axios.put("http://localhost:5000/api/setting", 
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
+      const res = await api.put("/setting", 
+        formData, 
       )
 
       if (res.data.success) {

@@ -1,6 +1,6 @@
 import "./OrgSetup.css";
 import {  useState, useRef } from "react";
-import axios from "axios";
+import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -75,8 +75,8 @@ const OrgSetup = () => {
       // Get access token from localStorage
       const token = localStorage.getItem('accessToken');
       
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/organization",
+      const res = await api.post(
+        "/auth/organization",
         formData,
         {
           headers: {

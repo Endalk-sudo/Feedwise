@@ -25,7 +25,7 @@ if (!process.env.JWT_SECRET_ACCESS || !process.env.JWT_SECRET_REFRESH) {
 const ACCESS_SECRET = process.env.JWT_SECRET_ACCESS; // Secret key for signing access tokens
 const REFRESH_SECRET = process.env.JWT_SECRET_REFRESH; // Secret key for signing refresh tokens
 const ACCESS_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION || '15m'; // Default to 15 minutes
-const REFRESH_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d'; // Default to 7 days
+const REFRESH_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION || '15d'; // Default to 15 days
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // --- Multer Configuration for In-Memory Storage ---
@@ -36,7 +36,7 @@ const upload = multer({ storage: storage });
 const generateTokens = (user) => {
     const payload = {
         user: {
-            id: user._id.toString() // Convert ObjectId to string and use _id instead of id
+            id: user._id.toString()
         },
     };
     // Create access and refresh tokens with expiration
@@ -64,6 +64,11 @@ const  register = async (req, res) => {
         console.log('Username too short');
         return res.status(400).json({ message: 'Username must be at least 3 characters long' });
     }
+      
+    if (!emailRegex.test(email)) {
+      console.log('Invalid email');
+      return res.status(400).json({ message: 'Please enter a valid email address.' });
+    }
     try {
         // Check if user already exists
         let user = await User.findOne({ email});
@@ -72,10 +77,6 @@ const  register = async (req, res) => {
             console.log('User already exists');
             return res.status(400).json({ message: 'User already exists' });
         }
-          if (!emailRegex.test(email)) {
-        console.log('Invalid email');
-        return res.status(400).json({ message: 'Please enter a valid email address.' });
-    }
         // Create new user (password will be hashed in the model)
         user = new User({
             username,
@@ -100,6 +101,11 @@ const  register = async (req, res) => {
 const setOrganization = async (req,res)=>{
   // Destructure organization name and slug from the request body.
   const {orgName,orgSlug} = req.body
+
+  if(!orgName || !orgSlug){
+      return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+
     try{
     // Get the user ID from the authenticated user.
     const userId = req.user.id;
@@ -170,6 +176,11 @@ const login = async (req, res) => {
     if (!email || !password) {
         return res.status(400).json({ message: 'Please provide email and password' });
     }
+
+    if (password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+
     try {
         // Find user by email
         let user = await User.findOne({ email});
@@ -183,31 +194,31 @@ const login = async (req, res) => {
         }
         // Generate new tokens
         const {accessToken, refreshToken } = generateTokens(user);
-        let refresh = await RefreshToken.findOne({ userId: user._id });
-        if (!refresh) {
-          // Create new refresh token document if it doesn't exist
-          refresh = new RefreshToken({
+        
+        const expiresAt = new Date()
+        expiresAt.setDate(expiresAt.getDate()  + 15)
+
+          const newRefreshToken = new RefreshToken({
             userId: user._id,
-            refreshTokens: []
+            token: refreshToken,
+            expiresAt: expiresAt,
           });
-        }
-        // Store refresh token in user document
-        refresh.refreshTokens.push({ token: refreshToken });
-        await refresh.save();
+
+          await newRefreshToken.save();
         
         // Set refresh token in HTTP-only cookie
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // Adjust for production
-          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+          maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
         });
         
         res.json({
           message: 'Logged in successfully',
           accessToken,
           user: {
-            id: user._id,
+            id: user._id.toString(),
             username: user.username,
             email: user.email,
             hasOrganization: user.hasOrganization,
@@ -233,33 +244,28 @@ const refreshToken = async (req, res) => {
     // Verify refresh token
     const decoded = jwt.verify(refreshTokenFromCookie, REFRESH_SECRET);
     // Check if refresh token exists in DB and is valid
-    const storedRefreshToken = await RefreshToken.findOne({ userId: decoded.user.id });
+    const storedRefreshToken = await RefreshToken.findOne({ token: refreshTokenFromCookie });
     
     if (!storedRefreshToken) {
-      return res.status(403).json({ message: 'Refresh token not found for user' });
+       // Clear the invalid token from the client's cookies
+      res.clearCookie('refreshToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict' });
+      return res.status(403).json({ message: 'Forbidden: Invalid or expired refresh token.' });
     }
-    // Check if refresh token exists in user document
-    const tokenExists = storedRefreshToken.refreshTokens.some(
-      tokenObj => tokenObj.token === refreshTokenFromCookie
-    );
-    if (!tokenExists) {
-      // Token might be compromised - remove all refresh tokens
-      storedRefreshToken.refreshTokens = [];
-      await storedRefreshToken.save();
-      return res.status(403).json({ message: 'Invalid or revoked Refresh Token' });
-    }
+    
 
     // Get user from database
     const user = await User.findById(decoded.user.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
     // Generate new access token
     const newAccessToken = jwt.sign(
-      { user: { id: user.id } }, 
-      ACCESS_SECRET, 
+      { user: { id: user._id.toString() } },
+      ACCESS_SECRET,
       { expiresIn: ACCESS_EXPIRATION }
     );
+
     res.json({
       accessToken: newAccessToken,
     });
@@ -279,18 +285,17 @@ const logout = async (req, res) => {
     try {
         const refreshToken = req.cookies.refreshToken;
         
+
+
         if (refreshToken) {
           // Verify token to get user ID
           const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
-          const storedRefreshToken = await RefreshToken.findOne({ userId: decoded.user.id });
+          const storedRefreshToken = await RefreshToken.findOne({ token: refreshToken})
           
-          if (storedRefreshToken) {
-            // Remove the specific refresh token
-            storedRefreshToken.refreshTokens = storedRefreshToken.refreshTokens.filter(
-              tokenObj => tokenObj.token !== refreshToken
-            );
-            await storedRefreshToken.save();
+          if(storedRefreshToken){
+            await RefreshToken.deleteOne({ token: refreshToken});
           }
+
         }
         
         // Clear cookie
@@ -327,7 +332,7 @@ const getProfile = async (req, res) => {
     // Return user data
     res.json({
       user: {
-        id: user._id,
+        id: user._id.toString(),
         username: user.username,
         email: user.email,
         hasOrganization: user.hasOrganization,

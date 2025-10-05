@@ -28,7 +28,7 @@ api.interceptors.response.use(
     // If error is due to expired access token and we haven't tried refreshing yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+      console.log("response interceptor is fired")
       try {
         // Try to refresh the token
         const response = await axios.post('http://localhost:5000/api/auth/refresh-token', {}, {

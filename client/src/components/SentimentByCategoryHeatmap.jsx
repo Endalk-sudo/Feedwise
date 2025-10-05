@@ -11,7 +11,7 @@ const SentimentByCategoryHeatmap = ({startDate,endDate,range}) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('http://localhost:5000/api/pro/sentiment-by-category',{
+        const response = await api.get('/pro/sentiment-by-category',{
           params: {
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString()

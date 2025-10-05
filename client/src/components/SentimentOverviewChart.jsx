@@ -9,7 +9,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import api from '../services/api';
+import api from '../services/api.js';
 import './SentimentOverviewChart.css';
 
 const SentimentOverviewChart = ({startDate,endDate,range}) => {

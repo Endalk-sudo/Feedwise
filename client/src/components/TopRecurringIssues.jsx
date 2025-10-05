@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import api from '../services/api.js';
 import './TopRecurringIssues.css';
 
 const TopRecurringIssues = ({startDate,endDate,range}) => {
@@ -10,7 +10,7 @@ const TopRecurringIssues = ({startDate,endDate,range}) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('http://localhost:5000/api/pro/recurring-issues',{
+        const response = await api.get('/pro/recurring-issues',{
           params: {
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString()

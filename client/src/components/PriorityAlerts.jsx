@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
-import { formatTimeAgo } from '../utils/timeUtils';
+import api from '../services/api.js';
+import { formatTimeAgo } from '../utils/timeUtils.js';
 import './PriorityAlerts.css';
 
 const PriorityAlerts = () => {
@@ -11,7 +11,7 @@ const PriorityAlerts = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('http://localhost:5000/api/pro/priority-alerts');
+        const response = await api.get('/pro/priority-alerts');
         if (response.data.success) {
           setAlerts(response.data.data);
         }

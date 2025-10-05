@@ -29,7 +29,7 @@ function MainContent() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get(`http://localhost:5000/api/user/dashboard`);
+        const response = await api.get(`/user/dashboard`);
         
         const data = response.data;
         console.log("data =>", data);
