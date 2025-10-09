@@ -27,24 +27,24 @@ const AllFeedbacks = () => {
   }, []); 
  
   if (isLoading) {
-    return <div className="feedback-container">Loading feedback...</div>;
+    return <div className="all-feedbacks-container">Loading feedback...</div>;
   }
 
   if (error) {
-    return <div className="feedback-container error-message">{error}</div>;
+    return <div className="all-feedbacks-container error-state">{error}</div>;
   }
 
   return (
-    <div className="feedback-container">
-        <div className="feedback-header">
-          <div className="feedback-header-title">
-            <div className="feedback-header-icon" aria-hidden="true">💬</div>
+    <div className="all-feedbacks-container">
+        <div className="feedbacks-header">
+          <div className="header-content">
+            <div className="feedback-icon" aria-hidden="true">💬</div>
             <h1>All Feedback</h1>
-            <span className="feedback-count">{feedbacks.length}</span>
+            <span className="total-feedback-count">{feedbacks.length}</span>
           </div>
         </div>
 
-        <div className="all-feedbacks">
+        <div className="feedbacks-grid">
           {feedbacks.map((fb) => (
             <FeedbackCard
               key={fb._id}

@@ -28,40 +28,34 @@ const Dashboard = () => {
             <header className="header">
                 <div className="header-left">
                     <ToggleButton sidebarOpen={sidebarOpen} handleSidebarToggle={handleSidebarToggle} />
-                    <div className="ai-logo">
+                    <div className={`ai-logo close-on-desktop ${sidebarOpen ? "close" : ""}`}>
                         Feedback<span className="logo-color">AI</span>
                     </div>
                 </div>
-
+ 
                 <div className="btn-container">
-                    <button className="logout-btn" onClick={handleLogout}>
+                     <button className="logout-btn" onClick={handleLogout}>
                         Log Out
                     </button>
-                    { user?.currentPlan === "basic" && <button className="logout-btn upgrade-btn" onClick={handleUpgrade}>
+                    {  user?.currentPlan === "basic" && <button className="logout-btn upgrade-btn" onClick={handleUpgrade}>
                         Upgrade to <span>PRO</span>
                     </button>}
-                    <div className="user-profile-icon">
-                        <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                    </div>
+
                 </div>
             </header>
 
             <aside className={`sidebar${sidebarOpen ? " open" : ""}`}>
-                <div className="sidebar-header-mobile">
-                    <h1>Dashboard</h1>
-                </div>
+                { !sidebarOpen &&
+                    <>
+                    <div className="sidebar-header">
+                        <div className="header-left">
+                            <div className="ai-logo">
+                                Feedback<span className="logo-color">AI</span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                </>}
                 <nav>
                     <NavLink className="nav-item" data-icon="dashboard" to="/dashboard" end onClick={handleNavClick}>
                         <span>📊</span>
@@ -88,6 +82,14 @@ const Dashboard = () => {
                         Settings
                     </NavLink>
                 </nav>
+                {user?.currentPlan === "basic" && <div className="upgrade-container">
+                   <h2>Upgrade to Pro</h2>
+                   <p>
+                    Get advanced analytics, smart AI insights,  
+                    and your personal AI chatbot.  
+                    </p>  
+                    <button onClick={handleUpgrade} className="logout-btn upgrade-button">Upgrade to Pro</button>
+                </div>}
             </aside>
             
             {sidebarOpen && (

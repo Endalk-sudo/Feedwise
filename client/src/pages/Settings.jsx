@@ -152,7 +152,6 @@ export const Settings = () => {
     <section className='setting'>
       <div className="settings-header">
         <h1>Settings</h1>
-        <p>Manage your business profile and preferences</p>
       </div>
 
       <form className="settings-form" onSubmit={handleSubmit}>

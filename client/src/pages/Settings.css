@@ -28,7 +28,8 @@
 
 /* Settings header section - page title and description */
 .settings-header {
-    background-color: var(--color-secondary-bg);
+    background-color: var(--color-primary-bg);
+    border: 1px solid var(--color-border);
     padding: 20px 30px;
     border-radius: 16px;
     display: flex;
@@ -40,8 +41,8 @@
 }
 
 .settings-header h1 {
-    font-size: 2.5rem; /* Large, prominent title */
-    font-weight: 700; /* Bold weight for emphasis */
+    font-size: 1.75rem;
+    font-weight: 600;
     margin-bottom: 10px; /* Spacing below title */
     background: linear-gradient(120deg, var(--color-text-primary), var(--color-accent)); /* Gradient text effect */
     -webkit-background-clip: text; /* Clip background to text (WebKit) */

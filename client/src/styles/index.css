@@ -14,6 +14,7 @@ html {
   /* === Base Colors === */
   --color-primary-bg: #020617; 
   --color-secondary-bg: #1E293B;
+  --color-feedback-card: #0c1626;
   --color-surface: #0f172a;
   --color-border: #1e293b;
 

@@ -1,23 +1,23 @@
 /*
-  FEEDBACK CONTAINER STYLES
-  Main wrapper for the feedback page, ensuring consistent padding and structure.
+  ALL FEEDBACKS CONTAINER STYLES
+  Main wrapper for the all feedbacks page, ensuring consistent padding and structure.
 */
-.feedback-container {
+.all-feedbacks-container {
   width: 100%;
   background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-secondary-bg) 100%);
 }
 
 /*
-  FEEDBACK HEADER
-  A clean, modern header bar for the feedback page.
+  FEEDBACKS HEADER
+  A clean, modern header bar for the feedbacks page.
 */
-.feedback-header {
+.feedbacks-header {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
     gap: 20px;
-  background: var(--color-secondary-bg);
+  background: var(--color-primary-bg);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 24px;
@@ -25,13 +25,14 @@
   margin-bottom: 32px;
 }
 
-.feedback-header-title {
+.feedbacks-header .header-content {
   display: flex;
-  align-items: center;
+  justify-content: center;
+  align-items: space-between;
   gap: 16px;
 }
 
-.feedback-header-icon {
+.feedback-icon {
   display: grid;
   place-items: center;
   width: 44px;
@@ -42,7 +43,7 @@
   font-size: 1.5rem;
 }
 
-.feedback-header h1 {
+.feedbacks-header h1 {
   font-size: 1.75rem;
   font-weight: 600;
   background: linear-gradient(120deg, var(--color-text-primary), var(--color-accent)); /* Gradient text effect */
@@ -52,7 +53,7 @@
     color: transparent; /* Fallback for older browsers */
 }
 
-.feedback-count {
+.total-feedback-count {
   padding: 6px 12px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -63,13 +64,13 @@
   margin-left: 8px;
 }
 
-.feedback-actions {
+.header-actions {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.feedback-action-btn {
+.action-btn {
   padding: 10px 18px;
   border-radius: 8px;
   background: var(--color-surface);
@@ -81,17 +82,17 @@
   font-size: 0.9rem;
 }
 
-.feedback-action-btn:hover {
+.action-btn:hover {
   background: var(--color-border);
   color: var(--color-text-primary);
   border-color: rgba(var(--color-accent-rgb), 0.5);
 }
 
 /*
-  ALL FEEDBACKS GRID
+  FEEDBACKS GRID
   A responsive grid for displaying feedback cards.
 */
-.all-feedbacks {
+.feedbacks-grid {
   width: 100%;
   display: grid;
   grid-template-columns: 1fr;
@@ -99,17 +100,17 @@
 }
 
 @media (min-width: 768px) {
-  .all-feedbacks {
+  .feedbacks-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .feedback-header{
+  .feedbacks-header{
     flex-direction: row;
   }
 }
 
 @media (min-width: 1200px) {
-  .all-feedbacks {
+  .feedbacks-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -118,8 +119,8 @@
   LOADING AND ERROR STATES
   Provides clear user feedback during data fetching.
 */
-.feedback-container > .loading-message,
-.feedback-container > .error-message {
+.all-feedbacks-container > .loading-state,
+.all-feedbacks-container > .error-state {
   text-align: center;
   padding: 6rem 2rem;
   font-size: 1.1rem;
@@ -129,7 +130,7 @@
   border: 1px solid var(--color-border);
 }
 
-.error-message {
+.error-state {
   color: var(--color-error);
 }
 

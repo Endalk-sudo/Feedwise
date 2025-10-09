@@ -9,6 +9,9 @@
 
 .dashboard-header {
   margin-bottom: 2rem;
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
   text-align: center;
   position: relative;
 }
@@ -30,6 +33,13 @@
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
+  font-size: 1.75rem;
+  font-weight: 600;
+  background: linear-gradient(120deg, var(--color-text-primary), var(--color-accent)); /* Gradient text effect */
+    -webkit-background-clip: text; /* Clip background to text (WebKit) */
+    -webkit-text-fill-color: transparent; /* Make text transparent to show background */
+    background-clip: text; /* Standard CSS property */
+    color: transparent; /* Fallback for older browsers */
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
@@ -92,7 +102,7 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
   .analytics-row {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -104,5 +114,9 @@
 
   .dashboard-header h1 {
     font-size: 2rem;
+  }
+  .basic-analytics-container{
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }

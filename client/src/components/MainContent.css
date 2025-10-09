@@ -6,26 +6,26 @@
 */
 
 /*
-  MAIN CONTENT STYLES
+  MAIN DASHBOARD CONTENT STYLES
   This stylesheet defines the layout and appearance of the main dashboard content area.
   It uses a responsive grid system to create a flexible and visually appealing layout.
 */
-.content {
+.main-dashboard-content {
   margin-top: 0px;
   display: grid;
   grid-template-columns: 2fr 1fr;
   grid-template-rows: auto auto 1fr;
   grid-template-areas:
-    "dashboard-header dashboard-header"
-    "qr-container     feedback-overview"
-    "latest-feedback  latest-feedback";
+    "dashboard-title-section dashboard-title-section"
+    "qr-share-section     feedback-stats"
+    "recent-feedback  recent-feedback";
   gap: 24px;
   animation: fadeIn 0.5s ease-out;
   background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-secondary-bg) 100%);
 }
 
-.card {
-  background-color: var(--color-secondary-bg);
+.dashboard-card {
+  background-color: var(--color-surface);
   border-radius: 16px;
   border: 1px solid var(--color-border);
   padding: 32px;
@@ -33,28 +33,30 @@
   transition: all 0.3s ease;
 }
 
-.card:hover {
+.dashboard-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-xl);
   border-color: rgba(var(--color-accent-rgb), 0.3);
 }
 
-.dashboard-header {
-  grid-area: dashboard-header;
+.dashboard-title-section {
+  grid-area: dashboard-title-section;
+  background: var(--color-primary-bg);
+  border: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.main-heading {
-  font-size: 2rem;
-  font-weight: 700;
+.dashboard-title {
+  font-size: 1.75rem;
+  font-weight: 600;
   background: linear-gradient(120deg, var(--color-text-primary), var(--color-accent)); /* Gradient text effect */
     -webkit-background-clip: text; /* Clip background to text (WebKit) */
     -webkit-text-fill-color: transparent; /* Make text transparent to show background */
     background-clip: text; /* Standard CSS property */
     color: transparent; /* Fallback for older browsers */
-}
+} 
 
 .stats-summary {
   text-align: right;
@@ -71,32 +73,32 @@
   color: var(--color-text-secondary);
 }
 
-.qr-container {
-  grid-area: qr-container;
+.qr-share-section {
+  grid-area: qr-share-section;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 32px;
 }
 
-.qr-content h2 {
+.qr-info h2 {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 8px;
 }
 
-.qr-content p {
+.qr-info p {
   color: var(--color-text-secondary);
   margin-bottom: 24px;
   max-width: 350px;
 }
 
-.btn-container {
+.button-group {
   display: flex;
   gap: 16px;
 }
 
-.btn {
+.action-button {
   padding: 12px 24px;
   border-radius: 8px;
   border: none;
@@ -106,29 +108,29 @@
   transition: all 0.2s ease;
 }
 
-.btn-one {
+.primary-button {
   background-color: var(--color-accent);
   color: white;
 }
 
-.btn-one:hover {
+.primary-button:hover {
   background-color: var(--color-accent-hover);
   box-shadow: 0 6px 15px rgba(var(--color-accent-rgb), 0.2);
   transform: translateY(-2px);
 }
 
-.btn-two {
+.secondary-button {
   background-color: var(--color-surface);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border);
 }
 
-.btn-two:hover {
+.secondary-button:hover {
   background-color: var(--color-border);
   border-color: rgba(var(--color-accent-rgb), 0.5);
 }
 
-.qr-code {
+.qr-image {
   width: 140px;
   height: 140px;
   border-radius: 12px;
@@ -138,16 +140,16 @@
   flex-shrink: 0;
 }
 
-.qr-code img {
+.qr-image img {
   width: 100%;
   height: 100%;
 }
 
-.feedback-overview {
-  grid-area: feedback-overview;
+.feedback-stats {
+  grid-area: feedback-stats;
 }
 
-.total-feedback {
+.total-feedback-stats {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -156,41 +158,41 @@
   height: 100%;
 }
 
-.feedback-icon {
+.stats-icon {
   font-size: 2.5rem;
   color: var(--color-accent);
   margin-bottom: 16px;
 }
 
-.feedback-content p {
+.stats-content p {
   color: var(--color-text-secondary);
   font-size: 1rem;
   margin-bottom: 4px;
 }
 
-.feedback-content h1 {
+.stats-content h1 {
   font-size: 3.5rem;
   font-weight: 700;
   color: var(--color-text-primary);
 }
 
-.latest-feedback {
-  grid-area: latest-feedback;
+.recent-feedback {
+  grid-area: recent-feedback;
 }
 
-.feedback-section-header {
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
 }
 
-.feedback-section-header h3 {
+.section-header h3 {
   font-size: 1.5rem;
   font-weight: 600;
 }
 
-.view-all-btn {
+.view-all-button {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--color-accent);
@@ -200,11 +202,11 @@
   transition: color 0.2s ease;
 }
 
-.view-all-btn:hover {
+.view-all-button:hover {
   color: var(--color-accent-hover);
 }
 
-.feedback-list {
+.feedback-items {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -222,25 +224,25 @@
 }
 
 @media (max-width: 1200px) {
-  .content {
+  .main-dashboard-content {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "dashboard-header"
-      "qr-container"
-      "feedback-overview"
-      "latest-feedback";
+      "dashboard-title-section"
+      "qr-share-section"
+      "feedback-stats"
+      "recent-feedback";
   }
 }
 
 @media (max-width: 768px) {
-  .card {
+  .dashboard-card {
     padding: 24px;
   }
-  .qr-container {
+  .qr-share-section {
     flex-direction: column;
     text-align: center;
   }
-  .qr-content {
+  .qr-info {
     align-items: center;
   }
 }

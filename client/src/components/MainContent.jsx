@@ -15,7 +15,7 @@ function MainContent() {
     navigator.clipboard.writeText(feedbackLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
+  }; 
 
   const downloadQR = () => {
     const link = document.createElement('a');
@@ -48,49 +48,49 @@ function MainContent() {
   }, []);
 
   return (
-    <main className="content">
-      <div className="dashboard-header card">
-        <h1 className="main-heading">Dashboard</h1>
+    <main className="main-dashboard-content">
+      <div className="dashboard-title-section dashboard-card">
+        <h1 className="dashboard-title">Dashboard</h1>
       </div>
 
-      <div className="qr-container card">
-        <div className="qr-content">
-          <h2 className="qr-heading">Share your feedback link</h2>
+      <div className="qr-share-section dashboard-card">
+        <div className="qr-info">
+          <h2 className="qr-title">Share your feedback link</h2>
           <p>Scan this QR code or share the link with your customers to collect feedback.</p>
-          <div className="btn-container">
-            <button className="btn btn-one" onClick={copyLink}>
+          <div className="button-group">
+            <button className="action-button primary-button" onClick={copyLink}>
               {copied ? '✓ Copied!' : 'Copy Link'}
             </button>
-            <button className="btn btn-two" onClick={downloadQR}>
+            <button className="action-button secondary-button" onClick={downloadQR}>
               Download QR
             </button>
           </div>
         </div>
 
-        <div className="qr-code">
+        <div className="qr-image">
           <img src={qrCode} alt="feedback qr code" />
         </div>
       </div>
 
-      <div className="feedback-overview card">
-        <div className="total-feedback">
-          <div className="feedback-icon">📊</div>
-          <div className="feedback-content">
+      <div className="feedback-stats dashboard-card">
+        <div className="total-feedback-stats">
+          <div className="stats-icon">📊</div>
+          <div className="stats-content">
             <p>Total Feedback Received</p>
             <h1>{totalFeedbacks}</h1>
           </div>
         </div>
       </div>
 
-      <div className="latest-feedback card">
-        <div className="feedback-section-header">
+      <div className="recent-feedback dashboard-card">
+        <div className="section-header">
           <h3>Latest Feedback</h3>
-          <button className="view-all-btn">View All</button>
+          <button className="view-all-button">View All</button>
         </div>
-        
-        <div className="feedback-list">
+
+        <div className="feedback-items">
           {error && (
-            <p role="alert" className="feedback-helper" style={{ color: "var(--color-error)" }}>
+            <p role="alert" className="error-message" style={{ color: "var(--color-error)" }}>
               {error}
             </p>
           )}
