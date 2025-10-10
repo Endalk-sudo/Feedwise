@@ -29,6 +29,20 @@ const orgSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
+  businessType: {
+    type: String,
+    required: true,  
+    trim: true
+  },
+  businessDescription: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  categories: {
+    type: [String],
+    require: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

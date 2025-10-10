@@ -8,6 +8,7 @@ import orgLogo from "../models/OrgLogo.js"
 import dotenv from "dotenv";
 import multer from 'multer';
 import { uploadToCloudinary } from '../utils/uploadHelper.js';
+import {generateAiCategories} from "../services/aiServices.js"
 dotenv.config();
 
 cloudinary.config({ 
@@ -84,12 +85,21 @@ const  register = async (req, res) => {
             password,
             });
         await user.save(); // Save user to database
-        // Create initial RefreshToken document for the user
-        const refreshTokenDoc = new RefreshToken({
-          userId: user._id,
-          refreshTokens: []
-        });
-        await refreshTokenDoc.save();
+
+        
+        // const expiresAt = new Date()
+
+        // expiresAt.setDate(expiresAt.getDate() + 15)
+
+        // // Create initial RefreshToken document for the user
+        // const refreshTokenDoc = new RefreshToken({
+        //   userId: user._id,
+        //   token: null,
+        //   expiresAt 
+        // });
+
+        // await refreshTokenDoc.save();
+        
         res.status(201).json({ message: 'User registered successfully' });
          
     } catch (err) {
@@ -100,11 +110,11 @@ const  register = async (req, res) => {
 
 const setOrganization = async (req,res)=>{
   // Destructure organization name and slug from the request body.
-  const {orgName,orgSlug} = req.body
+  const {orgName,orgSlug,businessType,businessDescription} = req.body
 
-  if(!orgName || !orgSlug){
-      return res.status(400).json({ message: 'Please provide all required fields' });
-    }
+  if (!orgName || !orgSlug || !businessType || !businessDescription) {
+    return res.status(400).json({ message: 'Please provide all required fields' });
+  }
 
     try{
     // Get the user ID from the authenticated user.
@@ -125,14 +135,18 @@ const setOrganization = async (req,res)=>{
             margin: 2,
             errorCorrectionLevel: 'H'
     });
-    // --- Organization Creation ---
-    // Prepare the data for the new organization.
+
+    const aiCategories = await generateAiCategories(businessType, businessDescription);
+
     const orgData = {
       ownerId: userId,
-      name :orgName,
-      slug : orgSlug,
+      name: orgName,
+      slug: orgSlug,
       content: content,
-      qrDataUrl: qrDataUrl
+      qrDataUrl: qrDataUrl,
+      businessType: businessType,
+      businessDescription: businessDescription,
+      categories: aiCategories  // Fixed typo
     };
     
     // Create the new organization in the database.

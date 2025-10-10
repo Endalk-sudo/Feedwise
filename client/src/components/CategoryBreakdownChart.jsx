@@ -13,7 +13,7 @@ const CategoryBreakdownChart = ({startDate,endDate,range}) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('http://localhost:5000/api/pro/category-breakdown',{
+        const response = await api.get('/pro/category-breakdown',{
           params: {
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString()

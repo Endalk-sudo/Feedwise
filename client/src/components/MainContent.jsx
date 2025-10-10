@@ -7,37 +7,39 @@ import { formatTimeAgo, sortFeedbackByTime } from "../utils/timeUtils";
 function MainContent() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [qrCode, setQrCode] = useState(null);
-  const [feedbackLink, setFeedbackLink] = useState('http://localhost:5173/feedback');
+  const [feedbackLink, setFeedbackLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [totalFeedbacks, setTotalFeedbacks] = useState(0)
 
   const copyLink = () => {
     navigator.clipboard.writeText(feedbackLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }; 
-
+ 
   const downloadQR = () => {
     const link = document.createElement('a');
     link.href = qrCode;
     link.download = 'feedback-qr-code.png';
     link.click();
   };
-
-  const totalFeedbacks = feedbacks.length;
-
+  
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await api.get(`/user/dashboard`);
         
         const data = response.data;
-        console.log("data =>", data);
         
         setQrCode(data.org.qrDataUrl);
         setFeedbackLink(data.org.content);
         const sortedFeedbacks = sortFeedbackByTime(data.feedbacks);
+        
         setFeedbacks(sortedFeedbacks);
+        
+        setTotalFeedbacks(data.feedbackNumber);
       } catch (error) {
         console.error(error);
         setError(error.message);

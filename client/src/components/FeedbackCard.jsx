@@ -56,7 +56,7 @@ const StarRating = ({ rating }) => {
  * Usage:
  * <FeedbackCard feedbackText="Great service!" date="2024-01-15" category="Service" rating={4.5} />
  */
-const FeedbackCard = ({ feedbackText, date, category, rating = 5 }) => {
+const FeedbackCard = ({ feedbackText, date, category, rating }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
   // Improved text truncation logic

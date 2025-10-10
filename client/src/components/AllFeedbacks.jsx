@@ -11,7 +11,7 @@ const AllFeedbacks = () => {
   useEffect(() => {
     const fetchAllFeedback = async () => {
       try {
-        const res = await api.get("http://localhost:5000/api/feedback/me");
+        const res = await api.get("/feedback/me");
         
         setFeedbacks(res.data);
         setError(null);

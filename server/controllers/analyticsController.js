@@ -82,8 +82,6 @@ export const getCategoryCount = async (req, res) => {
       { $sort: { count: -1 } }
     ]);
 
-    console.log("categories", categories);
-
     res.status(200).json({
       success: true,
       data: categories.map(cat => ({ category: cat._id, count: cat.count }))
@@ -410,7 +408,7 @@ export const getGrowthRecommendations = async (req, res) => {
     const insights = await Insight.findOne({ organizationId: user.organizationId }).select('recommendations lastUpdated');
 
     if (!insights) {
-      return res.status(404).json({ 
+      return res.status(200).json({ 
         success: false, 
         message: "Insights are being generated for the first time. Please check back in a few hours." 
       });

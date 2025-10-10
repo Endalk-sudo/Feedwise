@@ -12,11 +12,14 @@ export const getDashboard = async(req, res) => {
         }
 
         const feedbacks = await Feedback.find({organizationId:org._id}).sort({createdAt:-1}).limit(5);
-        
+        const feedbackNumber = await Feedback.countDocuments({organizationId:org._id});
+
         res.json({
             org:org,
-            feedbacks: feedbacks
+            feedbacks: feedbacks,
+            feedbackNumber: feedbackNumber
         });
+
     }catch(err){
         console.error(err);
         res.status(500).json({msg:"Server error"});

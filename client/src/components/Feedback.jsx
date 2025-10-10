@@ -1,7 +1,6 @@
 import axios from "axios"
 import { useState ,useEffect } from "react";
 import { useParams } from 'react-router-dom';
-import Rating from "./Rating";
 import "./Feedback.css";
 
 const Feedback = () => {
@@ -9,7 +8,6 @@ const Feedback = () => {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [feedback, setFeedback] = useState('');
-    const [selectedRating, setSelectedRating] = useState(0);
 
     const [logo, setLogo] = useState(null);
     const [orgName, setOrgName] = useState('');
@@ -25,7 +23,7 @@ const Feedback = () => {
       try {
         setLoadingOrg(true);
         setOrgError('');
-        const res = await axios.get(`http://localhost:5000/api/feedback/${slug}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/feedback/${slug}`);
         console.log("Organization data from API:", res.data); // <-- Add this line
         setOrgName(res.data.orgName);
         setLogo(res.data.orgLogo);
@@ -55,8 +53,7 @@ const Feedback = () => {
 
     try {
       const res = await axios.post(`http://localhost:5000/api/feedback/${slug}`, {
-        text,
-        rating: selectedRating
+        text
       });
       
       setIsSubmitted(true);
@@ -73,7 +70,6 @@ const Feedback = () => {
     setIsSubmitted(false);
     setSubmitting(false);
     setFeedback('');
-    setSelectedRating(0);
   };
 
   const handleRetry = async () => {
@@ -141,10 +137,6 @@ const Feedback = () => {
               </header>
 
               <article className="feedback-card" aria-labelledby="feedback-title">
-                <Rating 
-                  selectedRating={selectedRating} 
-                  setSelectedRating={setSelectedRating} 
-                />
                 
                 <form onSubmit={handleSubmit} className="feedback-form" noValidate>
                   <label htmlFor="feedback-input" className="feedback-label">Share your thoughts</label>
@@ -185,7 +177,7 @@ const Feedback = () => {
                   <button
                     className="feedback-submit"
                     type="submit"
-                    disabled={submitting || feedback.trim().length < MIN_LEN || selectedRating === 0}
+                    disabled={submitting || feedback.trim().length < MIN_LEN }
                     aria-busy={submitting}
                   >
                     {submitting ? "Analyzing & Submitting..." : "Submit Feedback"}

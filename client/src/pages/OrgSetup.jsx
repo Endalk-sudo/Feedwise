@@ -12,9 +12,45 @@ const OrgSetup = () => {
   const [logo, setLogo] = useState(null);
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
+  
+  const [businessType, setBusinessType] = useState("");
+  const [businessDescription, setBusinessDescription] = useState("");
 
   const { setUser } = useAuth();
   const navigate = useNavigate();
+
+const businessTypes = [
+  { label: 'Select your business type', value: '' },
+  { label: "SaaS (Software as a Service)", value: "saas" },
+  { label: "E-commerce / Online Store", value: "ecommerce" },
+  { label: "Retail Store", value: "retail" },
+  { label: "Service Business", value: "service" },
+  { label: "Agency / Consulting Firm", value: "agency" },
+  { label: "Manufacturing", value: "manufacturing" },
+  { label: "Nonprofit / NGO", value: "nonprofit" },
+  { label: "Education / Online Courses", value: "education" },
+  { label: "Healthcare / Medical", value: "healthcare" },
+  { label: "Finance / Banking / Fintech", value: "finance" },
+  { label: "Real Estate", value: "real_estate" },
+  { label: "Travel / Tourism", value: "travel" },
+  { label: "Food & Beverage / Restaurant / Café", value: "food_beverage" },
+  { label: "Logistics / Delivery / Transportation", value: "logistics" },
+  { label: "Entertainment / Media / Streaming", value: "entertainment" },
+  { label: "Marketplace / Platform", value: "marketplace" },
+  { label: "Fitness / Wellness / Gym", value: "fitness" },
+  { label: "Beauty / Cosmetics", value: "beauty" },
+  { label: "Events / Hospitality", value: "events" },
+  { label: "Construction / Engineering", value: "construction" },
+  { label: "Technology / IT Services", value: "technology" },
+  { label: "Marketing / Advertising", value: "marketing" },
+  { label: "Automotive / Car Services", value: "automotive" },
+  { label: "Fashion / Apparel", value: "fashion" },
+  { label: "Agriculture / Farming", value: "agriculture" },
+  { label: "Telecommunications", value: "telecommunications" },
+  { label: "Energy / Utilities", value: "energy" },
+  { label: "Legal / Law Firm", value: "legal" }
+];
+
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -59,14 +95,46 @@ const OrgSetup = () => {
     setOrgSlug(sanitizedSlug);
   };
 
+  const handleBusinessTypeChange = (e) =>{
+    setBusinessType(e.target.value)
+
+    // Clear error if type is not empty (basic validation)
+    if(e.target.value !== ""){
+      setError("")
+    }
+  }
+
+  const handleBusinessDescriptionChange =(e)=>{
+    setBusinessDescription(e.target.value)
+    // Clear error if description is not empty (basic validation)
+    if(e.target.value !== ""){
+      setError("")
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if(businessType === ""){
+      setError("Please select a Business Type before submitting.")
+      return
+    }
+
+    // Basic validation
+    if(businessDescription.length < 50 || businessDescription.length > 300){
+      setError("Business description must be between 50 and 300 characters.")
+      return
+    }
+
     setIsSubmitting(true);
     setError('');
 
     const formData = new FormData();
     formData.append('orgName', orgName);
     formData.append('orgSlug', orgSlug);
+    // Added businessType and businessDescription to formData to send to server
+    formData.append('businessType', businessType);
+    formData.append('businessDescription', businessDescription);
     if (logo) {
       formData.append('logo', logo);
     }
@@ -169,6 +237,36 @@ const OrgSetup = () => {
             </div>
             <div className="hint">Your unique URL: <code>yourapp.com/acme-inc</code></div>
           </div>
+
+          <div className="input-group">
+              <label htmlFor="businessTypes">Business Type</label>
+              <select 
+                id="businessTypes" 
+                value={businessType} 
+                onChange={handleBusinessTypeChange}
+                required={true}
+                >
+                  {
+                    businessTypes.map((option)=>(
+                      <option key={option.value} value={option.value} >{option.label} </ option>
+                    ))
+                  } 
+              </select>
+          </div>
+
+          <div className="input-group">
+              <label htmlFor="businessDescription">Describe your business and what you offer</label>
+              <textarea
+              name="business-description"
+              id="businessDescription"
+              value={businessDescription}
+              onChange={handleBusinessDescriptionChange}
+              maxLength={300}
+              placeholder="Example: We run an online store that sells eco-friendly skincare products."
+              required
+              />
+          </div>
+
 
           {error && <div className="form-error">{error}</div>}
 

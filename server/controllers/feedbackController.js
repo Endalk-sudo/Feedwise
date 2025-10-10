@@ -8,7 +8,7 @@
 // Import necessary modules
 import Feedback from "../models/Feedback.js";
 import Organization from "../models/Organization.js";
-import analyzeFeedback from "../services/aiServices.js"
+import {analyzeFeedback} from "../services/aiServices.js"
 import OrgLogo from "../models/OrgLogo.js"
 
 
@@ -52,7 +52,7 @@ export const submitFeedback = async (req, res) => {
     }
 
     // Call the AI to analyze the feedback
-    const analyzedData = await analyzeFeedback(text);
+    const analyzedData = await analyzeFeedback(text,org.categories);
 
     console.log("AI Analyzed Feedback Data:", analyzedData);
 
