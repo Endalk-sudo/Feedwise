@@ -12,7 +12,6 @@ import paymentRoutes from './routes/payment.js';
 import analyticsRoutes from "./routes/analytics.js"
 import { handleWebhook } from "./controllers/paymentController.js";
 import {startInsightGenerationJob} from "./jobs/generateInsights.js"
-import Insight from "./models/insightModel.js"
 
 // Load environment variables from .env file
 // This is like reading configuration settings before starting
@@ -190,6 +189,7 @@ startInsightGenerationJob();
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Error:', error);
+  console.error('Error Stack:', error.stack);
   res.status(error.status || 500).json({
     success: false,
     message: error.message || 'Internal Server Error',
