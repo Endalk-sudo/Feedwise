@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from 'cookie-parser';
 import dotenv from "dotenv";
+import connectDB from "./config/db.js";
 import feedbackRoutes from "./routes/feedback.js";
 import userRoutes from "./routes/user.js";
 import authRoutes from "./routes/auth.js"; // Import auth routes
@@ -25,7 +26,7 @@ const app = express();
 // This allows your React app (running on localhost:5173) to talk to your server (localhost:5000)
 // It's like allowing visitors from different neighborhoods to enter your building
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: process.env.CLIENT_URL,
   credentials: true
 }));
 
@@ -43,18 +44,6 @@ app.post('/api/payments/webhook',
 // This tells the server how to read JSON data sent from the frontend
 // It's like teaching the receptionist how to read different types of mail
 app.use(express.json());
-
-// Connect to MongoDB database
-// This is like connecting your building to the city's water and electricity
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/jwtAuthDB");
-    console.log("✅ MongoDB connected successfully");
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    process.exit(1); // Stop the server if database connection fails
-  }
-};
 
 
 // Define all API routes
@@ -199,16 +188,27 @@ app.use((error, req, res, next) => {
 
 // Start the server
 // This is like opening the building for business
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
+
 const startServer = async () => {
-  await connectDB(); // First connect to database
-  
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
-    console.log(`💬 Feedback endpoints: http://localhost:${PORT}/api/feedback`);
-  });
+  try {
+    console.log('🔄 Connecting to database...');
+    await connectDB(); // First connect to database
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
+      console.log(`💬 Feedback endpoints: http://localhost:${PORT}/api/feedback`);
+    });
+  } catch (error) {
+      console.error('❌ Failed to start server:', error.message);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(error.stack);
+      }
+      process.exit(1);
+  }
+    
 };
 
 // Start everything
