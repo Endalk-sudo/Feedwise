@@ -127,7 +127,6 @@ const subscriptionSchema = new mongoose.Schema({
  * - stripeCustomerId: Find subscriptions by Stripe customer
  */
 subscriptionSchema.index({ userId: 1 }); // Ascending index on userId
-subscriptionSchema.index({ stripeSubscriptionId: 1 }); // Unique lookups by Stripe sub ID
 subscriptionSchema.index({ stripeCustomerId: 1 }); // Customer-based queries
 
 /**
