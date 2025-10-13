@@ -16,6 +16,7 @@ import SubscriptionPlans from "./components/Payments/SubscriptionPlans"
 import PaymentCanceled from './components/Payments/PaymentCanceled';
 import ReactivateSubscription from './components/Payments/ReactivateSubscription';
 import PaymentSuccess from './components/Payments/PaymentSuccess';
+import NotFound from './pages/NotFound';
 
 
 const PublicRoute = ({ children }) => {
@@ -99,6 +100,7 @@ function App() {
             <Route path='settings' element={<Settings />}/>
             <Route path='pro-analysis' element={<AnalyticsPage />}/>
           </Route>
+          <Route path='*' element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
