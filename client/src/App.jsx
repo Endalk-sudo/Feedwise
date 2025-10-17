@@ -12,7 +12,7 @@ import { Settings } from './pages/Settings';
 import OrgSetup from './pages/OrgSetup';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
-import SubscriptionPlans from "./components/Payments/SubscriptionPlans"
+import SubscriptionPlans from "./components/Payments/SubscriptionPlans";
 import PaymentCanceled from './components/Payments/PaymentCanceled';
 import ReactivateSubscription from './components/Payments/ReactivateSubscription';
 import PaymentSuccess from './components/Payments/PaymentSuccess';
@@ -21,6 +21,8 @@ import NotFound from './pages/NotFound';
 
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
+
+
 
   if (loading) {
     return <div>Loading...</div>;
@@ -88,9 +90,13 @@ function App() {
 
           <Route path='/feedback/:slug' element={<Feedback />}/>
 
+          <Route path='/org-setup' element={<OrgSetup />}/>
+
           <Route path='/dashboard/*' element={
             <ProtectedRoute>
-              <DashboardWrapper />
+              <DashboardWrapper>
+                  <Dashboard />
+              </ DashboardWrapper>
             </ProtectedRoute>
           }>
             <Route path='' element={<MainContent />}/>
@@ -108,7 +114,7 @@ function App() {
 }
 
 // Wrapper component to handle the organization and subscription check
-function DashboardWrapper() {
+function DashboardWrapper({children}) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -120,17 +126,15 @@ function DashboardWrapper() {
     );
   }
 
-  // Check organization first
-  if (!user?.hasOrganization) {
-    return <OrgSetup />;
-  }
+  if(!user?.currentPlan) return <Navigate to="/payment" />
+
+  if(!user?.hasOrganization) return <Navigate to="/org-setup" />
 
   // Check subscription status
-  if (user?.subscriptionStatus !== 'active') {
-    return <ReactivateSubscription />;
-  }
+  if (user?.subscriptionStatus !== 'active') return <ReactivateSubscription />;
 
-  return <Dashboard />;
+  
+  return children;
 }
 
 export default App;

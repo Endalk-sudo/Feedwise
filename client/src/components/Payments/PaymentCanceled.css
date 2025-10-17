@@ -85,6 +85,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(32, 63, 113, 0.3);
+    text-decoration: none;
 }
 
 .payment-actions > .payment-retry-btn:hover {

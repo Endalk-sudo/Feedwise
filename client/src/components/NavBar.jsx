@@ -1,11 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './NavBar.css';
+import { useAuth } from '../context/AuthContext';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+
+  const {user} = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,10 +57,19 @@ const NavBar = () => {
       <ul className={`nav-links ${isOpen ? "expand" : ""}`}>
         <li><a href="#features" onClick={() => handleNavClick('#features')}>Features</a></li>
         <li><Link to="/payment" onClick={() => setIsOpen(false)}>Pricing</Link></li>
-        <li><Link to="/login" onClick={() => setIsOpen(false)}>Login</Link></li>
-        <Link to="/register" className="cta-link" onClick={() => setIsOpen(false)}>
-          <button className="btn cta-primary-btn">Get Started</button>
-        </Link>
+        {!user ? 
+        <>
+          <li><Link to="/login" onClick={() => setIsOpen(false)}>Login</Link></li>
+
+          <Link to="/register" className="cta-link" onClick={() => setIsOpen(false)}>
+            <button className="btn cta-primary-btn">Get Started</button>
+          </Link> 
+        </>
+        :
+        <Link to="/dashboard" className="cta-link" onClick={() => setIsOpen(false)}>
+          <button className="btn cta-primary-btn">Dashboard</button>
+        </Link> 
+        }
       </ul>
       <button
         onClick={toggle}

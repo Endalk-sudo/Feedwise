@@ -272,6 +272,7 @@ export const verifySession = async (req, res, next) => {
           payment_status: session.payment_status,
           customer: session.customer,
           subscription: session.subscription,
+          paymentIntentId: session.payment_intent,
         },
       });
     } else {

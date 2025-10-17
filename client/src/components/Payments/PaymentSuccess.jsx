@@ -25,6 +25,8 @@ const PaymentSuccess = () => {
   // Dynamic message that updates based on verification progress and results
   const [message, setMessage] = useState('Verifying your payment...');
 
+  const [data, setData] = useState(null);
+
   // LOADING STATE
   // Controls display of loading indicators during verification
   const [loading, setLoading] = useState(true);
@@ -77,17 +79,18 @@ const PaymentSuccess = () => {
           // SUCCESSFUL VERIFICATION
           // Update message and set up automatic redirect
           setMessage('Payment successful! Your subscription is now active. Redirecting to dashboard...');
-
+          setData(response.data.session);
           // AUTOMATIC REDIRECT
           // Give user time to read success message before redirecting
           setTimeout(() => {
             navigate('/dashboard');
-          }, 3000); // 3 second delay for user to see success message
+          }, 7000); // 7 second delay for user to see success message
         } else {
           // VERIFICATION FAILURE
           // Payment was not completed successfully
           setMessage('Payment verification failed. Please contact support with your session ID.');
         }
+
       } catch (error) {
         // ERROR HANDLING
         // Handle API errors, network issues, or verification failures
@@ -129,32 +132,59 @@ const PaymentSuccess = () => {
 
         {/* LOADING INDICATOR */}
         {/* Display during verification process */}
-        {loading && <div className="loading-spinner">Verifying...</div>}
+        {loading && 
+        <>
+          <div className="loading-spinner"></div>
+          {/* <p>Verifying...</p> */}
+        </>
+        }
+        {/* SESSION ID REFERENCE */}
+        {/* Display session ID for customer support and troubleshooting */}
+        {data && !loading && (
+          <div className='transaction-info'>
+            <h2>Transaction Information</h2>
+            <div className="session-info">
+              <span>Session ID:</span>
+              <span className='session-data'>{data.id}</span>
+            </div>
+            {data.paymentIntentId && (
+              <div className="session-info">
+                <span>Payment Intent ID:</span>
+                <span className='session-data'>{data.paymentIntentId}</span>
+              </div>
+            )}
+            {data.subscription && (
+              <>
+                <div className="session-info">
+                  <span>Subscription Start:</span>
+                  <span className='session-data'>{new Date(data.subscription.current_period_start * 1000).toLocaleDateString()}</span>
+                </div>
+                <div className="session-info">
+                  <span>Subscription End:</span>
+                  <span className='session-data'>{new Date(data.subscription.current_period_end * 1000).toLocaleDateString()}</span>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
-        {/* NAVIGATION ACTIONS */}
+         {/* NAVIGATION ACTIONS */}
         {/* Provide manual navigation options for user control */}
-        <div className="payment-actions">
-          <button
+        {!loading && <div className="payment-actions">
+         {sessionId && <button
             onClick={() => navigate('/dashboard')}
             className="btn btn-primary"
           >
             Go to Dashboard
-          </button>
+          </button>}
           <button
             onClick={() => navigate('/')}
             className="btn btn-secondary"
           >
             Back to Home
           </button>
-        </div>
+        </div>}
 
-        {/* SESSION ID REFERENCE */}
-        {/* Display session ID for customer support and troubleshooting */}
-        {sessionId && (
-          <div className="session-info">
-            <p>Reference ID: {sessionId}</p>
-          </div>
-        )}
       </div>
     </div>
   );

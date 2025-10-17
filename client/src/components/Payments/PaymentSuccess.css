@@ -88,7 +88,7 @@
     content: '';
     width: 20px;
     height: 20px;
-    border: 2px solid var(--color-border);
+    border: 2px solid rgba(30, 41, 59, 0.3);
     border-top: 2px solid var(--color-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -97,6 +97,67 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+.transaction-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--color-secondary-bg);
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.transaction-info h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.5rem;
+}
+
+.session-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.session-info:last-child {
+    border-bottom: none;
+}
+
+.session-info span{
+    text-align: start;
+}
+
+.session-info span:first-child {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    flex: 1;
+    min-width: 0;
+}
+
+.session-info .session-data {
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    flex: 2;
+    text-align: right;
+    word-break: break-all;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    background: rgba(0, 0, 0, 0.19);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.148);
 }
 
 .payment-actions {
@@ -148,21 +209,6 @@
     background: var(--color-secondary-bg);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.session-info {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background: var(--color-secondary-bg);
-    border-radius: 8px;
-    border: 1px solid var(--color-border);
-}
-
-.session-info p {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
-    margin: 0;
-    font-family: monospace;
 }
 
 /* Responsive design */

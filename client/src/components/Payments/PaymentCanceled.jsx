@@ -22,9 +22,9 @@ const PaymentCanceled = () => {
         <p>No charges were made to your account. Please check your payment details and try again, or contact support if the issue persists.</p>
 
         <div className="payment-actions">
-          <button className='btn payment-retry-btn' aria-label="Retry subscription payment">
+          <Link to="/payment" className='btn payment-retry-btn' aria-label="Retry subscription payment">
             Retry Payment
-          </button>
+          </Link>
           <Link to="/" className="btn btn-primary" aria-label="Return to home page">
             Go Back Home
           </Link>
