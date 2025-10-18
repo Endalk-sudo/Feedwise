@@ -1,49 +1,119 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Brand } from "./components/Brand";
 import { PasswordInput } from "./components/PasswordInput";
 import { SocialLogin } from "./components/SocialLogin";
 import { LoadingSpinner } from "./components/LoadingSpinner";
-import { useForm } from "./hooks/useForm";
-import { useRipple } from "./hooks/useRipple";
 import "./Auth.css";
 
 export const RegisterPage = () => {
-    const { register: contextRegister, clearError } = useAuth();
+    const { register: contextRegister, clearError, error: serverError, loading } = useAuth();
     const navigate = useNavigate();
     const [passwordsMatch, setPasswordsMatch] = useState(false);
-
-    const { values, errors, touched, loading, serverError, handleChange, handleBlur, handleSubmit, canSubmit } = useForm(
-        { username: '', email: '', password: '', confirmPassword: '' },
-        (vals) => {
-            const errs = {};
-            if (!vals.username.trim()) errs.username = "Username is required";
-            if (!vals.email) errs.email = "Email is required";
-            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(vals.email)) errs.email = "Invalid email address";
-            if (!vals.password) errs.password = "Password is required";
-            else if (vals.password.length < 6) errs.password = "Password must be at least 6 characters";
-            if (vals.password !== vals.confirmPassword) errs.confirmPassword = "Passwords do not match";
-            return errs;
-        },
-        // Use context's register function directly
-        (vals) => contextRegister(vals),
-        // On success, navigate to login page
-        () => {
-            navigate('/login');
-        }
-    );
-
+    
+    // Form state
+    const [formValues, setFormValues] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+    const [errors, setErrors] = useState({});
+    const [touched, setTouched] = useState({});
+    const [isValid, setIsValid] = useState(false);
+    
     const submitButtonRef = useRef();
-    useRipple(submitButtonRef);
-
+    
+    // Ripple effect
     useEffect(() => {
-        setPasswordsMatch(values.password.length > 0 && values.password === values.confirmPassword);
-    }, [values.password, values.confirmPassword]);
+        const button = submitButtonRef.current;
+        if (!button) return;
 
+        const createRipple = (event) => {
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+            circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+            circle.classList.add("ripple");
+
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+
+            button.appendChild(circle);
+        };
+
+        button.addEventListener("click", createRipple);
+
+        return () => {
+            button.removeEventListener("click", createRipple);
+        };
+    }, [submitButtonRef]);
+    
+    // Validation function
+    const validate = (values) => {
+        const errs = {};
+        if (!values.username.trim()) errs.username = "Username is required";
+        if (!values.email) errs.email = "Email is required";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errs.email = "Invalid email address";
+        if (!values.password) errs.password = "Password is required";
+        else if (values.password.length < 6) errs.password = "Password must be at least 6 characters";
+        if (values.password !== values.confirmPassword) errs.confirmPassword = "Passwords do not match";
+        return errs;
+    };
+    
+    // Check if form is valid
     useEffect(() => {
-        clearError();
-    }, [clearError]);
+        const validationErrors = validate(formValues);
+        setErrors(validationErrors);
+        setIsValid(Object.keys(validationErrors).length === 0);
+    }, [formValues]);
+    
+    // Check if passwords match
+    useEffect(() => {
+        setPasswordsMatch(formValues.password.length > 0 && formValues.password === formValues.confirmPassword);
+    }, [formValues.password, formValues.confirmPassword]);
+    
+    // Handle input change
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormValues({ ...formValues, [name]: value });
+        if (touched[name]) {
+            const validationErrors = validate({ ...formValues, [name]: value });
+            setErrors(validationErrors);
+        }
+        // Clear server error when user starts typing
+        if (serverError) {
+            clearError();
+        }
+    };
+    
+    // Handle input blur
+    const handleInputBlur = (e) => {
+        const { name } = e.target;
+        setTouched({ ...touched, [name]: true });
+        const validationErrors = validate(formValues);
+        setErrors(validationErrors);
+    };
+    
+    // Handle form submission - FIXED VERSION
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const validationErrors = validate(formValues);
+        setErrors(validationErrors);
+        setTouched(Object.keys(formValues).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
+        
+        if (Object.keys(validationErrors).length === 0) {
+            try {
+                await contextRegister(formValues);
+                // Only navigate if registration was successful
+                navigate('/login');
+            } catch (error) {
+                // Error is handled by AuthContext, we just catch to prevent unhandled rejection
+                console.error("Registration failed:", error.message);
+            }
+        }
+    };
 
     return (
         <div className="auth-shell">
@@ -62,9 +132,9 @@ export const RegisterPage = () => {
                             className={`input ${touched.username && errors.username ? 'input-error' : ''}`}
                             type="text"
                             placeholder=" "
-                            value={values.username}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
+                            value={formValues.username}
+                            onChange={handleInputChange}
+                            onBlur={handleInputBlur}
                             autoComplete="username"
                             required
                         />
@@ -78,9 +148,9 @@ export const RegisterPage = () => {
                             className={`input ${touched.email && errors.email ? 'input-error' : ''}`}
                             type="email"
                             placeholder=" "
-                            value={values.email}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
+                            value={formValues.email}
+                            onChange={handleInputChange}
+                            onBlur={handleInputBlur}
                             autoComplete="email"
                             required
                         />
@@ -90,9 +160,9 @@ export const RegisterPage = () => {
                         <PasswordInput
                             name="password"
                             label="Password"
-                            value={values.password}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
+                            value={formValues.password}
+                            onChange={handleInputChange}
+                            onBlur={handleInputBlur}
                             autoComplete="new-password"
                             error={errors.password}
                             touched={touched.password}
@@ -104,9 +174,9 @@ export const RegisterPage = () => {
                         <PasswordInput
                             name="confirmPassword"
                             label="Confirm Password"
-                            value={values.confirmPassword}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
+                            value={formValues.confirmPassword}
+                            onChange={handleInputChange}
+                            onBlur={handleInputBlur}
                             autoComplete="new-password"
                             error={errors.confirmPassword}
                             touched={touched.confirmPassword}
@@ -114,7 +184,7 @@ export const RegisterPage = () => {
                         {touched.confirmPassword && errors.confirmPassword && <div id="confirmPassword-error" className="field-error">{errors.confirmPassword}</div>}
                     </div>
                     {serverError && <div className="error"><span>{serverError}</span></div>}
-                    <button ref={submitButtonRef} className="auth-button" type="submit" disabled={loading || !canSubmit()}>
+                    <button ref={submitButtonRef} className="auth-button" type="submit" disabled={loading || !isValid}>
                         {loading ? <div className="button-loading-content"><LoadingSpinner /><span>Creating Account...</span></div> : "Create account"}
                     </button>
                     <SocialLogin />

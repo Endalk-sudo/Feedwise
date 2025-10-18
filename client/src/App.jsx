@@ -20,13 +20,13 @@ import NotFound from './pages/NotFound';
 
 
 const PublicRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
 
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
 
 
   return !user ? children : <Navigate to="/dashboard" />;

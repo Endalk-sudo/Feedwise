@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { login as loginUser, logout as logoutUser, getProfile, register as registerUser } from '../services/authService.js';
 
 const AuthContext = createContext();
@@ -89,9 +89,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setError(null);
-  };
+  }, []);
 
   const value = {
     user,
