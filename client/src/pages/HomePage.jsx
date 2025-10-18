@@ -8,6 +8,41 @@ import NavBar from "../components/NavBar";
 // HomePage component renders the main landing page for the FeedbackAI app
 const HomePage = () => {
   
+  const plans = [
+    {
+      id:"basic",
+      name: "Basic",
+      priceMonthly: 29,
+      priceId: import.meta.env.VITE_STRIPE_BASIC_PRICE_ID,
+      tagline: "Feedback Clarity Without the Chaos",
+      features: [
+        "Generate unlimited QR codes & shareable links",
+        "AI-powered feedback analysis before submission",
+        "Automatic categorization & tagging of feedback",
+        "Dashboard to view & track insights",
+        "Export feedback reports (CSV/PDF)",
+        "Email support"
+      ],
+      popular: false
+    },
+    {
+      id:"pro",
+      name: "Pro",
+      priceMonthly: 79,
+      priceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID,
+      tagline: "AI-Powered Growth Engine",
+      features: [
+        "Everything in Basic",
+        "Access to AI Business Insight Bot",
+        "Personalized growth recommendations from AI",
+        "Advanced analytics (trends, sentiment, recurring issues)",
+        "Team collaboration (add staff to dashboard)",
+        "Priority support"
+      ],
+      popular: true
+    }
+  ];
+  
   return (
     <>
       <NavBar />
@@ -17,14 +52,26 @@ const HomePage = () => {
         <section className="hero">
           <div className="container hero-content">
             <h1 className="hero-heading">
-              Stop Guessing What Your Customers Want. <span>Start Growing.</span>
+              Stop Guessing What Your Customers Want. <span className="accent-text">Start Growing.</span>
             </h1>
             <p className="hero-sub-heading">
               FeedbackAI captures the honest, anonymous feedback you're missing and transforms it into your personal AI business consultant. Get instant summaries, deep insights, and clear, step-by-step action plans to improve your business today.
             </p>
             <div className="cta-btn-container">
-              <Link className="btn cta-primary-btn cta-main-button" to="/register">Get Started </Link>
-              <button className="btn cta-secondary-btn">Watch a 2-Min Demo</button>
+              <Link className="btn cta-primary-btn cta-main-button" to="/register">
+                <span className="btn-text">Get Started</span>
+              </Link>
+              <Link className="btn cta-secondary-btn" to="/demo">
+                <span className="btn-text">Watch a 2-Min Demo</span>
+              </Link>
+            </div>
+            
+            {/* Trust indicators */}
+            <div className="trust-indicators">
+              <div className="trust-item">
+                <div className="trust-icon">✓</div>
+                <span>Setup in 3 minutes</span>
+              </div>
             </div>
           </div>
           <div className="hero-decoration">
@@ -49,7 +96,7 @@ const HomePage = () => {
             {/* List of problems customers face with traditional feedback methods */}
             <div className="problem-items-container">
               <div className="problem-item">
-                <div className="problem-icon">
+                <div className="problem-icon problem-icon-red">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -58,20 +105,22 @@ const HomePage = () => {
                 </div>
                 <h3>Silence Isn't Golden</h3>
                 <p>Most customers won't complain directly. They just leave. You're left wondering why.</p>
+                <div className="problem-highlight"></div>
               </div>
               
               <div className="problem-item">
-                <div className="problem-icon">
+                <div className="problem-icon problem-icon-red">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                   </svg>
                 </div>
                 <h3>Fear Holds Them Back</h3>
                 <p>Traditional feedback forms feel risky. Customers worry about being judged or identified, so they give vague, polite answers—or none at all.</p>
+                <div className="problem-highlight"></div>
               </div>
               
               <div className="problem-item">
-                <div className="problem-icon">
+                <div className="problem-icon problem-icon-red">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M3 3l18 18"></path>
                     <path d="M7 7l10 10"></path>
@@ -80,10 +129,11 @@ const HomePage = () => {
                 </div>
                 <h3>Data Overload, Zero Clarity</h3>
                 <p>Even if you get feedback, you're buried in spreadsheets and random comments. It's impossible to see the patterns and know what to fix first.</p>
+                <div className="problem-highlight"></div>
               </div>
               
               <div className="problem-item">
-                <div className="problem-icon">
+                <div className="problem-icon problem-icon-red">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="3" y1="9" x2="21" y2="9"></line>
@@ -92,6 +142,7 @@ const HomePage = () => {
                 </div>
                 <h3>Paralysis by Analysis</h3>
                 <p>You have the data, but no clear next steps. You feel stuck, unsure how to turn complaints into real, revenue-driving improvements.</p>
+                <div className="problem-highlight"></div>
               </div>
             </div>
           </div>
@@ -114,13 +165,14 @@ const HomePage = () => {
               <div className="solution-img-container">
                 <div className="solution-img">
                   <img src={aiImage} alt="AI analyzing customer feedback" loading="lazy" />
+                  <div className="solution-img-border"></div>
                 </div>
               </div>
               
               {/* List of solution features offered by FeedbackAI */}
               <div className="solution-items-container">
                 <div className="solution-item">
-                  <div className="solution-icon">
+                  <div className="solution-icon solution-icon-green">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
                       <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
@@ -137,7 +189,7 @@ const HomePage = () => {
                 </div>
                 
                 <div className="solution-item">
-                  <div className="solution-icon">
+                  <div className="solution-icon solution-icon-green">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="3"></circle>
                       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -154,7 +206,7 @@ const HomePage = () => {
                 </div>
                 
                 <div className="solution-item">
-                  <div className="solution-icon">
+                  <div className="solution-icon solution-icon-green">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
@@ -170,7 +222,7 @@ const HomePage = () => {
                 </div>
                 
                 <div className="solution-item">
-                  <div className="solution-icon">
+                  <div className="solution-icon solution-icon-green">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                       <polyline points="14 2 14 8 20 8"></polyline>
@@ -330,53 +382,22 @@ const HomePage = () => {
             </div>
             
             <div className="pricing-cards-container">
-              {/* Starter Plan */}
-              <div className="pricing-card">
-                <div className="card-header">
-                  <h3 className="plan-name">Starter</h3>
-                  <p className="plan-description">Perfect for getting started with customer feedback.</p>
-                  <p className="price">$0</p>
+              {plans.map(plan => (
+                <div key={plan.id} className={`pricing-card ${plan.popular ? 'popular' : ''}`}>
+                  {plan.popular && <div className="popular-badge">BEST VALUE</div>}
+                  <div className="card-header">
+                    <h3 className="plan-name">{plan.name}</h3>
+                    <p className="plan-description">{plan.tagline}</p>
+                    <p className="price">${plan.priceMonthly} <span>/ month</span></p>
+                  </div>
+                  <ul className="features-list">
+                    {plan.features.map((feature, index) => (
+                      <li key={index}>{feature}</li>
+                    ))}
+                  </ul>
+                  <Link className="btn cta-primary-btn pricing-cta-btn" to="/payment">Subscribe Now</Link>
                 </div>
-                <ul className="features-list">
-                  <li>Collect up to 50 feedbacks/month</li>
-                  <li>Basic AI Summaries</li>
-                  <li>1 Dashboard User</li>
-                </ul>
-                <Link className="btn cta-primary-btn pricing-cta-btn" to="/register">Start for Free</Link>
-              </div>
-              
-              {/* Pro Plan (Most Popular) */}
-              <div className="pricing-card popular">
-                <div className="popular-badge">Most Popular</div>
-                <div className="card-header">
-                  <h3 className="plan-name">Pro</h3>
-                  <p className="plan-description">For businesses ready to turn insights into action.</p>
-                  <p className="price">$29 <span>/ month</span></p>
-                </div>
-                <ul className="features-list">
-                  <li>Unlimited Feedback Collection</li>
-                  <li>AI Chat Consultant</li>
-                  <li>Actionable Insights & Guides</li>
-                  <li>Unlimited Dashboard Users</li>
-                </ul>
-                <Link className="btn cta-primary-btn pricing-cta-btn" to="/register">Start Your Pro Trial</Link>
-              </div>
-              
-              {/* Business Plan */}
-              <div className="pricing-card">
-                <div className="card-header">
-                  <h3 className="plan-name">Business</h3>
-                  <p className="plan-description">For teams that need advanced analytics and support.</p>
-                  <p className="price">$79 <span>/ month</span></p>
-                </div>
-                <ul className="features-list">
-                  <li>Everything in Pro, plus:</li>
-                  <li>Advanced AI Consulting Features</li>
-                  <li>API Access & Integrations</li>
-                  <li>Priority Support</li>
-                </ul>
-                <button className="btn cta-primary-btn pricing-cta-btn">Talk to Sales</button>
-              </div>
+              ))}
             </div>
           </div>
         </section>
@@ -389,10 +410,10 @@ const HomePage = () => {
                 Your Best Business Decisions Are Waiting in Your Customer Feedback.
               </h2>
               <p>
-                Unlock them with FeedbackAI. Get your free account today and start listening to what truly matters.
+                Unlock them with FeedbackAI. Get started today and start listening to what truly matters.
               </p>
               <Link className="closing-btn cta-primary-btn btn" to="/register">
-                Get Your Free Account Now
+                Get Started 
               </Link>
             </div>
           </div>
