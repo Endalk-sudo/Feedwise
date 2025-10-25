@@ -123,6 +123,13 @@
   transition: all 0.2s ease;
 }
 
+.sentiment-badge {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .meta-item:hover {
   background: rgba(148, 163, 184, 0.12);
   transform: translateY(-1px);

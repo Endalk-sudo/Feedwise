@@ -2,7 +2,6 @@ import api from "../services/api.js";
 import { useState, useEffect } from "react";
 import "./MainContent.css";
 import FeedbackCard from "./FeedbackCard";
-import { formatTimeAgo, sortFeedbackByTime } from "../utils/timeUtils";
 
 function MainContent() {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -35,9 +34,8 @@ function MainContent() {
         
         setQrCode(data.org.qrDataUrl);
         setFeedbackLink(data.org.content);
-        const sortedFeedbacks = sortFeedbackByTime(data.feedbacks);
         
-        setFeedbacks(sortedFeedbacks);
+        setFeedbacks(data.feedbacks);
         
         setTotalFeedbacks(data.feedbackNumber);
       } catch (error) {
@@ -100,9 +98,10 @@ function MainContent() {
             <FeedbackCard
               key={feedback._id}
               feedbackText={feedback.text}
-              date={formatTimeAgo(feedback.createdAt)}
+              date={new Date(feedback.createdAt).toISOString()}
               category={feedback.category}
               rating={feedback.rating}
+              sentiment={feedback.sentiment}
             />
           ))}
         </div>
