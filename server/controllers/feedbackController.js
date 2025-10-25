@@ -17,15 +17,33 @@ import OrgLogo from "../models/OrgLogo.js"
 
 export const getFeedback = async (req, res) => {
   const user = req.user;
+  const { page = 1, limit = 10 } = req.query;
+
   try {
     const org = await Organization.findOne({ ownerId: user.id });
     if (!org) {
       return res.status(404).json({ message: "Organization not found" });
     }
 
-    const allFeedbacks = await Feedback.find({ organizationId: org._id }).sort({createdAt: -1});
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
 
-    res.status(200).json(allFeedbacks);
+    const allFeedbacks = await Feedback.find({ organizationId: org._id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalFeedbacks = await Feedback.countDocuments({ organizationId: org._id });
+    const hasMore = skip + allFeedbacks.length < totalFeedbacks;
+
+    res.status(200).json({
+      feedbacks: allFeedbacks,
+      hasMore,
+      total: totalFeedbacks,
+      page: pageNum,
+      limit: limitNum
+    });
 
   } catch (error) {
     console.error("Error in getFeedback:", error);
