@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 import multer from 'multer';
 import { uploadToCloudinary } from '../utils/uploadHelper.js';
 import {generateAiCategories} from "../services/aiServices.js"
+import logger from '../utils/logger.js';
 dotenv.config();
 
 cloudinary.config({ 
@@ -51,31 +52,30 @@ const generateTokens = (user) => {
 // =====================
 const  register = async (req, res) => {
     const { username, email, password} = req.body;
-    console.log('Registration attempt:', { username, email, password: password ? 'provided' : 'missing' });
+    logger.info(`Registration attempt for email: ${email}`);
     // Input validation
     if (!username || !email || !password) {
-        console.log('Missing fields');
+        logger.warn('Registration failed: Missing fields');
         return res.status(400).json({ message: 'Please provide all required fields' });
     }
     if (password.length < 6) {
-        console.log('Password too short');
+        logger.warn('Registration failed: Password too short');
         return res.status(400).json({ message: 'Password must be at least 6 characters long' });
     }
     if (username.length < 3) {
-        console.log('Username too short');
+        logger.warn('Registration failed: Username too short');
         return res.status(400).json({ message: 'Username must be at least 3 characters long' });
     }
       
     if (!emailRegex.test(email)) {
-      console.log('Invalid email');
+      logger.warn(`Registration failed: Invalid email format ${email}`);
       return res.status(400).json({ message: 'Please enter a valid email address.' });
     }
     try {
         // Check if user already exists
         let user = await User.findOne({ email});
-        console.log('User lookup result:', user ? 'exists' : 'not found');
         if (user) {
-            console.log('User already exists');
+            logger.warn(`Registration failed: User already exists ${email}`);
             return res.status(409).json({
                 success: false,
                 message: 'User already exists',
@@ -91,24 +91,46 @@ const  register = async (req, res) => {
             });
         await user.save(); // Save user to database
 
+        // Generate tokens for auto-login
+        const { accessToken, refreshToken } = generateTokens(user);
         
-        // const expiresAt = new Date()
+        // Calculate refresh token expiration
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 15);
 
-        // expiresAt.setDate(expiresAt.getDate() + 15)
+        // Store refresh token in DB
+        const newRefreshToken = new RefreshToken({
+          userId: user._id,
+          token: refreshToken,
+          expiresAt: expiresAt,
+        });
 
-        // // Create initial RefreshToken document for the user
-        // const refreshTokenDoc = new RefreshToken({
-        //   userId: user._id,
-        //   token: null,
-        //   expiresAt 
-        // });
-
-        // await refreshTokenDoc.save();
+        await newRefreshToken.save();
         
-        res.status(201).json({ message: 'User registered successfully' });
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
+        });
+
+        res.status(201).json({ 
+            message: 'User registered successfully',
+            accessToken,
+            user: {
+                id: user._id.toString(),
+                username: user.username,
+                email: user.email,
+                hasOrganization: user.hasOrganization,
+                organizationId: user.organizationId,
+                currentPlan: user.currentPlan,
+                subscriptionStatus : user.subscriptionStatus
+            }
+        });
          
     } catch (err) {
-        console.error('Registration error:', err);
+        logger.error(`Registration error: ${err.message}`, { stack: err.stack });
         res.status(500).json({
             success: false,
             message: 'Server Error during registration',
@@ -186,7 +208,7 @@ const setOrganization = async (req,res)=>{
     return  res.status(201).send({ ok:true, user, organization: org})
     } catch(err){
         // --- Error Handling ---
-        console.error("Organization setup error:", err);
+        logger.error(`Organization setup error: ${err.message}`, { stack: err.stack });
         res.status(500).json({ message: "Server error during organization setup" });
     }
 }
@@ -262,7 +284,7 @@ const login = async (req, res) => {
           }
         });
     } catch (err) {
-        console.error('Login error:', err);
+        logger.error(`Login error: ${err.message}`, { stack: err.stack });
         res.status(500).json({
             success: false,
             message: 'Server Error during login',
@@ -309,7 +331,7 @@ const refreshToken = async (req, res) => {
       accessToken: newAccessToken,
     });
   } catch (err) {
-    console.error('Refresh token error:', err);
+    logger.error(`Refresh token error: ${err.message}`, { stack: err.stack });
     if (err.name === 'TokenExpiredError') {
       return res.status(403).json({ message: 'Refresh Token expired', code: 'REFRESH_TOKEN_EXPIRED' });
     }
@@ -346,7 +368,7 @@ const logout = async (req, res) => {
         
         res.json({ message: 'Logged out successfully' });
     } catch (err) {
-        console.error('Logout error:', err);
+        logger.error(`Logout error: ${err.message}`, { stack: err.stack });
         // Catch JWT errors if the refresh token format is invalid or it's expired
         if (err.name === 'TokenExpiredError') {
              return res.status(400).json({ message: 'Refresh token provided for logout is expired' });
@@ -381,7 +403,7 @@ const getProfile = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Get profile error:', err);
+    logger.error(`Get profile error: ${err.message}`, { stack: err.stack });
     res.status(500).json({ message: 'Server Error while fetching profile' });
   }
 };

@@ -190,11 +190,6 @@ export const RegisterPage = () => {
                         </AnimatePresence>
                     </div>
 
-                    {serverError && (
-                        <div className="error">
-                            <span>{serverError}</span>
-                        </div>
-                    )}
 
                     <button className="auth-button" type="submit" disabled={isSubmitting}>
                         {isSubmitting ? (

@@ -10,9 +10,7 @@ import Feedback from "../models/Feedback.js";
 import Organization from "../models/Organization.js";
 import {analyzeFeedback} from "../services/aiServices.js"
 import OrgLogo from "../models/OrgLogo.js"
-import validate from '../middleware/validationMiddleware.js';
-import { submitFeedbackSchema, getFeedbackSchema } from '../middleware/schemas.js';
-import {verifyToken} from "../middleware/auth.js"
+import logger from '../utils/logger.js';
 
 
 // --- Route Controllers ---
@@ -49,7 +47,7 @@ export const getFeedback = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error in getFeedback:", error);
+    logger.error(`Error in getFeedback: ${error.message}`, { stack: error.stack });
     res.status(500).json({ message: "An internal server error occurred." });
   }
 };
@@ -71,7 +69,7 @@ export const submitFeedback = async (req, res) => {
     // Call the AI to analyze the feedback
     const analyzedData = await analyzeFeedback(text,org.categories);
 
-    console.log("AI Analyzed Feedback Data:", analyzedData);
+    logger.info(`AI Analyzed Feedback Data for org ${orgSlug}`);
 
     // Create a new feedback document with both raw text and AI analysis
     const newFeedback = await Feedback.create({
@@ -110,7 +108,7 @@ export const getOrgInfo = async (req,res)=>{
         res.status(200).json({ orgName:org.name, orgLogo:logoUrl });
 
     }catch(err){
-        console.error(err);
+        logger.error(`Error getting Org Info: ${err.message}`, { stack: err.stack });
         res.status(500).json({message:"Server error"});
     }
 }

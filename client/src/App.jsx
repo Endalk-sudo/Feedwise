@@ -18,6 +18,7 @@ import ReactivateSubscription from './components/Payments/ReactivateSubscription
 import PaymentSuccess from './components/Payments/PaymentSuccess';
 import { Toaster } from 'sonner';
 import NotFound from './pages/NotFound';
+import SkeletonLoader from './components/common/SkeletonLoader';
 
 
 const PublicRoute = ({ children }) => {
@@ -39,11 +40,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Show loading spinner while checking authentication
   if (loading) {
-    return (
-      <div className="loading-container">
-        <p>Loading...</p>
-      </div>
-    );
+    return <SkeletonLoader type="auth" />;
   }
 
 
@@ -120,12 +117,7 @@ function DashboardWrapper({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading...</p>
-      </div>
-    );
+    return <SkeletonLoader type="page" />;
   }
 
   if (!user?.currentPlan) return <Navigate to="/payment" />

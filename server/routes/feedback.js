@@ -3,6 +3,17 @@ import { getFeedback, submitFeedback ,getOrgInfo } from "../controllers/feedback
 import {verifyToken} from '../middleware/auth.js';
 import validate from '../middleware/validationMiddleware.js';
 import { submitFeedbackSchema, getFeedbackSchema } from '../middleware/schemas.js';
+import rateLimit from 'express-rate-limit';
+
+const feedbackLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // Limit each IP to 10 feedback submissions per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: 'Too many feedback submissions from this IP, please try again after an hour'
+  }
+});
 
 const router = express.Router();
 
@@ -18,7 +29,7 @@ router.get('/all', verifyToken, validate(getFeedbackSchema), getFeedback);
 // Purpose: Submit new feedback from customers
 // Who can use: Anyone (no authentication required)
 // What it needs: organizationId, text, and optionally rating/projectKey
-router.post("/:orgSlug", submitFeedback);
+router.post("/:orgSlug", feedbackLimiter, validate(submitFeedbackSchema), submitFeedback);
 
 
 

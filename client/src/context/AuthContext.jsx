@@ -24,15 +24,18 @@ export const AuthProvider = ({ children }) => {
 
   // Check if user is logged in on initial load
   const initializeAuth = useCallback(async () => {
+    const token = localStorage.getItem('accessToken');
+
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        const response = await getProfile();
-        setUser(response.user);
-      } else {
-        setUser(null);
-      }
+      const response = await getProfile();
+      setUser(response.user);
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('accessToken');
@@ -89,8 +92,13 @@ export const AuthProvider = ({ children }) => {
       setValidationErrors({});
 
       const response = await registerUser(userData);
-      // Optional: Auto-login after register logic could go here
-      // setUser(response.user); 
+
+      // Auto-login logic
+      if (response.accessToken && response.user) {
+        localStorage.setItem('accessToken', response.accessToken);
+        setUser(response.user);
+      }
+
       return response;
     } catch (error) {
       handleAuthError(error);

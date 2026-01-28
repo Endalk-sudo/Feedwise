@@ -1,12 +1,21 @@
 import axios from "axios"
 import { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import "./Feedback.css";
+
+const ANALYSIS_STEPS = [
+  "Reading feedback...",
+  "Analyzing sentiment...",
+  "Extracting keywords...",
+  "Categorizing...",
+  "Finalizing..."
+];
 
 const Feedback = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [analysisStep, setAnalysisStep] = useState(0);
   const [feedback, setFeedback] = useState('');
 
   const [logo, setLogo] = useState(null);
@@ -44,23 +53,41 @@ const Feedback = () => {
     }
   }, [slug]);
 
+  useEffect(() => {
+    let interval;
+    if (submitting) {
+      interval = setInterval(() => {
+        setAnalysisStep((prev) => (prev < ANALYSIS_STEPS.length - 1 ? prev + 1 : prev));
+      }, 1500);
+    } else {
+      setAnalysisStep(0);
+    }
+    return () => clearInterval(interval);
+  }, [submitting]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setSubmitting(true);
 
     const text = feedback.trim();
 
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/feedback/${slug}`, {
+      // Minimum loading time to show animation (optional, but good for UX)
+      const minLoadTime = new Promise(resolve => setTimeout(resolve, 2000));
+
+      const request = axios.post(`${import.meta.env.VITE_API_URL}/api/feedback/${slug}`, {
         text
       });
 
+      const [res] = await Promise.all([request, minLoadTime]);
+
       setIsSubmitted(true);
+      toast.success("Feedback submitted successfully!");
       console.log("feedback", res.data);
     } catch (error) {
       console.log("Error submitting Feedback", error.message);
-      setError(error.response?.data?.message || "Failed to submit feedback. Please try again.");
+      const msg = error.response?.data?.message || "Failed to submit feedback. Please try again.";
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -164,15 +191,10 @@ const Feedback = () => {
                   {submitting && (
                     <div className="feedback-submitting" role="status" aria-label="Submitting feedback">
                       <div className="spinner small"></div>
-                      <p>Analyzing your feedback...</p>
+                      <p>{ANALYSIS_STEPS[analysisStep]}</p>
                     </div>
                   )}
 
-                  {error && (
-                    <p role="alert" className="feedback-error">
-                      {error}
-                    </p>
-                  )}
 
                   <button
                     className="feedback-submit"
