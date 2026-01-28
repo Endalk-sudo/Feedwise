@@ -4,13 +4,33 @@ import "./HomePage.css";
 import aiImage from "../assets/Gemini_Generated_Image_d20azfd20azfd20a.png"
 import { Link } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import { motion } from "framer-motion";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 60 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2
+    }
+  }
+};
 
 // HomePage component renders the main landing page for the FeedbackAI app
 const HomePage = () => {
-  
+
   const plans = [
     {
-      id:"basic",
+      id: "basic",
       name: "Basic",
       priceMonthly: 29,
       priceId: import.meta.env.VITE_STRIPE_BASIC_PRICE_ID,
@@ -26,7 +46,7 @@ const HomePage = () => {
       popular: false
     },
     {
-      id:"pro",
+      id: "pro",
       name: "Pro",
       priceMonthly: 79,
       priceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID,
@@ -42,37 +62,57 @@ const HomePage = () => {
       popular: true
     }
   ];
-  
+
   return (
     <>
       <NavBar />
-      
+
       <main>
         {/* Hero Section: Main headline, subheading, and primary call-to-action buttons */}
         <section className="hero">
           <div className="container hero-content">
-            <h1 className="hero-heading">
+            <motion.h1
+              className="hero-heading"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
               Stop Guessing What Your Customers Want. <span className="accent-text">Start Growing.</span>
-            </h1>
-            <p className="hero-sub-heading">
+            </motion.h1>
+            <motion.p
+              className="hero-sub-heading"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            >
               FeedbackAI captures the honest, anonymous feedback you're missing and transforms it into your personal AI business consultant. Get instant summaries, deep insights, and clear, step-by-step action plans to improve your business today.
-            </p>
-            <div className="cta-btn-container">
+            </motion.p>
+            <motion.div
+              className="cta-btn-container"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+            >
               <Link className="btn cta-primary-btn cta-main-button" to="/register">
                 <span className="btn-text">Get Started</span>
               </Link>
               <Link className="btn cta-secondary-btn" to="/demo">
                 <span className="btn-text">Watch a 2-Min Demo</span>
               </Link>
-            </div>
-            
+            </motion.div>
+
             {/* Trust indicators */}
-            <div className="trust-indicators">
+            <motion.div
+              className="trust-indicators"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.6 }}
+            >
               <div className="trust-item">
                 <div className="trust-icon">✓</div>
                 <span>Setup in 3 minutes</span>
               </div>
-            </div>
+            </motion.div>
           </div>
           <div className="hero-decoration">
             <div className="decoration-circle circle-1"></div>
@@ -80,22 +120,34 @@ const HomePage = () => {
             <div className="decoration-circle circle-3"></div>
           </div>
         </section>
-        
+
         {/* Problem Section: Highlights common issues businesses face with customer feedback */}
         <section className="problem-section">
           <div className="container">
-            <div className="problem-content">
+            <motion.div
+              className="problem-content"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+            >
               <h2>
                 You're Flying Blind. Your Customers Have the Map.
               </h2>
               <p>
                 Are you tired of making decisions based on guesswork? If you're not hearing what your customers <b>really</b> think, you're leaving growth on the table.
               </p>
-            </div>
-            
+            </motion.div>
+
             {/* List of problems customers face with traditional feedback methods */}
-            <div className="problem-items-container">
-              <div className="problem-item">
+            <motion.div
+              className="problem-items-container"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={staggerContainer}
+            >
+              <motion.div className="problem-item" variants={fadeInUp}>
                 <div className="problem-icon problem-icon-red">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -106,9 +158,9 @@ const HomePage = () => {
                 <h3>Silence Isn't Golden</h3>
                 <p>Most customers won't complain directly. They just leave. You're left wondering why.</p>
                 <div className="problem-highlight"></div>
-              </div>
-              
-              <div className="problem-item">
+              </motion.div>
+
+              <motion.div className="problem-item" variants={fadeInUp}>
                 <div className="problem-icon problem-icon-red">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
@@ -117,9 +169,9 @@ const HomePage = () => {
                 <h3>Fear Holds Them Back</h3>
                 <p>Traditional feedback forms feel risky. Customers worry about being judged or identified, so they give vague, polite answers—or none at all.</p>
                 <div className="problem-highlight"></div>
-              </div>
-              
-              <div className="problem-item">
+              </motion.div>
+
+              <motion.div className="problem-item" variants={fadeInUp}>
                 <div className="problem-icon problem-icon-red">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M3 3l18 18"></path>
@@ -130,9 +182,9 @@ const HomePage = () => {
                 <h3>Data Overload, Zero Clarity</h3>
                 <p>Even if you get feedback, you're buried in spreadsheets and random comments. It's impossible to see the patterns and know what to fix first.</p>
                 <div className="problem-highlight"></div>
-              </div>
-              
-              <div className="problem-item">
+              </motion.div>
+
+              <motion.div className="problem-item" variants={fadeInUp}>
                 <div className="problem-icon problem-icon-red">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -143,35 +195,53 @@ const HomePage = () => {
                 <h3>Paralysis by Analysis</h3>
                 <p>You have the data, but no clear next steps. You feel stuck, unsure how to turn complaints into real, revenue-driving improvements.</p>
                 <div className="problem-highlight"></div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
-        
+
         {/* Solution Section: Explains how FeedbackAI solves these problems */}
         <section className="solution-section">
           <div className="container">
-            <div className="solution-content">
+            <motion.div
+              className="solution-content"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+            >
               <h2>
                 From Feedback Chaos to Crystal-Clear Action.
               </h2>
               <p>
                 FeedbackAI bridges the gap between customer silence and confident decision-making. We combine the power of anonymity with brilliant AI to give you an unbeatable advantage.
               </p>
-            </div>
-            
+            </motion.div>
+
             <div className="solutions-container">
               {/* Image representing AI features */}
-              <div className="solution-img-container">
+              <motion.div
+                className="solution-img-container"
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8 }}
+              >
                 <div className="solution-img">
                   <img src={aiImage} alt="AI analyzing customer feedback" loading="lazy" />
                   <div className="solution-img-border"></div>
                 </div>
-              </div>
-              
+              </motion.div>
+
               {/* List of solution features offered by FeedbackAI */}
-              <div className="solution-items-container">
-                <div className="solution-item">
+              <motion.div
+                className="solution-items-container"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }}
+                variants={staggerContainer}
+              >
+                <motion.div className="solution-item" variants={fadeInUp}>
                   <div className="solution-icon solution-icon-green">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
@@ -186,9 +256,9 @@ const HomePage = () => {
                       Our simple, anonymous QR codes and links encourage customers to share what they truly think in under 30 seconds
                     </p>
                   </div>
-                </div>
-                
-                <div className="solution-item">
+                </motion.div>
+
+                <motion.div className="solution-item" variants={fadeInUp}>
                   <div className="solution-icon solution-icon-green">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="3"></circle>
@@ -203,9 +273,9 @@ const HomePage = () => {
                       Forget spreadsheets. Our AI reads every piece of feedback, automatically categorizes it by theme, and summarizes the key takeaways.
                     </p>
                   </div>
-                </div>
-                
-                <div className="solution-item">
+                </motion.div>
+
+                <motion.div className="solution-item" variants={fadeInUp}>
                   <div className="solution-icon solution-icon-green">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -219,9 +289,9 @@ const HomePage = () => {
                       Go beyond summaries. Ask your AI direct questions like, "What are the top 3 complaints about our checkout process?"
                     </p>
                   </div>
-                </div>
-                
-                <div className="solution-item">
+                </motion.div>
+
+                <motion.div className="solution-item" variants={fadeInUp}>
                   <div className="solution-icon solution-icon-green">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -239,22 +309,34 @@ const HomePage = () => {
                       FeedbackAI doesn't just give you data; it gives you a plan. Receive prioritized, actionable steps tailored to your business.
                     </p>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </div>
           </div>
         </section>
-        
+
         {/* Features Section: Details all the main features of FeedbackAI */}
         <section className="features-section" id="features">
           <div className="container">
-            <div className="feature-content">
+            <motion.div
+              className="feature-content"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+            >
               <h2>Everything You Need to Become a Customer-Centric Business</h2>
-            </div>
-            
-            <div className="features-card-container">
+            </motion.div>
+
+            <motion.div
+              className="features-card-container"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={staggerContainer}
+            >
               {/* Each feature-card highlights a unique feature of the product */}
-              <div className="feature-card">
+              <motion.div className="feature-card" variants={fadeInUp}>
                 <div className="feature-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -269,9 +351,9 @@ const HomePage = () => {
                 <p>
                   Get 3x more honest feedback with a simple link or QR code that customers actually use.
                 </p>
-              </div>
-              
-              <div className="feature-card">
+              </motion.div>
+
+              <motion.div className="feature-card" variants={fadeInUp}>
                 <div className="feature-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -284,9 +366,9 @@ const HomePage = () => {
                 <p>
                   Feedback is instantly organized by sentiment and theme, saving you hours of manual work.
                 </p>
-              </div>
-              
-              <div className="feature-card">
+              </motion.div>
+
+              <motion.div className="feature-card" variants={fadeInUp}>
                 <div className="feature-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -300,9 +382,9 @@ const HomePage = () => {
                 <p>
                   See every customer voice, trend, and priority in one clean, beautiful interface.
                 </p>
-              </div>
-              
-              <div className="feature-card">
+              </motion.div>
+
+              <motion.div className="feature-card" variants={fadeInUp}>
                 <div className="feature-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -314,9 +396,9 @@ const HomePage = () => {
                 <p>
                   Go beyond data. Chat with your AI to brainstorm solutions and strategize your next move.
                 </p>
-              </div>
-              
-              <div className="feature-card">
+              </motion.div>
+
+              <motion.div className="feature-card" variants={fadeInUp}>
                 <div className="feature-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9 11 12 14 22 4"></polyline>
@@ -329,9 +411,9 @@ const HomePage = () => {
                 <p>
                   Receive personalized, step-by-step guides created by the AI to fix identified issues.
                 </p>
-              </div>
-              
-              <div className="feature-card">
+              </motion.div>
+
+              <motion.div className="feature-card" variants={fadeInUp}>
                 <div className="feature-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
@@ -343,15 +425,21 @@ const HomePage = () => {
                 <p>
                   Go from zero to action plan in 3 simple steps: Share, Analyze, and Act.
                 </p>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
-        
+
         {/* Social Proof Section: Shows a testimonial from a real user */}
         <section className="sp-section">
           <div className="container">
-            <div className="sp-container">
+            <motion.div
+              className="sp-container"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+            >
               <div className="quote-icon">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5z"></path>
@@ -369,21 +457,37 @@ const HomePage = () => {
                   <p className="customer-title">Beta User & Coffee Shop Owner</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
-        
+
         {/* Pricing Section: Outlines the pricing plans available */}
         <section className="pricing-section" id="pricing">
           <div className="container">
-            <div className="pricing-content">
+            <motion.div
+              className="pricing-content"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+            >
               <h2>Choose the Plan That Grows With You</h2>
               <p>Simple, transparent pricing. No hidden fees. Cancel anytime.</p>
-            </div>
-            
-            <div className="pricing-cards-container">
+            </motion.div>
+
+            <motion.div
+              className="pricing-cards-container"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={staggerContainer}
+            >
               {plans.map(plan => (
-                <div key={plan.id} className={`pricing-card ${plan.popular ? 'popular' : ''}`}>
+                <motion.div
+                  key={plan.id}
+                  className={`pricing-card ${plan.popular ? 'popular' : ''}`}
+                  variants={fadeInUp}
+                >
                   {plan.popular && <div className="popular-badge">BEST VALUE</div>}
                   <div className="card-header">
                     <h3 className="plan-name">{plan.name}</h3>
@@ -396,16 +500,22 @@ const HomePage = () => {
                     ))}
                   </ul>
                   <Link className="btn cta-primary-btn pricing-cta-btn" to="/payment">Subscribe Now</Link>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
-        
+
         {/* Closing Section: Final call-to-action for users to sign up */}
         <section className="closing-section">
           <div className="container">
-            <div className="closing-content">
+            <motion.div
+              className="closing-content"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+            >
               <h2>
                 Your Best Business Decisions Are Waiting in Your Customer Feedback.
               </h2>
@@ -413,15 +523,15 @@ const HomePage = () => {
                 Unlock them with FeedbackAI. Get started today and start listening to what truly matters.
               </p>
               <Link className="closing-btn cta-primary-btn btn" to="/register">
-                Get Started 
+                Get Started
               </Link>
-            </div>
+            </motion.div>
           </div>
         </section>
-      </main>
-      
+      </main >
+
       {/* Footer: Modern minimalist design with great UI/UX */}
-      <footer className="footer">
+      < footer className="footer" >
         <div className="container">
           <div className="footer-container">
             {/* Brand Section */}
@@ -429,7 +539,7 @@ const HomePage = () => {
               <h2>Feedback<span className='logo-color'>AI</span></h2>
               <p>Stop Guessing. Start Growing.</p>
             </div>
-            
+
             {/* Quick Links */}
             <div className="footer-links">
               <div className="footer-group">
@@ -440,7 +550,7 @@ const HomePage = () => {
                   <li><a href="#">Demo</a></li>
                 </ul>
               </div>
-              
+
               <div className="footer-group">
                 <h4>Company</h4>
                 <ul>
@@ -448,7 +558,7 @@ const HomePage = () => {
                   <li><a href="#">Contact</a></li>
                 </ul>
               </div>
-              
+
               <div className="footer-group">
                 <h4>Legal</h4>
                 <ul>
@@ -457,7 +567,7 @@ const HomePage = () => {
                 </ul>
               </div>
             </div>
-            
+
             {/* Social Links */}
             <div className="footer-social">
               <h4>Follow Us</h4>
@@ -483,14 +593,14 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Copyright Line */}
         <div className="footer-bottom">
           <div className="container">
             <p>© 2025 FeedbackAI. All rights reserved.</p>
           </div>
         </div>
-      </footer>
+      </footer >
     </>
   )
 }
