@@ -113,7 +113,7 @@ const generateInsightsForOrg = async (org) => {
     ]
     `;
 
-    const model = "gemini-2.5-flash";
+    const model = "gemini-2.0-flash";
 
     // 3. CALL THE AI API
     const completion = await ai.models.generateContent({

@@ -97,14 +97,14 @@ export default async function getAIResponse(req, res) {
      * AI MODEL CONFIGURATION
      * 
      * We use Google's Gemini model with specific configuration:
-     * - Model: gemini-2.5-flash (fast and cost-effective for conversational AI)
+     * - Model: gemini-2.0-flash (fast and cost-effective for conversational AI)
      * - Temperature: 0.2 (low creativity, more focused and deterministic responses)
      * - Max tokens: 100 (limits response length for conciseness)
      * 
      * System instructions define the AI's personality and response guidelines
      */
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",                   // Fast and efficient model for chat
+      model: "gemini-2.0-flash",                   // Fast and efficient model for chat
       contents: [{ 
         role: "user", 
         parts: [{ text: fullPrompt }]              // Our enhanced prompt with context

@@ -96,7 +96,7 @@ async function analyzeFeedback(originalText,categories) {
     Feedback: "${originalText}"`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: {
         responseMimeType: "application/json",
@@ -157,7 +157,7 @@ async function generateAiCategories(businessType, businessDescription) {
   try {
     
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: {
         responseMimeType: "application/json",
