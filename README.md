@@ -1,161 +1,87 @@
-# AI Feedback Collector App
+# 🚀 AI Feedback Collector (SaaS)
 
-A comprehensive full-stack application designed to help organizations collect, analyze, and gain insights from user feedback using advanced AI technologies. This app provides a user-friendly interface for feedback submission, real-time analytics, sentiment analysis, and actionable recommendations.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/frontend-React-blue)](https://reactjs.org/)
+[![MongoDB](https://img.shields.io/badge/database-MongoDB-green)](https://www.mongodb.com/)
 
-## Features
+**AI Feedback Collector** is a full-stack SaaS platform designed to help businesses turn customer feedback into actionable insights instantly. Using QR codes for collection and Gemini AI for analysis, it categorizes, sentiments, and provides growth recommendations in real-time.
 
-- **User Authentication & Authorization**: Secure login and registration with JWT-based authentication.
-- **Feedback Collection**: Easy-to-use forms for users to submit feedback with categories and ratings.
-- **AI-Powered Insights**: Automated analysis of feedback using AI to generate summaries, sentiment scores, and growth recommendations.
-- **Analytics Dashboard**: Interactive charts and visualizations for sentiment overview, category breakdowns, recurring issues, and priority alerts.
-- **Organization Management**: Setup and manage organizational profiles with logos and settings.
-- **Subscription & Payments**: Integrated Stripe payments for subscription plans (Free, Pro, Enterprise).
-- **Real-time Updates**: Live feedback updates and notifications.
-- **Responsive Design**: Mobile-friendly interface built with React and modern CSS.
+---
 
-## Tech Stack
+## 📖 Project Overview
+The goal of this project is to simplify the feedback loop for small to medium businesses. Customers scan a QR code, leave their thoughts, and the AI handles the rest—categorizing the input, detecting sentiment, and alerting owners to urgent issues.
 
-### Frontend
-- **React**: Component-based UI library
-- **Vite**: Fast build tool and development server
-- **CSS Modules**: Scoped styling for components
-- **React Router**: Client-side routing
-- **Context API**: State management for authentication
+### 💡 Key Features
+- **🤖 Smart AI Analysis**: Powered by Gemini 2.0, providing sentiment detection, priority scoring, and keyword extraction.
+- **💳 SaaS-Ready**: Integrated Stripe payments for Basic and Pro subscription tiers.
+- **📊 Interactive Dashboard**: Professional analytics using modern charting for sentiment trends and category breakthroughs.
+- **📱 QR Collection**: Unique, organization-specific landing pages and QR codes for easy physical-to-digital feedback.
+- **💬 Admin AI Chat**: An intelligent assistant to help admins query their own feedback data using natural language.
+- **🔐 Secure Auth**: Robust JWT-based authentication with refresh token logic.
 
-### Backend
-- **Node.js**: JavaScript runtime
-- **Express.js**: Web framework for API development
-- **MongoDB**: NoSQL database with Mongoose ODM
-- **JWT**: JSON Web Tokens for authentication
-- **bcrypt**: Password hashing
+---
 
-### Integrations
-- **Stripe**: Payment processing and subscription management
-- **OpenAI**: AI-powered feedback analysis and insights
-- **Cloudinary**: Image upload and management for organization logos
+## 🛠️ Tech Stack
 
-### Development Tools
-- **ESLint**: Code linting
-- **Git**: Version control
-- **npm**: Package management
+- **Frontend**: React, Vite, Context API, Lucide Icons, Framer Motion, Sonner.
+- **Backend**: Node.js, Express.js, Mongoose.
+- **Database**: MongoDB (Atlas).
+- **Integrations**: 
+  - **AI**: Google Gemini (2.0 Flash).
+  - **Payments**: Stripe (Checkout & Billing Portal).
+  - **Storage**: Cloudinary (Org Logos).
+  - **QR**: QRCode.js.
 
-## Installation
+---
+
+## 🏗️ Technical Deep Dive
+For a detailed look at the architecture, database schema, and technical decisions, please check out the **[DOCUMENTATION.md](./DOCUMENTATION.md)**.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- MongoDB (local or cloud instance)
-- Git
+- Node.js (v18+)
+- MongoDB Atlas account
+- Stripe, Gemini, and Cloudinary API keys
 
-### Setup
+### Installation
 
-1. **Clone the repository**:
+1. **Clone the repo**
    ```bash
-   git clone https://github.com/your-username/ai-feedback-collector-app.git
-   cd ai-feedback-collector-app
+   git clone https://github.com/Endalk-sudo/AI-Feedback-collector-app.git
+   cd AI-Feedback-collector-app
    ```
 
-2. **Install server dependencies**:
+2. **Setup Server**
    ```bash
    cd server
    npm install
+   # Copy .env.example to .env and fill in your keys
+   npm run dev
    ```
 
-3. **Install client dependencies**:
+3. **Setup Client**
    ```bash
    cd ../client
    npm install
+   # Copy .env.example to .env
+   npm run dev
    ```
 
-4. **Environment Configuration**:
-   - Copy `.env.example` to `.env` in both `server/` and `client/` directories
-   - Fill in the required environment variables:
-     - Database connection string
-     - JWT secret
-     - Stripe API keys
-     - OpenAI API key
-     - Cloudinary credentials
+---
 
-5. **Start the application**:
-   - Start the server:
-     ```bash
-     cd server
-     npm start
-     ```
-   - Start the client (in a new terminal):
-     ```bash
-     cd client
-     npm run dev
-     ```
+## 🌍 Deployment
+This app is ready for deployment on **Render** (Backend) and **Vercel** (Frontend). See the [Deployment Guide](./deployment.md) for full instructions.
 
-6. **Access the app**:
-   - Open your browser and navigate to `http://localhost:5173` (client)
-   - Server runs on `http://localhost:5000` (or configured port)
+---
 
-## Usage
+## 📄 License
+Distributed under the MIT License. See `LICENSE` for more information.
 
-1. **Register/Login**: Create an account or log in to access the dashboard.
-2. **Organization Setup**: Configure your organization details and upload a logo.
-3. **Collect Feedback**: Share feedback forms with users or integrate via API.
-4. **View Analytics**: Monitor feedback trends, sentiment, and insights on the dashboard.
-5. **Manage Subscriptions**: Upgrade plans via the payments section.
-6. **AI Insights**: Review AI-generated summaries and recommendations.
+---
 
-## API Documentation
-
-The API provides endpoints for:
-- Authentication (`/api/auth`)
-- Feedback management (`/api/feedback`)
-- Analytics (`/api/analytics`)
-- AI processing (`/api/ai`)
-- Payments (`/api/payment`)
-- User management (`/api/user`)
-- Settings (`/api/settings`)
-
-Detailed API documentation can be found in the `server/routes/` directory or by running the server and accessing `/api/docs` (if Swagger is configured).
-
-## Project Structure
-
-```
-ai-feedback-collector-app/
-├── client/                 # Frontend React application
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/          # Page components
-│   │   ├── services/       # API service functions
-│   │   └── context/        # React context providers
-│   ├── public/             # Static assets
-│   └── package.json
-├── server/                 # Backend Node.js application
-│   ├── controllers/        # Route controllers
-│   ├── models/             # MongoDB models
-│   ├── routes/             # API routes
-│   ├── middleware/         # Custom middleware
-│   ├── services/           # Business logic services
-│   └── config/             # Configuration files
-├── .gitignore              # Git ignore rules
-└── README.md               # Project documentation
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For support, email support@ai-feedback-collector.com or join our Discord community.
-
-## Roadmap
-
-- [ ] Mobile app development
-- [ ] Advanced AI models integration
-- [ ] Multi-language support
-- [ ] API rate limiting and caching
-- [ ] Export analytics reports
+## ✨ Developed with ❤️ by [Endalk](https://github.com/Endalk-sudo)
+*Passionate about building AI-driven solutions that solve real-world problems.*
