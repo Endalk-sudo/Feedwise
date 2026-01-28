@@ -21,12 +21,17 @@
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.1",
+    "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "qrcode": "^1.5.4",
-    "stripe": "^19.0.0"
+    "stripe": "^19.0.0",
+    "winston": "^3.19.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

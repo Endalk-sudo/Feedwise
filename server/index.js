@@ -13,6 +13,10 @@ import paymentRoutes from './routes/payment.js';
 import analyticsRoutes from "./routes/analytics.js"
 import { handleWebhook } from "./controllers/paymentController.js";
 import {startInsightGenerationJob} from "./jobs/generateInsights.js"
+import helmet from 'helmet';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
+import logger from './utils/logger.js';
 
 // Load environment variables from .env file
 // This is like reading configuration settings before starting
@@ -22,13 +26,32 @@ dotenv.config();
 // Think of this as building the main office building
 const app = express();
 
-// Enable CORS (Cross-Origin Resource Sharing)
-// This allows your React app (running on localhost:5173) to talk to your server (localhost:5000)
-// It's like allowing visitors from different neighborhoods to enter your building
+// Set secure HTTP headers
+app.use(helmet());
+
+// Logging HTTP requests
+app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
+
+// Enable CORS
 app.use(cors({
   origin: process.env.CLIENT_URL,
   credentials: true
 }));
+
+// Rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+  }
+});
+
+// Apply the rate limiting middleware to all requests
+app.use('/api/', apiLimiter);
 
 // Enable cookie parsing
 app.use(cookieParser());
@@ -87,8 +110,8 @@ startInsightGenerationJob();
 
 // Error handling middleware
 app.use((error, req, res, next) => {
-  console.error('Error:', error);
-  console.error('Error Stack:', error.stack);
+  logger.error(`${error.message}`, { stack: error.stack });
+  
   res.status(error.status || 500).json({
     success: false,
     message: error.message || 'Internal Server Error',
@@ -106,17 +129,12 @@ const startServer = async () => {
     await connectDB(); // First connect to database
     
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/health`);
-      console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
-      console.log(`💬 Feedback endpoints: http://localhost:${PORT}/api/feedback`);
+      logger.info(`🚀 Server running on port ${PORT}`);
+      logger.info(`📊 Health check: http://localhost:${PORT}/health`);
     });
   } catch (error) {
-      console.error('❌ Failed to start server:', error.message);
-      if (process.env.NODE_ENV === 'development') {
-        console.error(error.stack);
-      }
-      process.exit(1);
+    logger.error(`❌ Failed to start server: ${error.message}`, { stack: error.stack });
+    process.exit(1);
   }
     
 };

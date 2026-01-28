@@ -76,7 +76,12 @@ const  register = async (req, res) => {
         console.log('User lookup result:', user ? 'exists' : 'not found');
         if (user) {
             console.log('User already exists');
-            return res.status(400).json({ message: 'User already exists' });
+            return res.status(409).json({
+                success: false,
+                message: 'User already exists',
+                code: 'AUTH_USER_EXISTS',
+                errors: [{ field: 'email', message: 'Email is already registered' }]
+            });
         }
         // Create new user (password will be hashed in the model)
         user = new User({
@@ -104,7 +109,12 @@ const  register = async (req, res) => {
          
     } catch (err) {
         console.error('Registration error:', err);
-        res.status(500).json({ message: 'Server Error during registration' });
+        res.status(500).json({
+            success: false,
+            message: 'Server Error during registration',
+            code: 'SERVER_ERROR',
+            errors: []
+        });
     }
 };
 
@@ -199,12 +209,22 @@ const login = async (req, res) => {
         // Find user by email
         let user = await User.findOne({ email});
         if (!user) {
-            return res.status(401).json({ message: 'Invalid Credentials' });
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid Credentials',
+                code: 'AUTH_INVALID_CREDENTIALS',
+                errors: []
+            });
         }
         // Check if password matches (uses model's comparePassword method)
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid Credentials' });
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid Credentials',
+                code: 'AUTH_INVALID_CREDENTIALS',
+                errors: []
+            });
         }
         // Generate new tokens
         const {accessToken, refreshToken } = generateTokens(user);
@@ -243,7 +263,12 @@ const login = async (req, res) => {
         });
     } catch (err) {
         console.error('Login error:', err);
-        res.status(500).json({ message: 'Server Error during login' });
+        res.status(500).json({
+            success: false,
+            message: 'Server Error during login',
+            code: 'SERVER_ERROR',
+            errors: []
+        });
     }
 };
 

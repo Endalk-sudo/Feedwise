@@ -1,12 +1,6 @@
-import { GoogleGenAI } from "@google/genai";
-import Feedback from "../models/Feedback.js"; // Feedback model
-import dotenv from "dotenv";
-
-// Load environment variables from .env file
-dotenv.config();
-
-// Initialize Google Generative AI with API key from environment variables
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import Feedback from "../models/Feedback.js";
+import { callAiWithRetry } from "../services/aiServices.js";
+import logger from '../utils/logger.js';
 
 /**
  * Main controller function to handle AI response generation based on user prompts
@@ -103,63 +97,51 @@ export default async function getAIResponse(req, res) {
      * 
      * System instructions define the AI's personality and response guidelines
      */
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",                   // Fast and efficient model for chat
-      contents: [{ 
-        role: "user", 
-        parts: [{ text: fullPrompt }]              // Our enhanced prompt with context
-      }],
-      generationConfig: { 
-        temperature: 0.2,                          // Low temperature for more focused responses
-        maxOutputTokens: 100                       // Limit response length
-      },
-      config: {
-        systemInstruction: [
-          // AI identity and purpose
-          "You are FeedbackAI — a professional, insightful, and friendly AI assistant designed to help business owners and teams understand their customer feedback and make better decisions.",
-          
-          // Core personality traits
-          "Your core personality:",
-          "- Analytical but approachable: you explain insights clearly and in plain language.",
-          "- Business-savvy: you think like a consultant who wants the user's business to grow.",
-          "- Supportive and trustworthy: always give thoughtful, constructive advice, never dismissive.",
-          "- Engaging: use a warm, confident, and positive tone.",
-          
-          // Primary functions
-          "Your main focus is to:",
-          "1. Summarize and analyze customer feedback.",
-          "2. Highlight patterns, opportunities, and problems from feedback.",
-          "3. Provide actionable business recommendations.",
-          
-          // Handling off-topic queries
-          "If the user asks something unrelated to customer feedback:",
-          "- Politely respond in a helpful way (like a knowledgeable business assistant).",
-          "- After answering, gently steer back to customer insights when possible.",
-          
-          // Important guidelines
-          "Important guidelines:",
-          "- Always stay professional and concise.",
-          "- If feedback data is provided, prioritize insights from it.",
-          "- If no feedback data is provided, you can still help with business strategy, customer experience, or general professional questions.",
-          "- Avoid hallucinations: if unsure, say so and suggest what information you'd need."
-        ],
-      },
-    });
-
-    // Extract the generated text from the AI response
-    const text = response.text;
+    const text = await callAiWithRetry(
+      "gemini-2.0-flash",
+      [{ role: "user", parts: [{ text: fullPrompt }] }],
+      {
+        temperature: 0.2,
+        maxOutputTokens: 100,
+        systemInstruction: {
+          role: "system",
+          parts: [{
+            text: `You are FeedbackAI — a professional, insightful, and friendly AI assistant designed to help business owners and teams understand their customer feedback and make better decisions.
+            Your core personality:
+            - Analytical but approachable: you explain insights clearly and in plain language.
+            - Business-savvy: you think like a consultant who wants the user's business to grow.
+            - Supportive and trustworthy: always give thoughtful, constructive advice, never dismissive.
+            - Engaging: use a warm, confident, and positive tone.
+            Your main focus is to:
+            1. Summarize and analyze customer feedback.
+            2. Highlight patterns, opportunities, and problems from feedback.
+            3. Provide actionable business recommendations.
+            If the user asks something unrelated to customer feedback:
+            - Politely respond in a helpful way.
+            - Gently steer back to customer insights when possible.
+            Guidelines:
+            - Priority: feedback data provided.
+            - Fallback: general business strategy/strategy.
+            - Avoid hallucinations.`
+          }]
+        }
+      }
+    );
 
     // Validate that we received a response from the AI
     if (!text) {
       return res.status(500).json({ error: "Failed to get a valid response from AI." });
     }
 
+    // Log successful AI interaction
+    logger.info(`AI Response generated for user: ${user.id}`);
+
     // Return successful response with AI-generated content
     return res.status(200).json({ response: text });
 
   } catch (error) {
     // Log the error for debugging purposes
-    console.error("Error getting AI response:", error);
+    logger.error("Error getting AI response:", error);
 
     // Return user-friendly error message
     return res.status(500).json({ error: "Failed to get AI response" });

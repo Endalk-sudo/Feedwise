@@ -10,6 +10,9 @@ import Feedback from "../models/Feedback.js";
 import Organization from "../models/Organization.js";
 import {analyzeFeedback} from "../services/aiServices.js"
 import OrgLogo from "../models/OrgLogo.js"
+import validate from '../middleware/validationMiddleware.js';
+import { submitFeedbackSchema, getFeedbackSchema } from '../middleware/schemas.js';
+import {verifyToken} from "../middleware/auth.js"
 
 
 // --- Route Controllers ---
@@ -17,7 +20,7 @@ import OrgLogo from "../models/OrgLogo.js"
 
 export const getFeedback = async (req, res) => {
   const user = req.user;
-  const { page = 1, limit = 10 } = req.query;
+  const { page, limit } = req.query; // Already parsed by zod
 
   try {
     const org = await Organization.findOne({ ownerId: user.id });
@@ -58,10 +61,6 @@ export const getFeedback = async (req, res) => {
 export const submitFeedback = async (req, res) => {
   const { orgSlug } = req.params;
   const { text } = req.body;
-
-  if (!text || typeof text !== 'string' || text.trim() === '') {
-    return res.status(400).json({ message: "Feedback text is required and cannot be empty." });
-  }
 
   try {
     const org = await Organization.findOne({ slug: orgSlug });

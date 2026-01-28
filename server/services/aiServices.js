@@ -1,22 +1,43 @@
 // Import necessary modules
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import logger from '../utils/logger.js';
 
 dotenv.config(); // Load environment variables from .env file
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
+
+/**
+ * Helper function for AI calls with retry logic
+ */
+const callAiWithRetry = async (modelName, contents, config, retries = 3) => {
+  let lastError;
+  for (let i = 0; i < retries; i++) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(contents, config);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      lastError = error;
+      logger.warn(`AI call failed (attempt ${i + 1}/${retries}): ${error.message}`);
+      if (i < retries - 1) {
+        const delay = Math.pow(2, i) * 1000; // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+};
+
 
 // --- AI Model Initialization ---
-if (!GEMINI_API_KEY) {
+if (!process.env.GEMINI_API_KEY) {
   throw new Error("GEMINI_API_KEY environment variable is not set.");
 }
 
-// Initialize the Google GenAI client
-// The constructor expects an options object with the API key
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
 // --- Helper Function for AI Categorization ---
-async function analyzeFeedback(originalText,categories) {
+async function analyzeFeedback(originalText, categories) {
   // --- AI Category Schema ---
   const analysisSchema = {
     type: Type.OBJECT,
@@ -95,24 +116,27 @@ async function analyzeFeedback(originalText,categories) {
 
     Feedback: "${originalText}"`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
+    // Generate structured content using the optimized helper
+    const text = await callAiWithRetry(
+      "gemini-2.0-flash",
+      [{ role: "user", parts: [{ text: prompt }] }],
+      {
         responseMimeType: "application/json",
         responseSchema: analysisSchema,
         temperature: 0.2,
-      },
-    });
+      }
+    );
 
-    const responseText = response.text;
-    const cleanedText = responseText.replace(/```json|```/g, "").trim();
+    const parsedData = JSON.parse(text);
+    logger.info(`Feedback analyzed successfully. Sentiment: ${parsedData.sentiment}`);
 
-    console.log("AI Categorization Response:", cleanedText);
-    return JSON.parse(cleanedText);
+    return {
+      text: originalText, // Use originalText as feedbackText
+      ...parsedData,
+    };
   } catch (error) {
-    console.error("Error during AI feedback categorization:", error);
-    throw new Error("The AI failed to process the feedback. Please try again.");
+    logger.error("Error in analyzeFeedback:", error);
+    throw new Error("Failed to analyze feedback with AI.");
   }
 }
 
@@ -155,20 +179,17 @@ async function generateAiCategories(businessType, businessDescription) {
       `;
 
   try {
-    
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
+    const text = await callAiWithRetry(
+      "gemini-2.0-flash",
+      [{ role: "user", parts: [{ text: prompt }] }],
+      {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
         temperature: 0.2,
-      },
-    });
+      }
+    );
     
-    const responseText = response.text;
-    const cleanedText = responseText.replace(/```json|```/g, "").trim();
-    const categories = JSON.parse(cleanedText);
+    const categories = JSON.parse(text);
 
      // Validate the response
     if (!Array.isArray(categories) || categories.length < 5 || categories.length > 14) {
@@ -178,14 +199,14 @@ async function generateAiCategories(businessType, businessDescription) {
       throw new Error("Categories must be non-empty strings.");
     }
 
-     console.log("Generated Categories:", categories);
+    logger.info(`Generated ${categories.length} categories for business: ${businessType}`);
     return categories
 
   } catch (error) {
-      console.error("Error generating AI categories:", error);
+      logger.error("Error generating AI categories:", error);
       throw new Error("Failed to generate categories. Please try again.");
   }
 }
 
 
-export { analyzeFeedback, generateAiCategories};
+export { analyzeFeedback, generateAiCategories, callAiWithRetry };
