@@ -78,26 +78,41 @@
 }
 
 .form-label {
-    position: absolute;
-    top: 12px;
-    left: 16px;
+    margin-bottom: 8px;
+    display: block;
     color: var(--color-text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
     pointer-events: none;
-    transition: all 0.2s ease;
-    z-index: 1;
+    z-index: 2;
 }
 
 .input {
     width: 100%;
-    padding: 16px;
+    padding: 12px 16px 12px 40px;
     border-radius: 8px;
     border: 1px solid var(--color-border);
-    background: rgba(30, 41, 59, 0.8);
+    background: rgba(30, 41, 59, 0.6);
     color: var(--color-text-primary);
-    font-size: 1rem;
+    font-size: 0.95rem;
     outline: none;
-    transition: all 0.3s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .input:focus {
@@ -111,25 +126,37 @@
 
 .field-error {
     color: var(--color-error);
-    font-size: 0.8rem;
-    margin-top: 5px;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .password-wrapper {
     position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper .input {
+    padding-right: 45px;
 }
 
 .password-toggle-btn {
     position: absolute;
+    right: 8px;
     top: 50%;
-    right: 12px;
     transform: translateY(-50%);
     background: none;
     border: none;
     color: var(--color-text-secondary);
     cursor: pointer;
-    padding: 5px;
-    border-radius: 4px;
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.2s ease;
 }
 
@@ -142,10 +169,18 @@
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.2);
     border-radius: 8px;
-    padding: 12px;
+    padding: 10px;
     color: var(--color-error);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     text-align: center;
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 .auth-button {

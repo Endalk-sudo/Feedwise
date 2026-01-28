@@ -1,5 +1,5 @@
 import "./OrgSetup.css";
-import {  useState, useRef } from "react";
+import { useState, useRef } from "react";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -12,44 +12,44 @@ const OrgSetup = () => {
   const [logo, setLogo] = useState(null);
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
-  
+
   const [businessType, setBusinessType] = useState("");
   const [businessDescription, setBusinessDescription] = useState("");
 
   const { setUser } = useAuth();
   const navigate = useNavigate();
 
-const businessTypes = [
-  { label: 'Select your business type', value: '' },
-  { label: "SaaS (Software as a Service)", value: "saas" },
-  { label: "E-commerce / Online Store", value: "ecommerce" },
-  { label: "Retail Store", value: "retail" },
-  { label: "Service Business", value: "service" },
-  { label: "Agency / Consulting Firm", value: "agency" },
-  { label: "Manufacturing", value: "manufacturing" },
-  { label: "Nonprofit / NGO", value: "nonprofit" },
-  { label: "Education / Online Courses", value: "education" },
-  { label: "Healthcare / Medical", value: "healthcare" },
-  { label: "Finance / Banking / Fintech", value: "finance" },
-  { label: "Real Estate", value: "real_estate" },
-  { label: "Travel / Tourism", value: "travel" },
-  { label: "Food & Beverage / Restaurant / Café", value: "food_beverage" },
-  { label: "Logistics / Delivery / Transportation", value: "logistics" },
-  { label: "Entertainment / Media / Streaming", value: "entertainment" },
-  { label: "Marketplace / Platform", value: "marketplace" },
-  { label: "Fitness / Wellness / Gym", value: "fitness" },
-  { label: "Beauty / Cosmetics", value: "beauty" },
-  { label: "Events / Hospitality", value: "events" },
-  { label: "Construction / Engineering", value: "construction" },
-  { label: "Technology / IT Services", value: "technology" },
-  { label: "Marketing / Advertising", value: "marketing" },
-  { label: "Automotive / Car Services", value: "automotive" },
-  { label: "Fashion / Apparel", value: "fashion" },
-  { label: "Agriculture / Farming", value: "agriculture" },
-  { label: "Telecommunications", value: "telecommunications" },
-  { label: "Energy / Utilities", value: "energy" },
-  { label: "Legal / Law Firm", value: "legal" }
-];
+  const businessTypes = [
+    { label: 'Select your business type', value: '' },
+    { label: "SaaS (Software as a Service)", value: "saas" },
+    { label: "E-commerce / Online Store", value: "ecommerce" },
+    { label: "Retail Store", value: "retail" },
+    { label: "Service Business", value: "service" },
+    { label: "Agency / Consulting Firm", value: "agency" },
+    { label: "Manufacturing", value: "manufacturing" },
+    { label: "Nonprofit / NGO", value: "nonprofit" },
+    { label: "Education / Online Courses", value: "education" },
+    { label: "Healthcare / Medical", value: "healthcare" },
+    { label: "Finance / Banking / Fintech", value: "finance" },
+    { label: "Real Estate", value: "real_estate" },
+    { label: "Travel / Tourism", value: "travel" },
+    { label: "Food & Beverage / Restaurant / Café", value: "food_beverage" },
+    { label: "Logistics / Delivery / Transportation", value: "logistics" },
+    { label: "Entertainment / Media / Streaming", value: "entertainment" },
+    { label: "Marketplace / Platform", value: "marketplace" },
+    { label: "Fitness / Wellness / Gym", value: "fitness" },
+    { label: "Beauty / Cosmetics", value: "beauty" },
+    { label: "Events / Hospitality", value: "events" },
+    { label: "Construction / Engineering", value: "construction" },
+    { label: "Technology / IT Services", value: "technology" },
+    { label: "Marketing / Advertising", value: "marketing" },
+    { label: "Automotive / Car Services", value: "automotive" },
+    { label: "Fashion / Apparel", value: "fashion" },
+    { label: "Agriculture / Farming", value: "agriculture" },
+    { label: "Telecommunications", value: "telecommunications" },
+    { label: "Energy / Utilities", value: "energy" },
+    { label: "Legal / Law Firm", value: "legal" }
+  ];
 
 
   const handleFileChange = (e) => {
@@ -70,12 +70,12 @@ const businessTypes = [
       return;
     }
 
-      setLogo(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+    setLogo(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleNameChange = (e) => {
@@ -95,19 +95,19 @@ const businessTypes = [
     setOrgSlug(sanitizedSlug);
   };
 
-  const handleBusinessTypeChange = (e) =>{
+  const handleBusinessTypeChange = (e) => {
     setBusinessType(e.target.value)
 
     // Clear error if type is not empty (basic validation)
-    if(e.target.value !== ""){
+    if (e.target.value !== "") {
       setError("")
     }
   }
 
-  const handleBusinessDescriptionChange =(e)=>{
+  const handleBusinessDescriptionChange = (e) => {
     setBusinessDescription(e.target.value)
     // Clear error if description is not empty (basic validation)
-    if(e.target.value !== ""){
+    if (e.target.value !== "") {
       setError("")
     }
   }
@@ -115,13 +115,13 @@ const businessTypes = [
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if(businessType === ""){
+    if (businessType === "") {
       setError("Please select a Business Type before submitting.")
       return
     }
 
     // Basic validation
-    if(businessDescription.length < 50 || businessDescription.length > 300){
+    if (businessDescription.length < 50 || businessDescription.length > 300) {
       setError("Business description must be between 50 and 300 characters.")
       return
     }
@@ -140,20 +140,16 @@ const businessTypes = [
     }
 
     try {
-      // Get access token from localStorage
-      const token = localStorage.getItem('accessToken');
-      
       const res = await api.post(
         "/auth/organization",
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
         }
       );
-      
+
       // Update user in context with the new organization data
       setUser(res.data.user);
       navigate("/dashboard");
@@ -194,7 +190,7 @@ const businessTypes = [
                 <img src={preview} alt="Organization Logo Preview" />
               ) : (
                 <div className="logo-placeholder">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
                   <span>Upload Logo</span>
                 </div>
               )}
@@ -205,7 +201,7 @@ const businessTypes = [
             <label htmlFor="orgName">Organization Name</label>
             <div className="input-field-wrapper">
               <span className="input-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
               </span>
               <input
                 id="orgName"
@@ -223,7 +219,7 @@ const businessTypes = [
             <label htmlFor="orgSlug">URL Slug</label>
             <div className="input-field-wrapper">
               <span className="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72" /></svg>
               </span>
               <input
                 id="orgSlug"
@@ -239,24 +235,24 @@ const businessTypes = [
           </div>
 
           <div className="input-group">
-              <label htmlFor="businessTypes">Business Type</label>
-              <select 
-                id="businessTypes" 
-                value={businessType} 
-                onChange={handleBusinessTypeChange}
-                required={true}
-                >
-                  {
-                    businessTypes.map((option)=>(
-                      <option key={option.value} value={option.value} >{option.label} </ option>
-                    ))
-                  } 
-              </select>
+            <label htmlFor="businessTypes">Business Type</label>
+            <select
+              id="businessTypes"
+              value={businessType}
+              onChange={handleBusinessTypeChange}
+              required={true}
+            >
+              {
+                businessTypes.map((option) => (
+                  <option key={option.value} value={option.value} >{option.label} </ option>
+                ))
+              }
+            </select>
           </div>
 
           <div className="input-group">
-              <label htmlFor="businessDescription">Describe your business and what you offer</label>
-              <textarea
+            <label htmlFor="businessDescription">Describe your business and what you offer</label>
+            <textarea
               name="business-description"
               id="businessDescription"
               value={businessDescription}
@@ -264,7 +260,7 @@ const businessTypes = [
               maxLength={300}
               placeholder="Example: We run an online store that sells eco-friendly skincare products."
               required
-              />
+            />
           </div>
 
 

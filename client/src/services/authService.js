@@ -17,7 +17,9 @@ export const login = async (credentials) => {
     const response = await api.post('/auth/login', credentials);
     
     // Store access token in localStorage
-    localStorage.setItem('accessToken', response.data.accessToken);
+    if (response.data.accessToken) {
+      localStorage.setItem('accessToken', response.data.accessToken);
+    }
     
     return response.data;
   } catch (error) {
@@ -30,15 +32,11 @@ export const login = async (credentials) => {
 export const logout = async () => {
   try {
     await api.post('/auth/logout');
-    localStorage.removeItem('accessToken');
   } catch (error) {
-    console.error('Logout error:', error);
-    // Even if the request fails, clear local storage
+    console.error('Logout API error:', error);
+  } finally {
+    // Always clear local storage
     localStorage.removeItem('accessToken');
-    
-    // Normalize error message
-    const errorMessage = error.response?.data?.message || error.message || 'Logout failed';
-    throw new Error(errorMessage);
   }
 };
 

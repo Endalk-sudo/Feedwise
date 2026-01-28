@@ -11,7 +11,7 @@ const WelcomeMessage = () => {
             <div className="ai-response-avatar">
                 <div className="avatar-icon">🤖</div>
             </div>
-            
+
             <div className="ai-response-content">
                 <div className="ai-response-text">
                     <p>Hello! I'm InsightBot, your AI assistant for customer feedback analysis.</p>
@@ -34,7 +34,7 @@ const AiPage = () => {
     const inputRef = useRef(null);
 
     const { user } = useAuth(); // Fixed to use useAuth hook
-    
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -47,34 +47,34 @@ const AiPage = () => {
         event.preventDefault();
         const formData = new FormData(event.target);
         const prompt = formData.get('user-prompt');
-        
+
         if (!prompt.trim()) return;
-        
+
         // Add user message
         setMessages(prev => [...prev, { type: 'user', content: prompt, id: Date.now() }]);
         setIsLoading(true);
-        
+
         // Clear the input field
         event.target.reset();
-        
+
         try {
-            const response = await api.post("/ai", 
+            const response = await api.post("/ai",
                 { user, prompt }
             );
-            
+
             console.log("response data =>", response.data);
             setMessages(prev => [...prev, { type: 'ai', content: response.data, id: Date.now() + 1 }]);
-        } catch(err) {
+        } catch (err) {
             console.log("error from ai", err.message);
-            setMessages(prev => [...prev, { 
-                type: 'ai', 
-                content: { error: "Sorry, I'm having trouble connecting right now. Please try again." }, 
-                id: Date.now() + 1 
+            setMessages(prev => [...prev, {
+                type: 'ai',
+                content: { error: err.message || "Sorry, I'm having trouble connecting right now. Please try again." },
+                id: Date.now() + 1
             }]);
         } finally {
             setIsLoading(false);
         }
-        
+
         scrollToBottom();
     }
 
@@ -87,7 +87,7 @@ const AiPage = () => {
                             <div className="avatar-pulse"></div>
                             <div className="bot-icon">🤖</div>
                         </div>
-                        
+
                         <div className="header-text">
                             <h1>InsightBot AI Assistant</h1>
                             <p>Analyze customer feedback and extract valuable insights</p>
@@ -98,17 +98,17 @@ const AiPage = () => {
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="ai-play-ground">
                     <div className="chat-messages">
                         <WelcomeMessage />
-                        
+
                         {messages.map((msg) => (
-                            msg.type === 'user' ? 
-                                <UserPromptCard key={msg.id} prompt={msg.content} /> : 
+                            msg.type === 'user' ?
+                                <UserPromptCard key={msg.id} prompt={msg.content} /> :
                                 <AiResponseCard key={msg.id} res={msg.content} />
                         ))}
-                        
+
                         {isLoading && (
                             <div className="ai-response-message loading">
                                 <div className="ai-response-avatar">
@@ -123,11 +123,11 @@ const AiPage = () => {
                                 </div>
                             </div>
                         )}
-                        
+
                         <div ref={messagesEndRef} />
                     </div>
                 </div>
-                
+
                 <form onSubmit={handleSubmit} id="ai-form" className="ai-form">
                     <div className="input-container">
                         <input
@@ -141,8 +141,8 @@ const AiPage = () => {
                         <button type="submit" className="ai-chat-send-btn">
                             <span className="btn-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                             </span>
                         </button>

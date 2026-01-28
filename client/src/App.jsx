@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route ,Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from "./auth/LoginPage";
 import { RegisterPage } from "./auth/RegisterPage";
 import Feedback from "./components/Feedback";
@@ -16,6 +16,7 @@ import SubscriptionPlans from "./components/Payments/SubscriptionPlans";
 import PaymentCanceled from './components/Payments/PaymentCanceled';
 import ReactivateSubscription from './components/Payments/ReactivateSubscription';
 import PaymentSuccess from './components/Payments/PaymentSuccess';
+import { Toaster } from 'sonner';
 import NotFound from './pages/NotFound';
 
 
@@ -35,7 +36,7 @@ const PublicRoute = ({ children }) => {
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   // Show loading spinner while checking authentication
   if (loading) {
     return (
@@ -45,7 +46,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  
+
   return user ? children : <Navigate to="/login" replace />;
 };
 
@@ -55,7 +56,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<HomePage />}/>
+          <Route path='/' element={<HomePage />} />
           <Route path='/login' element={
             <PublicRoute >
               <LoginPage />
@@ -68,7 +69,7 @@ function App() {
             </PublicRoute>
           } />
 
-          <Route path="/payment" element={<SubscriptionPlans />}/>
+          <Route path="/payment" element={<SubscriptionPlans />} />
           <Route path="/payment-success" element={
             <ProtectedRoute>
               <PaymentSuccess />
@@ -88,33 +89,34 @@ function App() {
           }
           />
 
-          <Route path='/feedback/:slug' element={<Feedback />}/>
+          <Route path='/feedback/:slug' element={<Feedback />} />
 
-          <Route path='/org-setup' element={<OrgSetup />}/>
+          <Route path='/org-setup' element={<OrgSetup />} />
 
           <Route path='/dashboard/*' element={
             <ProtectedRoute>
               <DashboardWrapper>
-                  <Dashboard />
+                <Dashboard />
               </ DashboardWrapper>
             </ProtectedRoute>
           }>
-            <Route path='' element={<MainContent />}/>
-            <Route path='feedbackes' element={<AllFeedbacks />}/>
-            <Route path='categories' element={<MainContent />}/>
-            <Route path='chat-ai' element={<AiPage />}/>
-            <Route path='settings' element={<Settings />}/>
-            <Route path='pro-analysis' element={<AnalyticsPage />}/>
+            <Route path='' element={<MainContent />} />
+            <Route path='feedbackes' element={<AllFeedbacks />} />
+            <Route path='categories' element={<MainContent />} />
+            <Route path='chat-ai' element={<AiPage />} />
+            <Route path='settings' element={<Settings />} />
+            <Route path='pro-analysis' element={<AnalyticsPage />} />
           </Route>
           <Route path='*' element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      <Toaster position="top-right" richColors closeButton />
     </AuthProvider>
   );
 }
 
 // Wrapper component to handle the organization and subscription check
-function DashboardWrapper({children}) {
+function DashboardWrapper({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -126,14 +128,14 @@ function DashboardWrapper({children}) {
     );
   }
 
-  if(!user?.currentPlan) return <Navigate to="/payment" />
+  if (!user?.currentPlan) return <Navigate to="/payment" />
 
-  if(!user?.hasOrganization) return <Navigate to="/org-setup" />
+  if (!user?.hasOrganization) return <Navigate to="/org-setup" />
 
   // Check subscription status
   if (user?.subscriptionStatus !== 'active') return <ReactivateSubscription />;
 
-  
+
   return children;
 }
 

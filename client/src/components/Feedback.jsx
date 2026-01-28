@@ -1,24 +1,24 @@
 import axios from "axios"
-import { useState ,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import "./Feedback.css";
 
 const Feedback = () => {
-    const [isSubmitted, setIsSubmitted] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState('');
-    const [feedback, setFeedback] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState('');
 
-    const [logo, setLogo] = useState(null);
-    const [orgName, setOrgName] = useState('');
-    const [loadingOrg, setLoadingOrg] = useState(true);
-    const [orgError, setOrgError] = useState('');
-  
-    const {slug} = useParams();
-    const MIN_LEN = 15;
+  const [logo, setLogo] = useState(null);
+  const [orgName, setOrgName] = useState('');
+  const [loadingOrg, setLoadingOrg] = useState(true);
+  const [orgError, setOrgError] = useState('');
+
+  const { slug } = useParams();
+  const MIN_LEN = 15;
 
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchOrg = async () => {
       try {
         setLoadingOrg(true);
@@ -29,10 +29,10 @@ const Feedback = () => {
         setLogo(res.data.orgLogo);
       } catch (err) {
         console.error("Error fetching organization:", err);
-        const errorMessage = err.response?.data?.message || 
-                           err.response?.status === 404 ? 
-                           "Organization not found. Please check the URL." :
-                           "Failed to load organization information. Please try again.";
+        const errorMessage = err.response?.data?.message ||
+          err.response?.status === 404 ?
+          "Organization not found. Please check the URL." :
+          "Failed to load organization information. Please try again.";
         setOrgError(errorMessage);
       } finally {
         setLoadingOrg(false);
@@ -52,10 +52,10 @@ const Feedback = () => {
     const text = feedback.trim();
 
     try {
-      const res = await axios.post(`http://localhost:5000/api/feedback/${slug}`, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/feedback/${slug}`, {
         text
       });
-      
+
       setIsSubmitted(true);
       console.log("feedback", res.data);
     } catch (error) {
@@ -76,15 +76,15 @@ const Feedback = () => {
     try {
       setLoadingOrg(true);
       setOrgError('');
-      const res = await axios.get(`http://localhost:5000/api/feedback/${slug}`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/feedback/${slug}`);
       setOrgName(res.data.orgName);
       setLogo(res.data.orgLogo);
     } catch (err) {
       console.error("Error fetching organization:", err);
-      const errorMessage = err.response?.data?.message || 
-                         err.response?.status === 404 ? 
-                         "Organization not found. Please check the URL." :
-                         "Failed to load organization information. Please try again.";
+      const errorMessage = err.response?.data?.message ||
+        err.response?.status === 404 ?
+        "Organization not found. Please check the URL." :
+        "Failed to load organization information. Please try again.";
       setOrgError(errorMessage);
     } finally {
       setLoadingOrg(false);
@@ -101,8 +101,8 @@ const Feedback = () => {
             We appreciate your time. Your input helps us improve the experience.
           </p>
           <button
-          className="feedback-back-btn"
-          onClick={handleReset}>Go Back</button>
+            className="feedback-back-btn"
+            onClick={handleReset}>Go Back</button>
         </div>
       ) : (
         <section className="feedback-container ">
@@ -115,8 +115,8 @@ const Feedback = () => {
             <div className="feedback-error-container">
               <h2>Error Loading Organization</h2>
               <p className="feedback-error">{orgError}</p>
-              <button 
-                className="feedback-back-btn" 
+              <button
+                className="feedback-back-btn"
                 onClick={handleRetry}
               >
                 Retry
@@ -137,7 +137,7 @@ const Feedback = () => {
               </header>
 
               <article className="feedback-card" aria-labelledby="feedback-title">
-                
+
                 <form onSubmit={handleSubmit} className="feedback-form" noValidate>
                   <label htmlFor="feedback-input" className="feedback-label">Share your thoughts</label>
 
@@ -158,7 +158,7 @@ const Feedback = () => {
                   <p id="feedback-helper" className="feedback-helper">
                     {feedback.length < MIN_LEN
                       ? `Please enter at least ${MIN_LEN} characters.`
-                      : "Looks good. You can submit now." }
+                      : "Looks good. You can submit now."}
                   </p>
 
                   {submitting && (
@@ -177,7 +177,7 @@ const Feedback = () => {
                   <button
                     className="feedback-submit"
                     type="submit"
-                    disabled={submitting || feedback.trim().length < MIN_LEN }
+                    disabled={submitting || feedback.trim().length < MIN_LEN}
                     aria-busy={submitting}
                   >
                     {submitting ? "Analyzing & Submitting..." : "Submit Feedback"}

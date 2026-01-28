@@ -1,26 +1,23 @@
 import { useState } from "react";
-import { EyeIcon } from "./EyeIcon";
-import { EyeOffIcon } from "./EyeOffIcon";
+import { Eye, EyeOff, Lock } from "lucide-react";
 
-export const PasswordInput = ({ name, value, onChange, onBlur, label, autoComplete, error, touched }) => {
+export const PasswordInput = ({ label, error, touched, ...props }) => {
     const [showPassword, setShowPassword] = useState(false);
+
     return (
         <div className="form-field">
-            <label className="form-label" htmlFor={name}>{label}</label>
+            <label className="form-label" htmlFor={props.name}>{label}</label>
             <div className="password-wrapper">
+                <span className="input-icon">
+                    <Lock size={18} />
+                </span>
                 <input
-                    id={name}
-                    name={name}
+                    {...props}
+                    id={props.name}
                     className={`input ${touched && error ? 'input-error' : ''}`}
                     type={showPassword ? "text" : "password"}
                     placeholder=" "
-                    value={value}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    autoComplete={autoComplete}
-                    required
                     aria-invalid={!!(touched && error)}
-                    aria-describedby={touched && error ? `${name}-error` : undefined}
                 />
                 <button
                     type="button"
@@ -28,9 +25,14 @@ export const PasswordInput = ({ name, value, onChange, onBlur, label, autoComple
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
             </div>
+            {touched && error && (
+                <div className="field-error">
+                    <span>{error.message || error}</span>
+                </div>
+            )}
         </div>
     );
 };

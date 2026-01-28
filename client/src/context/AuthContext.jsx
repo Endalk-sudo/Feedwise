@@ -12,96 +12,127 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+  /* State Values */
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true); // Initial app load
+  const [isSubmitting, setIsSubmitting] = useState(false); // Form submission status
+  const [serverError, setServerError] = useState(null); // Global error message
+  const [validationErrors, setValidationErrors] = useState({}); // Field-specific errors
+
+  // Derived state
+  const isAuthenticated = !!user;
 
   // Check if user is logged in on initial load
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-          const response = await getProfile();
-          setUser(response.user);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        localStorage.removeItem('accessToken');
+  const initializeAuth = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        const response = await getProfile();
+        setUser(response.user);
+      } else {
         setUser(null);
-      } finally {
-        setLoading(false);
       }
-    };
-    checkAuthStatus();
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('accessToken');
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  // Utility to parse errors from backend
+  const handleAuthError = (error) => {
+    const responseData = error.response?.data;
+
+    // 1. Validation Errors (409 Conflict, 400 Bad Request with errors array)
+    if (responseData?.errors && Array.isArray(responseData.errors)) {
+      const fieldErrors = {};
+      responseData.errors.forEach(err => {
+        fieldErrors[err.field] = err.message;
+      });
+      setValidationErrors(fieldErrors);
+    }
+
+    // 2. Global Server Error (Message string)
+    const globalMessage = responseData?.message || error.message || 'An unexpected error occurred';
+    setServerError(globalMessage);
+
+    throw new Error(globalMessage);
+  };
 
   const login = async (credentials) => {
     try {
-      setLoading(true);
-      setError(null);
+      setIsSubmitting(true);
+      setServerError(null);
+      setValidationErrors({});
+
       const response = await loginUser(credentials);
       setUser(response.user);
       return response;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      handleAuthError(error);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const register = async (userData) => {
     try {
-      setLoading(true);
-      setError(null);
+      setIsSubmitting(true);
+      setServerError(null);
+      setValidationErrors({});
+
       const response = await registerUser(userData);
-      setUser(response.user);
+      // Optional: Auto-login after register logic could go here
+      // setUser(response.user); 
       return response;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      handleAuthError(error);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const logout = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setIsSubmitting(true);
+      setServerError(null);
+      setValidationErrors({});
+
       await logoutUser();
-      setUser(null);
-      localStorage.removeItem('accessToken');
     } catch (error) {
       console.error('Logout error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Logout failed';
-      setError(errorMessage);
-      // Still clear user and token even if API call fails
+      // Don't throw on logout, just cleanup locally
+    } finally {
       setUser(null);
       localStorage.removeItem('accessToken');
-    } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const clearError = useCallback(() => {
-    setError(null);
+    setServerError(null);
+    setValidationErrors({});
   }, []);
 
   const value = {
     user,
-    login,
-    logout,
-    register,
+    isAuthenticated,
     loading,
-    error,
-    setUser,
-    clearError
+    isSubmitting,
+    serverError,
+    validationErrors,
+    login,
+    register,
+    logout,
+    clearError,
+    setUser
   };
 
   return (
@@ -111,4 +142,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthContext;
+export { AuthContext };
