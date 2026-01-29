@@ -49,6 +49,21 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, [initializeAuth]);
 
+  // Listen for subscription updates from PaymentSuccess component
+  useEffect(() => {
+    const handleSubscriptionUpdate = (event) => {
+      if (event.detail) {
+        setUser(event.detail);
+      }
+    };
+
+    window.addEventListener('user-subscription-updated', handleSubscriptionUpdate);
+
+    return () => {
+      window.removeEventListener('user-subscription-updated', handleSubscriptionUpdate);
+    };
+  }, []);
+
   // Utility to parse errors from backend
   const handleAuthError = (error) => {
     const responseData = error.response?.data;

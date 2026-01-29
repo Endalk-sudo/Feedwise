@@ -80,11 +80,32 @@ const PaymentSuccess = () => {
           // Update message and set up automatic redirect
           setMessage('Payment successful! Your subscription is now active. Redirecting to dashboard...');
           setData(response.data.session);
+
+          // CRITICAL FIX: Refresh user data to get updated subscription status
+          // This ensures the AuthContext has the latest user data before redirecting
+          if (user && response.data.session) {
+            try {
+              // Import and call getProfile to refresh user data
+              const { getProfile } = await import('../../services/authService.js');
+              const profileResponse = await getProfile();
+              // Update the user in AuthContext if the function is available
+              if (profileResponse?.user) {
+                // Trigger a re-render by updating local state or context
+                window.dispatchEvent(new CustomEvent('user-subscription-updated', {
+                  detail: profileResponse.user
+                }));
+              }
+            } catch (refreshError) {
+              console.error('Error refreshing user profile:', refreshError);
+              // Continue with redirect even if refresh fails
+            }
+          }
+
           // AUTOMATIC REDIRECT
           // Give user time to read success message before redirecting
           setTimeout(() => {
             navigate('/dashboard');
-          }, 7000); // 7 second delay for user to see success message
+          }, 3000); // Reduced to 3 seconds since subscription is now active immediately
         } else {
           // VERIFICATION FAILURE
           // Payment was not completed successfully
@@ -132,11 +153,11 @@ const PaymentSuccess = () => {
 
         {/* LOADING INDICATOR */}
         {/* Display during verification process */}
-        {loading && 
-        <>
-          <div className="loading-spinner"></div>
-          {/* <p>Verifying...</p> */}
-        </>
+        {loading &&
+          <>
+            <div className="loading-spinner"></div>
+            {/* <p>Verifying...</p> */}
+          </>
         }
         {/* SESSION ID REFERENCE */}
         {/* Display session ID for customer support and troubleshooting */}
@@ -168,10 +189,10 @@ const PaymentSuccess = () => {
           </div>
         )}
 
-         {/* NAVIGATION ACTIONS */}
+        {/* NAVIGATION ACTIONS */}
         {/* Provide manual navigation options for user control */}
         {!loading && <div className="payment-actions">
-         {sessionId && <button
+          {sessionId && <button
             onClick={() => navigate('/dashboard')}
             className="btn btn-primary"
           >
