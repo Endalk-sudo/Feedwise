@@ -8,32 +8,32 @@ const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
 
-  const {user} = useAuth()
+  const { user, logout } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
+
   const toggle = () => {
     setIsOpen((p) => !p);
   }
-  
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768 && isOpen) {
         setIsOpen(false);
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isOpen]);
-  
+
   // Helper function to handle navigation
   const handleNavClick = (href) => {
     setIsOpen(false);
@@ -55,20 +55,31 @@ const NavBar = () => {
         Feedback<span className="logo-color">AI</span>
       </Link>
       <ul className={`nav-links ${isOpen ? "expand" : ""}`}>
-        <li><a href="#features" onClick={() => handleNavClick('#features')}>Features</a></li>
-        <li><Link to="/payment" onClick={() => setIsOpen(false)}>Pricing</Link></li>
-        {!user ? 
-        <>
-          <li><Link to="/login" onClick={() => setIsOpen(false)}>Login</Link></li>
+        {/* Hide Features and Pricing on org-setup page */}
+        {location.pathname !== '/org-setup' && (
+          <>
+            <li><a href="#features" onClick={() => handleNavClick('#features')}>Features</a></li>
+            <li><Link to="/payment" onClick={() => setIsOpen(false)}>Pricing</Link></li>
+          </>
+        )}
+        {!user ?
+          <>
+            <li><Link to="/login" onClick={() => setIsOpen(false)}>Login</Link></li>
 
-          <Link to="/register" className="cta-link" onClick={() => setIsOpen(false)}>
-            <button className="btn cta-primary-btn">Get Started</button>
-          </Link> 
-        </>
-        :
-        <Link to="/dashboard" className="cta-link" onClick={() => setIsOpen(false)}>
-          <button className="btn cta-primary-btn">Dashboard</button>
-        </Link> 
+            <Link to="/register" className="cta-link" onClick={() => setIsOpen(false)}>
+              <button className="btn cta-primary-btn">Get Started</button>
+            </Link>
+          </>
+          :
+          <>
+            {/* Show Dashboard button only when NOT on org-setup page */}
+            {location.pathname !== '/org-setup' && (
+              <Link to="/dashboard" className="cta-link" onClick={() => setIsOpen(false)}>
+                <button className="btn cta-primary-btn">Dashboard</button>
+              </Link>
+            )}
+            <button className="btn cta-primary-btn" onClick={() => logout()}>Logout</button>
+          </>
         }
       </ul>
       <button
