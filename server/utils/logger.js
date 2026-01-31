@@ -23,14 +23,12 @@ const logger = winston.createLogger({
   ],
 });
 
-// If we're not in production then log to the `console` with colors
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: combine(
-      colorize(),
-      logFormat
-    ),
-  }));
-}
+// Always log to the `console` for visibility in Cloud environments (Render/Vercel)
+logger.add(new winston.transports.Console({
+  format: combine(
+    colorize(),
+    logFormat
+  ),
+}));
 
 export default logger;

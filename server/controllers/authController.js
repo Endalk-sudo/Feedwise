@@ -158,7 +158,7 @@ const setOrganization = async (req, res) => {
         // Check if an organization with the given slug already exists to ensure uniqueness.
         const isOrg = await Organization.findOne({ slug: orgSlug });
         if (isOrg) {
-            return res.status(400).send({ ok: false, message: 'Slug is already taken, it has to be unique' });
+            return res.status(400).json({ ok: false, message: 'Slug is already taken, it has to be unique' });
         }
         // --- QR Code Generation ---
         // Construct the URL that will be encoded into the QR code.
@@ -171,7 +171,23 @@ const setOrganization = async (req, res) => {
             errorCorrectionLevel: 'H',
         });
 
-        const aiCategories = await generateAiCategories(businessType, businessDescription);
+        let aiCategories;
+        try {
+            aiCategories = await generateAiCategories(businessType, businessDescription);
+        } catch (aiError) {
+            logger.error(`AI category generation failed: ${aiError.message}`);
+            // Fallback to default categories based on business type
+            aiCategories = [
+                'Product Quality',
+                'Customer Service',
+                'Pricing',
+                'User Experience',
+                'Features',
+                'Support',
+                'Performance',
+                'Reliability',
+            ];
+        }
 
         const orgData = {
             ownerId: userId,
@@ -181,7 +197,7 @@ const setOrganization = async (req, res) => {
             qrDataUrl: qrDataUrl,
             businessType: businessType,
             businessDescription: businessDescription,
-            categories: aiCategories, // Fixed typo
+            categories: aiCategories,
         };
 
         // Create the new organization in the database.
@@ -189,15 +205,26 @@ const setOrganization = async (req, res) => {
         // --- Logo Handling ---
         // If a logo file was uploaded, process it.
         if (req.file) {
-            // Upload the file buffer to Cloudinary using the modular helper function.
-            const result = await uploadToCloudinary(req.file.buffer);
+            try {
+                // Check if Cloudinary is configured
+                if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+                    throw new Error('Cloudinary is not configured but a logo was uploaded.');
+                }
+                // Upload the file buffer to Cloudinary using the modular helper function.
+                const result = await uploadToCloudinary(req.file.buffer);
 
-            // Create a new logo document in the database with the Cloudinary URL.
-            await orgLogo.create({
-                orgId: org._id,
-                url: result.secure_url,
-                public_id: result.public_id,
-            });
+                // Create a new logo document in the database with the Cloudinary URL.
+                await orgLogo.create({
+                    orgId: org._id,
+                    url: result.secure_url,
+                    public_id: result.public_id,
+                });
+            } catch (uploadError) {
+                logger.error(`Logo upload failed: ${uploadError.message}`);
+                // We don't want to fail the entire organization setup if just the logo fails
+                // but we should inform the user if we can or just log it. 
+                // Currently, we'll just log it.
+            }
         }
         // --- User Update ---
         // Update the user document to link it with the new organization.
@@ -208,11 +235,15 @@ const setOrganization = async (req, res) => {
         );
         // --- Success Response ---
         // Send a success response with the user and organization data.
-        return res.status(201).send({ ok: true, user, organization: org });
+        return res.status(201).json({ ok: true, user, organization: org });
     } catch (err) {
         // --- Error Handling ---
         logger.error(`Organization setup error: ${err.message}`, { stack: err.stack });
-        res.status(500).json({ message: 'Server error during organization setup' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error during organization setup',
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 };
 

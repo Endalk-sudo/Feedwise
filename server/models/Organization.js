@@ -23,7 +23,6 @@ const orgSchema = new mongoose.Schema({
   content: {
      type: String, 
      required: true,
-     unique: true, 
     },
   qrDataUrl: { 
     type: String, 
@@ -41,7 +40,7 @@ const orgSchema = new mongoose.Schema({
   },
   categories: {
     type: [String],
-    require: true
+    required: true
   },
   createdAt: {
     type: Date,
