@@ -397,7 +397,11 @@ export const verifySession = async (req, res, next) => {
  */
 const handleCheckoutSessionCompleted = async (session) => {
     const customerId = session.customer;
-    const subscriptionId = session.subscription;
+    // Handle case where subscription might be an object or string
+    const subscriptionId =
+        typeof session.subscription === 'object' && session.subscription !== null
+            ? session.subscription.id
+            : session.subscription;
 
     if (!subscriptionId) {
         console.log('Checkout session has no subscription ID yet, skipping');
@@ -497,7 +501,11 @@ const handleCheckoutSessionCompleted = async (session) => {
  */
 const handleInvoicePaid = async (invoice) => {
     const customerId = invoice.customer;
-    const subscriptionId = invoice.subscription;
+    // Handle case where subscription might be an object or string
+    const subscriptionId =
+        typeof invoice.subscription === 'object' && invoice.subscription !== null
+            ? invoice.subscription.id
+            : invoice.subscription;
 
     if (!subscriptionId) {
         console.log('Invoice has no subscription ID, skipping');
