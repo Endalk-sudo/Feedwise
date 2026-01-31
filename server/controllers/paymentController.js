@@ -269,7 +269,11 @@ export const verifySession = async (req, res, next) => {
             // CRITICAL FIX: Update user subscription immediately to prevent race condition
             // This ensures the user can access the dashboard right after payment
             const customerId = session.customer;
-            const subscriptionId = session.subscription;
+            // Handle case where subscription might be an object or string
+            const subscriptionId =
+                typeof session.subscription === 'object' && session.subscription !== null
+                    ? session.subscription.id
+                    : session.subscription;
 
             if (subscriptionId && customerId) {
                 try {
