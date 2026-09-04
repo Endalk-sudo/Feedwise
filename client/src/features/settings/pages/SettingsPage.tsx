@@ -102,7 +102,7 @@ export function SettingsPage() {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold mb-2">No organization selected</h2>
-        <p className="text-slate-400">Please select an organization to manage settings</p>
+        <p className="text-muted-foreground">Please select an organization to manage settings</p>
       </div>
     );
   }
@@ -123,23 +123,23 @@ export function SettingsPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-slate-400 mt-1">Manage your organization settings</p>
+        <p className="text-muted-foreground mt-1">Manage your organization settings</p>
       </div>
 
       {/* Plan Status */}
-      <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
+      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center', currentPlan === 'pro' ? 'bg-purple-500/20' : 'bg-blue-500/20')}>
+            <div className={cn('w-12 h-12 rounded-lg flex items-center justify-center', currentPlan === 'pro' ? 'bg-primary/10' : 'bg-primary/10')}>
               {currentPlan === 'pro' ? (
-                <Zap className="w-6 h-6 text-purple-400" />
+                <Zap className="w-6 h-6 text-primary" />
               ) : (
-                <Building2 className="w-6 h-6 text-blue-400" />
+                <Building2 className="w-6 h-6 text-primary" />
               )}
             </div>
             <div>
               <h3 className="font-semibold capitalize">{currentPlan} Plan</h3>
-              <p className="text-sm text-slate-400 capitalize">{subscriptionStatus}</p>
+              <p className="text-sm text-muted-foreground capitalize">{subscriptionStatus}</p>
             </div>
           </div>
           <div className="flex gap-3">
@@ -147,7 +147,7 @@ export function SettingsPage() {
               type="button"
               onClick={handleManageSubscription}
               disabled={isPortalLoading}
-              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:border-slate-600 transition-all disabled:opacity-50"
+              className="px-4 py-2 bg-secondary border border-input rounded-lg text-sm font-medium text-foreground hover:text-foreground hover:border-input transition-all disabled:opacity-50"
             >
               {isPortalLoading ? 'Opening…' : 'Manage Subscription'}
             </button>
@@ -157,7 +157,7 @@ export function SettingsPage() {
 
       {/* Organization Details */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
             <Building2 className="w-5 h-5" />
             Organization Details
@@ -166,18 +166,18 @@ export function SettingsPage() {
           <div className="space-y-6">
             {/* Logo Upload */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">Logo</label>
+              <label className="block text-sm font-medium text-foreground mb-3">Logo</label>
               <div className="flex items-center gap-6">
-                <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-slate-800 border border-slate-700 flex-shrink-0">
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-secondary border border-input flex-shrink-0">
                   {logoPreview ? (
                     <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-500">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <Building2 className="w-8 h-8" />
                     </div>
                   )}
                   <label className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors">
-                    <Upload className="w-4 h-4 text-white" />
+                    <Upload className="w-4 h-4 text-foreground" />
                     <input
                       type="file"
                       accept="image/*"
@@ -187,15 +187,15 @@ export function SettingsPage() {
                   </label>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-slate-400 mb-2">Upload a logo (PNG, JPG up to 2MB)</p>
+                  <p className="text-sm text-muted-foreground mb-2">Upload a logo (PNG, JPG up to 2MB)</p>
                   <input
                     type="text"
                     {...register('logo')}
                     placeholder="Or enter logo URL"
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-secondary border border-input rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring"
                   />
                   {errors.logo && (
-                    <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+                    <p className="mt-1 text-sm text-destructive flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
                       {errors.logo.message}
                     </p>
@@ -206,7 +206,7 @@ export function SettingsPage() {
 
             {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                 Organization Name
               </label>
               <input
@@ -214,13 +214,13 @@ export function SettingsPage() {
                 id="name"
                 type="text"
                 className={cn(
-                  'w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all',
-                  errors.name ? 'border-red-500' : 'border-slate-700'
+                  'w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all',
+                  errors.name ? 'border-destructive' : 'border-input'
                 )}
                 placeholder="Acme Inc."
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
                   {errors.name.message}
                 </p>
@@ -228,24 +228,24 @@ export function SettingsPage() {
             </div>
 
             {/* Read-only fields */}
-            <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-slate-800">
+            <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-border">
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Slug</label>
-                <input type="text" value={org?.slug ?? ''} readOnly className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-500" />
+                <label className="block text-xs text-muted-foreground mb-1">Slug</label>
+                <input type="text" value={org?.slug ?? ''} readOnly className="w-full px-4 py-3 bg-secondary border border-input rounded-lg text-muted-foreground" />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Business Type</label>
-                <input type="text" value={org?.businessType ?? ''} readOnly className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-500" />
+                <label className="block text-xs text-muted-foreground mb-1">Business Type</label>
+                <input type="text" value={org?.businessType ?? ''} readOnly className="w-full px-4 py-3 bg-secondary border border-input rounded-lg text-muted-foreground" />
               </div>
             </div>
           </div>
 
           {/* Save Button */}
-          <div className="pt-4 border-t border-slate-800">
+          <div className="pt-4 border-t border-border">
             <button
               type="submit"
               disabled={updateOrg.isPending}
-              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-3 btn-brand hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {updateOrg.isPending ? (
                 <>

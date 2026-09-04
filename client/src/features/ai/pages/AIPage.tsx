@@ -16,7 +16,7 @@ const suggestions = [
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-slate-500">
+    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
       <Bot className="w-16 h-16 text-slate-700 mb-4" />
       <h3 className="text-lg font-medium mb-2">Ready to help</h3>
       <p className="text-sm">Ask me anything about your customer feedback</p>
@@ -28,16 +28,16 @@ function MessageBubble({ message, onCopy }: { message: { role: 'user' | 'assista
   return (
     <div className={cn('flex gap-3', message.role === 'user' ? 'justify-end' : 'justify-start')}>
       <div className={cn(
-        'max-w-[80%] rounded-2xl px-4 py-3',
+        'max-w-[80%] rounded-xl px-4 py-3',
         message.role === 'user'
-          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-tr-none'
-          : 'bg-slate-800 text-white rounded-tl-none'
+          ? 'bg-primary text-primary-foreground rounded-tr-none'
+          : 'bg-secondary text-foreground rounded-tl-none'
       )}>
         <p className="whitespace-pre-wrap">{message.content}</p>
         {message.role === 'assistant' && (
           <button
             onClick={() => onCopy(message.content)}
-            className="mt-2 flex items-center gap-1 text-xs text-slate-400 hover:text-slate-300 transition-colors"
+            className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <Copy className="w-3 h-3" />
             Copy
@@ -51,7 +51,7 @@ function MessageBubble({ message, onCopy }: { message: { role: 'user' | 'assista
 function TypingIndicator() {
   return (
     <div className="px-4 pb-4 flex justify-start">
-      <div className="bg-slate-800 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-1">
+      <div className="bg-secondary rounded-xl rounded-tl-none px-4 py-3 flex items-center gap-1">
         <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
         <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
         <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -68,7 +68,7 @@ function InputForm({ input, setInput, handleSubmit, isPending, currentPlan }: {
   currentPlan: string | null | undefined;
 }) {
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t border-slate-800">
+    <form onSubmit={handleSubmit} className="p-4 border-t border-border">
       <div className="flex gap-2">
         <input
           type="text"
@@ -76,12 +76,12 @@ function InputForm({ input, setInput, handleSubmit, isPending, currentPlan }: {
           onChange={(e) => setInput(e.target.value)}
           placeholder={currentPlan !== 'pro' ? 'Upgrade to Pro to use AI Chat' : 'Ask me anything about your feedback...'}
           disabled={isPending || currentPlan !== 'pro'}
-          className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all disabled:opacity-50"
+          className="flex-1 px-4 py-3 bg-secondary border border-input rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={!input.trim() || isPending || currentPlan !== 'pro'}
-          className="px-6 py-3 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-medium rounded-xl hover:from-pink-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-6 py-3 btn-brand"
         >
           <Send className="w-5 h-5" />
           Send
@@ -132,9 +132,9 @@ export function AIPage() {
   if (!slug) {
     return (
       <div className="text-center py-12">
-        <Bot className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+        <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         <h2 className="text-xl font-semibold mb-2">No organization selected</h2>
-        <p className="text-slate-400">Please select an organization to use AI Assistant</p>
+        <p className="text-muted-foreground">Please select an organization to use AI Assistant</p>
       </div>
     );
   }
@@ -150,10 +150,10 @@ export function AIPage() {
             <Bot className="w-6 h-6 text-pink-400" />
             AI Assistant
           </h1>
-          <p className="text-slate-400 mt-1">Ask questions about your feedback data</p>
+          <p className="text-muted-foreground mt-1">Ask questions about your feedback data</p>
         </div>
         {currentPlan !== 'pro' && (
-          <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 px-4 py-2 rounded-xl text-sm">
+          <div className="bg-yellow-500/10 border border-yellow-500/30 text-warning px-4 py-2 rounded-lg text-sm">
             <Zap className="w-4 h-4 inline mr-1" />
             Pro plan required for AI Chat
           </div>
@@ -162,9 +162,9 @@ export function AIPage() {
 
       {/* Suggestions */}
       {showSuggestions && messages.length === 0 && (
-        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
           <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-yellow-400" />
+            <Lightbulb className="w-5 h-5 text-warning" />
             Try asking:
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -172,7 +172,7 @@ export function AIPage() {
               <button
                 key={suggestion}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl text-left text-slate-300 hover:border-blue-500/50 hover:bg-slate-800 transition-all text-sm"
+                className="p-4 bg-secondary/50 border border-input rounded-lg text-left text-foreground hover:border-blue-500/50 hover:bg-secondary transition-all text-sm"
               >
                 {suggestion}
               </button>
@@ -182,7 +182,7 @@ export function AIPage() {
       )}
 
       {/* Chat Messages */}
-      <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl flex flex-col h-[500px] overflow-hidden">
+      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl flex flex-col h-[500px] overflow-hidden">
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {messages.length === 0 ? <EmptyState /> : (
             messages.map((message, i) => (

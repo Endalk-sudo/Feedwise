@@ -20,32 +20,39 @@ import { cn } from '@/lib/utils';
 const SENTIMENTS = ['Positive', 'Negative', 'Neutral', 'Mixed'] as const;
 
 const sentimentFill: Record<(typeof SENTIMENTS)[number], string> = {
-  Positive: '#22c55e',
-  Negative: '#ef4444',
-  Neutral: '#64748b',
-  Mixed: '#eab308',
+  Positive: 'var(--chart-1)',
+  Negative: 'var(--chart-2)',
+  Neutral: 'var(--chart-3)',
+  Mixed: 'var(--chart-4)',
 };
 
-const barPalette = ['#38bdf8', '#a855f7', '#f472b6', '#22c55e', '#eab308', '#f97316'];
+const barPalette = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'var(--chart-1)',
+];
 
 const sentimentBadge: Record<string, string> = {
-  Positive: 'bg-green-500/20 text-green-400 border-green-500/30',
-  Negative: 'bg-red-500/20 text-red-400 border-red-500/30',
-  Neutral: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
-  Mixed: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  Positive: 'bg-primary/10 text-primary border-primary/30',
+  Negative: 'bg-destructive/10 text-destructive border-destructive/30',
+  Neutral: 'bg-muted/10 text-muted-foreground border-muted/30',
+  Mixed: 'bg-warning/10 text-warning border-warning/30',
 };
 
 const urgencyBadge: Record<string, string> = {
-  High: 'bg-red-500/20 text-red-400 border-red-500/30',
-  Medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  Low: 'bg-green-500/20 text-green-400 border-green-500/30',
+  High: 'bg-destructive/10 text-destructive border-destructive/30',
+  Medium: 'bg-warning/10 text-warning border-warning/30',
+  Low: 'bg-primary/10 text-primary border-primary/30',
 };
 
 const tooltipStyle = {
-  backgroundColor: '#0f172a',
-  border: '1px solid #1e293b',
+  backgroundColor: 'var(--background)',
+  border: '1px solid var(--border)',
   borderRadius: '12px',
-  color: '#e2e8f0',
+  color: 'var(--foreground)',
 };
 
 function SentimentTrendsChart({ trends }: { trends: SentimentTrend[] | undefined }) {
@@ -54,14 +61,14 @@ function SentimentTrendsChart({ trends }: { trends: SentimentTrend[] | undefined
     label: t.date.slice(5),
   }));
   if (data.length === 0) {
-    return <p className="text-slate-500 text-center py-8">No trend data yet</p>;
+    return <p className="text-muted-foreground text-center py-8">No trend data yet</p>;
   }
   return (
     <ResponsiveContainer width="100%" height={260}>
       <AreaChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-        <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
-        <YAxis allowDecimals={false} tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+        <XAxis dataKey="label" tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <YAxis allowDecimals={false} tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} axisLine={false} tickLine={false} />
         <Tooltip contentStyle={tooltipStyle} />
         <Legend />
         {SENTIMENTS.map((s) => (
@@ -75,14 +82,14 @@ function SentimentTrendsChart({ trends }: { trends: SentimentTrend[] | undefined
 function CategoryBreakdownChart({ categories }: { categories: CategoryBreakdown[] | undefined }) {
   const data = (categories ?? []).slice(0, 10);
   if (data.length === 0) {
-    return <p className="text-slate-500 text-center py-8">No category data yet</p>;
+    return <p className="text-muted-foreground text-center py-8">No category data yet</p>;
   }
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 16, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
-        <XAxis type="number" allowDecimals={false} tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
-        <YAxis type="category" dataKey="name" width={110} tick={{ fill: '#cbd5e1', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+        <XAxis type="number" allowDecimals={false} tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <YAxis type="category" dataKey="name" width={110} tick={{ fill: 'var(--foreground)', fontSize: 12 }} axisLine={false} tickLine={false} />
         <Tooltip contentStyle={tooltipStyle} />
         <Bar dataKey="count" radius={[0, 6, 6, 0]}>
           {data.map((_, i) => (
@@ -97,13 +104,13 @@ function CategoryBreakdownChart({ categories }: { categories: CategoryBreakdown[
 function HeatmapTable({ heatmap }: { heatmap: HeatmapData[] | undefined }) {
   const cats = Array.from(new Set((heatmap ?? []).map((h) => h.category)));
   if (cats.length === 0) {
-    return <p className="text-slate-500 text-center py-8">No heatmap data yet</p>;
+    return <p className="text-muted-foreground text-center py-8">No heatmap data yet</p>;
   }
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-slate-500 border-b border-slate-800">
+          <tr className="text-muted-foreground border-b border-border">
             <th className="text-left p-2">Category</th>
             {SENTIMENTS.map((s) => (
               <th key={s} className="p-2">{s}</th>
@@ -112,8 +119,8 @@ function HeatmapTable({ heatmap }: { heatmap: HeatmapData[] | undefined }) {
         </thead>
         <tbody>
           {cats.map((cat) => (
-            <tr key={cat} className="border-b border-slate-800/50">
-              <td className="p-2 font-medium text-slate-300">{cat}</td>
+            <tr key={cat} className="border-b border-border/50">
+              <td className="p-2 font-medium text-foreground">{cat}</td>
               {SENTIMENTS.map((sentiment) => {
                 const count = heatmap?.find((h) => h.category === cat && h.sentiment === sentiment)?.count ?? 0;
                 return (
@@ -126,7 +133,7 @@ function HeatmapTable({ heatmap }: { heatmap: HeatmapData[] | undefined }) {
                         {count}
                       </span>
                     ) : (
-                      <span className="text-slate-500">—</span>
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </td>
                 );
@@ -140,16 +147,16 @@ function HeatmapTable({ heatmap }: { heatmap: HeatmapData[] | undefined }) {
 }
 
 function TopIssuesList({ issues }: { issues: TopIssue[] | undefined }) {
-  if (!issues?.length) return <p className="text-slate-500 text-center py-8">No recurring issues found</p>;
+  if (!issues?.length) return <p className="text-muted-foreground text-center py-8">No recurring issues found</p>;
   return (
     <div className="space-y-4">
       {issues.slice(0, 5).map((issue, i) => (
-        <div key={i} className="p-4 bg-slate-800/50 rounded-xl">
+        <div key={i} className="p-4 bg-secondary/50 rounded-lg">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <p className="text-slate-300 text-sm line-clamp-2">{issue.text}</p>
+              <p className="text-foreground text-sm line-clamp-2">{issue.text}</p>
               <div className="flex flex-wrap gap-2 mt-2">
-                <span className="px-2 py-0.5 text-xs bg-slate-700 text-slate-400 rounded">{issue.category}</span>
+                <span className="px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded">{issue.category}</span>
                 <span className={cn('px-2 py-0.5 text-xs rounded', urgencyBadge[issue.urgency] ?? '')}>
                   {issue.urgency}
                 </span>
@@ -158,7 +165,7 @@ function TopIssuesList({ issues }: { issues: TopIssue[] | undefined }) {
                 </span>
               </div>
             </div>
-            <span className="text-lg font-bold text-slate-500 whitespace-nowrap">{issue.count}x</span>
+            <span className="text-lg font-bold text-muted-foreground whitespace-nowrap">{issue.count}x</span>
           </div>
         </div>
       ))}
@@ -167,18 +174,18 @@ function TopIssuesList({ issues }: { issues: TopIssue[] | undefined }) {
 }
 
 function AlertsList({ alerts }: { alerts: Alert[] | undefined }) {
-  if (!alerts?.length) return <p className="text-slate-500 text-center py-8">No alerts</p>;
+  if (!alerts?.length) return <p className="text-muted-foreground text-center py-8">No alerts</p>;
   return (
     <div className="space-y-3">
       {alerts.slice(0, 10).map((alert) => (
-        <div key={alert.id} className="p-3 bg-slate-800/50 rounded-xl border-l-4 border-red-500">
-          <p className="text-slate-300 text-sm line-clamp-1">{alert.text}</p>
+        <div key={alert.id} className="p-3 bg-secondary/50 rounded-lg border-l-4 border-destructive">
+          <p className="text-foreground text-sm line-clamp-1">{alert.text}</p>
           <div className="flex gap-2 mt-2">
-            <span className="px-2 py-0.5 text-xs rounded bg-red-500/20 text-red-400">{alert.urgency}</span>
+            <span className="px-2 py-0.5 text-xs rounded bg-red-500/20 text-destructive">{alert.urgency}</span>
             <span className={cn('px-2 py-0.5 text-xs rounded', sentimentBadge[alert.sentiment ?? ''] ?? '')}>
               {alert.sentiment}
             </span>
-            <span className="text-xs text-slate-500 ml-auto">
+            <span className="text-xs text-muted-foreground ml-auto">
               {new Date(alert.createdAt).toLocaleDateString()}
             </span>
           </div>
@@ -193,20 +200,20 @@ function RecommendationsList({ recommendations }: { recommendations: Recommendat
   return (
     <section>
       <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <Lightbulb className="w-5 h-5 text-yellow-400" />
+        <Lightbulb className="w-5 h-5 text-warning" />
         AI Growth Recommendations
       </h2>
       <div className="grid gap-4">
         {recommendations.map((rec, i) => (
-          <div key={i} className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
+          <div key={i} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1">{rec.title}</h3>
-                <p className="text-slate-400 mb-3">{rec.reason}</p>
-                <p className="text-blue-400 text-sm font-medium">Action: {rec.action}</p>
+                <p className="text-muted-foreground mb-3">{rec.reason}</p>
+                <p className="text-primary text-sm font-medium">Action: {rec.action}</p>
               </div>
               <div className="text-right">
-                <span className={cn('px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap', rec.priority >= 7 ? 'bg-red-500/20 text-red-400' : rec.priority >= 4 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400')}>
+                <span className={cn('px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap', rec.priority >= 7 ? 'bg-red-500/20 text-destructive' : rec.priority >= 4 ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary')}>
                   Priority: {rec.priority}/10
                 </span>
               </div>
@@ -232,7 +239,7 @@ export function AnalyticsPage() {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold mb-2">No organization selected</h2>
-        <p className="text-slate-400">Please select an organization to view analytics</p>
+        <p className="text-muted-foreground">Please select an organization to view analytics</p>
       </div>
     );
   }
@@ -242,16 +249,16 @@ export function AnalyticsPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Analytics</h1>
-        <p className="text-slate-400 mt-1">Deep insights into your customer feedback</p>
+        <p className="text-muted-foreground mt-1">Deep insights into your customer feedback</p>
       </div>
 
       {/* Sentiment Trends */}
       <section>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-400" />
+          <TrendingUp className="w-5 h-5 text-primary" />
           Sentiment Trends (30 days)
         </h2>
-        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
           <SentimentTrendsChart trends={trends} />
         </div>
       </section>
@@ -260,10 +267,10 @@ export function AnalyticsPage() {
       <div className="grid lg:grid-cols-2 gap-6">
         <section>
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-purple-400" />
+            <BarChart3 className="w-5 h-5 text-primary" />
             Category Breakdown
           </h2>
-          <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
+          <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
             <CategoryBreakdownChart categories={categories} />
           </div>
         </section>
@@ -273,7 +280,7 @@ export function AnalyticsPage() {
             <Zap className="w-5 h-5 text-pink-400" />
             Sentiment by Category
           </h2>
-          <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
+          <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
             <HeatmapTable heatmap={heatmap} />
           </div>
         </section>
@@ -283,20 +290,20 @@ export function AnalyticsPage() {
       <div className="grid lg:grid-cols-2 gap-6">
         <section>
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-400" />
+            <AlertTriangle className="w-5 h-5 text-warning" />
             Top Recurring Issues
           </h2>
-          <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
+          <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
             <TopIssuesList issues={issues} />
           </div>
         </section>
 
         <section>
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-red-400" />
+            <Zap className="w-5 h-5 text-destructive" />
             Priority Alerts
           </h2>
-          <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
+          <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
             <AlertsList alerts={alerts} />
           </div>
         </section>

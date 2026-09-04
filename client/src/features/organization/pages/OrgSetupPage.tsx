@@ -135,35 +135,35 @@ export function OrgSetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-2xl">
-        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-8">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Building2 className="w-8 h-8 text-foreground" />
             </div>
             <h1 className="text-3xl font-bold mb-2">Set up your organization</h1>
-            <p className="text-slate-400">Tell us about your business so we can customize your feedback experience</p>
+            <p className="text-muted-foreground">Tell us about your business so we can customize your feedback experience</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                 Organization Name
               </label>
               <input
                 {...register('name', { onChange: handleNameChange })}
                 id="name"
                 type="text"
-                className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
-                  errors.name ? 'border-red-500' : 'border-slate-700'
+                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all ${
+                  errors.name ? 'border-destructive' : 'border-input'
                 }`}
                 placeholder="Acme Inc."
                 disabled={createOrg.isPending}
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
                   {errors.name.message}
                 </p>
@@ -172,8 +172,8 @@ export function OrgSetupPage() {
 
             {/* Slug */}
             <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-slate-300 mb-2">
-                URL Slug <span className="text-slate-500">(feedback.yourapp.com/your-slug)</span>
+              <label htmlFor="slug" className="block text-sm font-medium text-foreground mb-2">
+                URL Slug <span className="text-muted-foreground">(feedback.yourapp.com/your-slug)</span>
               </label>
               <div className="relative">
                 <input
@@ -181,18 +181,18 @@ export function OrgSetupPage() {
                   id="slug"
                   type="text"
                   onBlur={handleSlugBlur}
-                  className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
-                    errors.slug ? 'border-red-500' :
+                  className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all ${
+                    errors.slug ? 'border-destructive' :
                     isCheckingSlug ? 'border-blue-500' :
                     slugAvailable === true ? 'border-green-500' :
-                    slugAvailable === false ? 'border-red-500' :
-                    'border-slate-700'
+                    slugAvailable === false ? 'border-destructive' :
+                    'border-input'
                   }`}
                   placeholder="acme-inc"
                   disabled={createOrg.isPending || isCheckingSlug}
                 />
                 {isCheckingSlug && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
                     <Loader2 className="w-5 h-5 animate-spin" />
                   </div>
                 )}
@@ -208,13 +208,13 @@ export function OrgSetupPage() {
                 )}
               </div>
               {errors.slug && (
-                <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
                   {errors.slug.message}
                 </p>
               )}
               {slugError && (
-                <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
                   {slugError}
                 </p>
@@ -223,14 +223,14 @@ export function OrgSetupPage() {
 
             {/* Business Type */}
             <div>
-              <label htmlFor="businessType" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="businessType" className="block text-sm font-medium text-foreground mb-2">
                 Business Type
               </label>
               <select
                 {...register('businessType')}
                 id="businessType"
-                className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
-                  errors.businessType ? 'border-red-500' : 'border-slate-700'
+                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all ${
+                  errors.businessType ? 'border-destructive' : 'border-input'
                 }`}
                 disabled={createOrg.isPending}
               >
@@ -240,7 +240,7 @@ export function OrgSetupPage() {
                 ))}
               </select>
               {errors.businessType && (
-                <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
                   {errors.businessType.message}
                 </p>
@@ -249,26 +249,26 @@ export function OrgSetupPage() {
 
             {/* Business Description */}
             <div>
-              <label htmlFor="businessDescription" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="businessDescription" className="block text-sm font-medium text-foreground mb-2">
                 Business Description
               </label>
               <textarea
                 {...register('businessDescription')}
                 id="businessDescription"
                 rows={4}
-                className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none ${
-                  errors.businessDescription ? 'border-red-500' : 'border-slate-700'
+                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all resize-none ${
+                  errors.businessDescription ? 'border-destructive' : 'border-input'
                 }`}
                 placeholder="Describe your business, products, and target audience. This helps our AI generate relevant feedback categories."
                 disabled={createOrg.isPending}
               />
               {errors.businessDescription && (
-                <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
                   {errors.businessDescription.message}
                 </p>
               )}
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 This helps our AI generate relevant feedback categories for your business.
               </p>
             </div>
@@ -277,7 +277,7 @@ export function OrgSetupPage() {
             <button
               type="submit"
               disabled={createOrg.isPending}
-              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 btn-brand hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {createOrg.isPending ? (
                 <>
