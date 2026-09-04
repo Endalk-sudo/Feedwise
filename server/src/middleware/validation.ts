@@ -34,9 +34,18 @@ export function validate<T extends z.ZodType<ValidatedRequest>>(schema: T) {
       return;
     }
 
-    // Replace request data with validated (and defaulted) data
+    // Replace request data with validated (and defaulted) data.
+    // NOTE: under Express 5 `req.query` is getter-only, so it must be
+    // redefined rather than assigned.
     if (result.data.body !== undefined) req.body = result.data.body;
-    if (result.data.query !== undefined) req.query = result.data.query as Request['query'];
+    if (result.data.query !== undefined) {
+      Object.defineProperty(req, 'query', {
+        value: result.data.query,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+    }
     if (result.data.params !== undefined) req.params = result.data.params as Request['params'];
 
     next();

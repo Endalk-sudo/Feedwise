@@ -51,13 +51,14 @@ Copy `server/example.env` to `server/.env` and `client/example.env` to `client/.
 - Server: `MONGODB_URI`, `JWT_SECRET_ACCESS`, `JWT_SECRET_REFRESH`, `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLIENT_URL`
 - Client: `VITE_API_URL`, `VITE_STRIPE_PUBLISHABLE_KEY`
 
-## Docker
+## Docker (local dev)
 
 ```bash
-docker-compose up --build    # Full stack: client (nginx:3000), server (node:5000), mongo (27017)
+cp server/example.env server/.env   # once; fill secrets (BETTER_AUTH_SECRET etc.)
+docker compose up --build            # client vite:5173, server tsx:5000, postgres:5434
 ```
 
-Client container serves built SPA via nginx. Server container runs `node dist/index.js` (must build first).
+Dev stack with hot reload (bind mounts): `client` (vite dev :5173) → `server` (`tsx watch` :5000, runs `prisma migrate deploy` on start) → `postgres` 16 (host :5434 — :5433 belongs to another project). First DB setup: `docker compose up -d postgres`, then in `server/` run `npx prisma migrate dev --name <x>` and `npm run prisma:seed` (demo org `demo-coffee` for the first registered user). Demo login: register `demo@example.com` via UI, then seed. Prod images (`Dockerfile` + nginx) are a Phase 4 concern.
 
 ## CI Pipeline
 

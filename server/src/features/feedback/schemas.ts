@@ -24,8 +24,8 @@ export const getFeedbacksSchema = z.object({
 
 export const feedbackParamsSchema = z.object({
   params: z.object({
-    id: z.string().cuid(),
-    slug: z.string().optional(),
+    id: z.string().cuid().optional(),
+    slug: z.string().min(1),
   }),
 });
 

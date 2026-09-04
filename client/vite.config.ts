@@ -12,14 +12,16 @@ export default defineConfig({
     },
   },
   server: {
+    // In docker compose, VITE_PROXY_TARGET=http://server:5000 (container DNS).
+    // Locally (npm run dev) it defaults to http://localhost:5000.
     proxy: {
       '/setting': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_PROXY_TARGET ?? 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
       },
       '/api': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_PROXY_TARGET ?? 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
       },
