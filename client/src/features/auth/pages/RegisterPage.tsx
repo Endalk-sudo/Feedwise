@@ -202,7 +202,7 @@ export function RegisterPage() {
                 type="checkbox"
                 id="terms"
                 required
-                className="mt-1 w-4 h-4 bg-secondary border-input rounded text-blue-600 focus:ring-2 focus:ring-ring/20"
+                className="mt-1 w-4 h-4 bg-secondary border-input rounded text-primary focus:ring-2 focus:ring-ring/20"
               />
               <label htmlFor="terms" className="text-sm text-muted-foreground">
                 I agree to the <span className="text-foreground">Terms of Service</span> and{' '}
@@ -230,7 +230,7 @@ export function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-muted-foreground">
               Already have an account?{' '}
-              <Link to="/auth/login" className="text-primary hover:text-blue-300 font-medium">
+              <Link to="/auth/login" className="text-primary hover:text-primary/80 font-medium">
                 Sign in
               </Link>
             </p>

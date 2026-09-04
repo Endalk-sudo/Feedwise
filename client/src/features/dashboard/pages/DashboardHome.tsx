@@ -7,10 +7,10 @@ import { useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 const stats = [
-  { name: 'Total Feedback', key: 'total', icon: MessageSquare, color: 'text-primary', bg: 'bg-blue-500/10' },
+  { name: 'Total Feedback', key: 'total', icon: MessageSquare, color: 'text-primary', bg: 'bg-primary/10' },
   { name: 'This Week', key: 'recentCount', icon: TrendingUp, color: 'text-primary', bg: 'bg-green-500/10' },
   { name: 'Positive', key: 'positive', icon: CheckCircle2, color: 'text-primary', bg: 'bg-green-500/10' },
-  { name: 'Needs Attention', key: 'alerts', icon: AlertTriangle, color: 'text-warning', bg: 'bg-yellow-500/10' },
+  { name: 'Needs Attention', key: 'alerts', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' },
 ];
 
 export function DashboardHome() {
@@ -103,8 +103,8 @@ export function DashboardHome() {
             <p className="font-medium">Analytics</p>
             <p className="text-sm text-muted-foreground mt-1">View trends & insights</p>
           </Link>
-          <Link to="/dashboard/ai" className="p-4 bg-secondary/50 border border-input rounded-lg hover:border-pink-500/50 transition-all">
-            <Bot className="w-6 h-6 text-pink-400 mb-2" />
+          <Link to="/dashboard/ai" className="p-4 bg-secondary/50 border border-input rounded-lg hover:border-primary/50 transition-all">
+            <Bot className="w-6 h-6 text-primary mb-2" />
             <p className="font-medium">AI Assistant</p>
             <p className="text-sm text-muted-foreground mt-1">Ask questions about feedback</p>
           </Link>

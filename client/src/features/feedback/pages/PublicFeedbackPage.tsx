@@ -90,7 +90,7 @@ export function PublicFeedbackPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center">
-          <MessageSquare className="w-16 h-16 text-slate-700 mx-auto mb-4" />
+          <MessageSquare className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Organization not found</h1>
           <p className="text-muted-foreground">The feedback page you&apos;re looking for doesn&apos;t exist.</p>
         </div>

@@ -181,7 +181,7 @@ function AlertsList({ alerts }: { alerts: Alert[] | undefined }) {
         <div key={alert.id} className="p-3 bg-secondary/50 rounded-lg border-l-4 border-destructive">
           <p className="text-foreground text-sm line-clamp-1">{alert.text}</p>
           <div className="flex gap-2 mt-2">
-            <span className="px-2 py-0.5 text-xs rounded bg-red-500/20 text-destructive">{alert.urgency}</span>
+            <span className="px-2 py-0.5 text-xs rounded bg-destructive/10 text-destructive">{alert.urgency}</span>
             <span className={cn('px-2 py-0.5 text-xs rounded', sentimentBadge[alert.sentiment ?? ''] ?? '')}>
               {alert.sentiment}
             </span>
@@ -213,7 +213,7 @@ function RecommendationsList({ recommendations }: { recommendations: Recommendat
                 <p className="text-primary text-sm font-medium">Action: {rec.action}</p>
               </div>
               <div className="text-right">
-                <span className={cn('px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap', rec.priority >= 7 ? 'bg-red-500/20 text-destructive' : rec.priority >= 4 ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary')}>
+                <span className={cn('px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap', rec.priority >= 7 ? 'bg-destructive/10 text-destructive' : rec.priority >= 4 ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary')}>
                   Priority: {rec.priority}/10
                 </span>
               </div>
@@ -277,7 +277,7 @@ export function AnalyticsPage() {
 
         <section>
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-pink-400" />
+            <Zap className="w-5 h-5 text-pink-500" />
             Sentiment by Category
           </h2>
           <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">

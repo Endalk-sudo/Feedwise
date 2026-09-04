@@ -205,7 +205,7 @@ export function DashboardLayout() {
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-destructive hover:text-red-300 hover:bg-secondary/50 transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-destructive hover:text-destructive/80 hover:bg-secondary/50 transition-colors"
                       >
                         <LogOut className="w-5 h-5" />
                         Sign Out

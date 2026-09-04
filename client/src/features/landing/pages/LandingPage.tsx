@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import { useState } from 'react';
 import {
   CheckCircle2,
   Zap,
@@ -9,6 +10,8 @@ import {
   ArrowRight,
   Star,
   Users,
+  Menu,
+  X,
 } from 'lucide-react';
 
 const features = [
@@ -35,7 +38,7 @@ const features = [
   {
     icon: Shield,
     title: 'Enterprise Security',
-    description: 'SOC 2 compliant, end-to-end encryption, and granular access controls for your data.',
+    description: 'End-to-end encryption and granular access controls keep your data safe and secure.',
   },
   {
     icon: Users,
@@ -80,7 +83,30 @@ const pricing = [
   },
 ];
 
+const testimonials = [
+  {
+    quote: 'FeedbackAI cut our response analysis time from hours to seconds. The AI categorization is incredibly accurate.',
+    name: 'Sarah Chen',
+    role: 'Head of Product at NovaTech',
+    initials: 'SC',
+  },
+  {
+    quote: 'We identified our top 3 customer pain points in the first week. The sentiment trends helped us prioritize our roadmap.',
+    name: 'Marcus Rodriguez',
+    role: 'Customer Success Lead at BrightLocal',
+    initials: 'MR',
+  },
+  {
+    quote: 'The QR code feedback collection is a game changer for our restaurants. Customers love the simplicity.',
+    name: 'Emily Park',
+    role: 'Operations Manager at FreshBites',
+    initials: 'EP',
+  },
+];
+
 export function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
@@ -96,7 +122,7 @@ export function LandingPage() {
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-foreground hover:text-foreground transition-colors">Features</a>
               <a href="#pricing" className="text-foreground hover:text-foreground transition-colors">Pricing</a>
-              <a href="#features" className="text-foreground hover:text-foreground transition-colors">About</a>
+              <a href="#testimonials" className="text-foreground hover:text-foreground transition-colors">Testimonials</a>
             </div>
             <div className="flex items-center gap-4">
               <Link to="/auth/login" className="text-foreground hover:text-foreground transition-colors hidden sm:block">
@@ -109,8 +135,40 @@ export function LandingPage() {
                 Get Started Free
               </Link>
             </div>
+
+            {/* Mobile menu button */}
+            <button
+              className="md:hidden p-2 text-foreground hover:text-foreground transition-colors"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
           </div>
         </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
+            <div className="absolute right-0 top-0 bottom-0 w-72 bg-card border-l border-border p-6">
+              <div className="flex items-center justify-between mb-8">
+                <span className="font-bold text-lg">Menu</span>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <nav className="space-y-4">
+                <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors">Features</a>
+                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors">Pricing</a>
+                <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors">Testimonials</a>
+                <hr className="border-border" />
+                <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors">Sign In</Link>
+                <Link to="/auth/register" onClick={() => setMobileMenuOpen(false)} className="block py-2 btn-brand text-center">Get Started Free</Link>
+              </nav>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -144,12 +202,12 @@ export function LandingPage() {
               Start Free Trial
               <ArrowRight className="w-5 h-5 inline ml-2" />
             </Link>
-            <Link
-              to="/auth/register"
-              className="w-full sm:w-auto border-2 border-input px-8 py-4 rounded-lg text-foreground font-semibold text-lg hover:border-slate-500 hover:text-foreground transition-all"
+            <a
+              href="#features"
+              className="w-full sm:w-auto border-2 border-input px-8 py-4 rounded-lg text-foreground font-semibold text-lg hover:border-primary hover:text-foreground transition-all"
             >
-              View Demo
-            </Link>
+              See How It Works
+            </a>
           </div>
 
           <div className="flex items-center justify-center gap-8 text-muted-foreground text-sm">
@@ -242,8 +300,8 @@ export function LandingPage() {
                   to="/auth/register"
                   className={`w-full py-3 px-4 rounded-lg text-center font-semibold transition-all ${
                     plan.popular
-? 'btn-brand'
-                  : 'bg-secondary border border-input text-foreground hover:bg-muted hover:border-input hover:text-foreground'
+                      ? 'btn-brand'
+                      : 'bg-secondary border border-input text-foreground hover:bg-muted hover:border-input hover:text-foreground'
                   }`}
                 >
                   {plan.cta}
@@ -255,7 +313,7 @@ export function LandingPage() {
       </section>
 
       {/* Social Proof */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-card/50">
+      <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8 bg-card/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">Trusted by teams everywhere</h2>
@@ -265,23 +323,23 @@ export function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
+            {testimonials.map((t, i) => (
               <div key={i} className="p-6 rounded-xl bg-card border border-border">
                 <div className="flex gap-1 mb-4">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="w-5 h-5 fill-yellow-400 text-warning" />
+                    <Star key={star} className="w-5 h-5 fill-warning text-warning" />
                   ))}
                 </div>
                 <p className="text-foreground mb-6 italic">
-                  "FeedbackAI completely changed how we understand our customers. The AI insights are spot on and have helped us improve our product significantly."
+                  &ldquo;{t.quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                    <span className="text-foreground font-medium">JD</span>
+                    <span className="text-foreground font-medium text-sm">{t.initials}</span>
                   </div>
                   <div>
-                    <p className="font-medium">John Doe</p>
-                    <p className="text-muted-foreground text-sm">CEO at TechStart</p>
+                    <p className="font-medium">{t.name}</p>
+                    <p className="text-muted-foreground text-sm">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -304,7 +362,7 @@ export function LandingPage() {
             className="btn-brand text-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg shadow-blue-500/25"
           >
             Start Your Free Trial
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-5 h-5 inline ml-2" />
           </Link>
         </div>
       </section>
@@ -329,40 +387,34 @@ export function LandingPage() {
               <ul className="space-y-2 text-muted-foreground text-sm">
                 <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
                 <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
-                <li><span className="text-muted-foreground">Integrations</span></li>
-                <li><span className="text-muted-foreground">API Docs</span></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-muted-foreground text-sm">
-                <li><span className="text-muted-foreground">About</span></li>
-                <li><span className="text-muted-foreground">Blog</span></li>
-                <li><span className="text-muted-foreground">Careers</span></li>
-                <li><span className="text-muted-foreground">Contact</span></li>
+                <li><a href="#testimonials" className="hover:text-foreground transition-colors">Testimonials</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-muted-foreground text-sm">
-                <li><span className="text-muted-foreground">Privacy Policy</span></li>
-                <li><span className="text-muted-foreground">Terms of Service</span></li>
-                <li><span className="text-muted-foreground">Security</span></li>
+                <li><span className="opacity-50">Privacy Policy</span></li>
+                <li><span className="opacity-50">Terms of Service</span></li>
               </ul>
             </div>
           </div>
           <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} FeedbackAI. All rights reserved.
+              &copy; {new Date().getFullYear()} FeedbackAI. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <a href="https://twitter.com" className="text-muted-foreground hover:text-foreground transition-colors" target="_blank" rel="noopener">
+              <a href="https://twitter.com" className="text-muted-foreground hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">
                 Twitter
               </a>
-              <a href="https://github.com" className="text-muted-foreground hover:text-foreground transition-colors" target="_blank" rel="noopener">
+              <a href="https://github.com" className="text-muted-foreground hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">
                 GitHub
               </a>
-              <a href="https://linkedin.com" className="text-muted-foreground hover:text-foreground transition-colors" target="_blank" rel="noopener">
+              <a href="https://linkedin.com" className="text-muted-foreground hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">
                 LinkedIn
               </a>
             </div>

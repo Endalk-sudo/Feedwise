@@ -17,7 +17,7 @@ const suggestions = [
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-      <Bot className="w-16 h-16 text-slate-700 mb-4" />
+      <Bot className="w-16 h-16 text-muted-foreground mb-4" />
       <h3 className="text-lg font-medium mb-2">Ready to help</h3>
       <p className="text-sm">Ask me anything about your customer feedback</p>
     </div>
@@ -52,9 +52,9 @@ function TypingIndicator() {
   return (
     <div className="px-4 pb-4 flex justify-start">
       <div className="bg-secondary rounded-xl rounded-tl-none px-4 py-3 flex items-center gap-1">
-        <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+        <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+        <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
       </div>
     </div>
   );
@@ -147,13 +147,13 @@ export function AIPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Bot className="w-6 h-6 text-pink-400" />
+            <Bot className="w-6 h-6 text-primary" />
             AI Assistant
           </h1>
           <p className="text-muted-foreground mt-1">Ask questions about your feedback data</p>
         </div>
         {currentPlan !== 'pro' && (
-          <div className="bg-yellow-500/10 border border-yellow-500/30 text-warning px-4 py-2 rounded-lg text-sm">
+          <div className="bg-warning/10 border border-warning/30 text-warning px-4 py-2 rounded-lg text-sm">
             <Zap className="w-4 h-4 inline mr-1" />
             Pro plan required for AI Chat
           </div>

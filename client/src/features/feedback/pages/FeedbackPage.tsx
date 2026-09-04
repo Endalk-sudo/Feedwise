@@ -146,7 +146,7 @@ export function FeedbackPage() {
           </div>
         ) : (
           <>
-            <div className="divide-y divide-slate-800">
+            <div className="divide-y divide-border">
               {feedbacks.map((feedback) => (
                 <div key={feedback.id} className="p-4 sm:p-6 hover:bg-secondary/50 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">

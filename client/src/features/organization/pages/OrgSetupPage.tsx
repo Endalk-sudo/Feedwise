@@ -183,7 +183,7 @@ export function OrgSetupPage() {
                   onBlur={handleSlugBlur}
                   className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all ${
                     errors.slug ? 'border-destructive' :
-                    isCheckingSlug ? 'border-blue-500' :
+                    isCheckingSlug ? 'border-primary' :
                     slugAvailable === true ? 'border-green-500' :
                     slugAvailable === false ? 'border-destructive' :
                     'border-input'
@@ -202,7 +202,7 @@ export function OrgSetupPage() {
                   </div>
                 )}
                 {slugAvailable === false && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
                     <AlertCircle className="w-5 h-5" />
                   </div>
                 )}
