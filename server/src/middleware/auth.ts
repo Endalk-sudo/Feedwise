@@ -57,7 +57,7 @@ export async function optionalAuthMiddleware(
       (req as any).session = session;
     }
     next();
-  } catch (error) {
+  } catch {
     // Ignore errors, continue without auth
     next();
   }

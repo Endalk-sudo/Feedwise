@@ -39,6 +39,15 @@ export const strictRateLimiter = createRateLimiter({
 });
 
 /**
+ * Auth session endpoints (polled by the client, so roomier than strict)
+ */
+export const authRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 120,
+  message: 'Too many auth requests, please try again later',
+});
+
+/**
  * Feedback submission rate limiter (per IP)
  */
 export const feedbackRateLimiter = createRateLimiter({

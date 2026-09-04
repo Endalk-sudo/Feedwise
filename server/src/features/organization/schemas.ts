@@ -14,6 +14,36 @@ export const updateOrgSchema = z.object({
     name: z.string().min(2).optional(),
     logo: z.string().url().optional().or(z.literal('')),
   }),
+  params: z.object({
+    slug: z.string().min(1),
+  }),
+});
+
+export const addMemberSchema = z.object({
+  body: z.object({
+    email: z.string().email('Valid email is required'),
+    role: z.enum(['admin', 'member']).default('member'),
+  }),
+  params: z.object({
+    slug: z.string().min(1),
+  }),
+});
+
+export const removeMemberSchema = z.object({
+  params: z.object({
+    slug: z.string().min(1),
+    userId: z.string().min(1),
+  }),
+});
+
+export const updateMemberRoleSchema = z.object({
+  body: z.object({
+    role: z.enum(['admin', 'member']),
+  }),
+  params: z.object({
+    slug: z.string().min(1),
+    userId: z.string().min(1),
+  }),
 });
 
 export const orgParamsSchema = z.object({

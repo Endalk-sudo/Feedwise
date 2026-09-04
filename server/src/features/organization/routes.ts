@@ -1,8 +1,15 @@
 import { Router } from 'express';
 import { validate } from '@/middleware/validation.js';
-import { authMiddleware } from '@/middleware/auth.js';
+import { authMiddleware, optionalAuthMiddleware } from '@/middleware/auth.js';
 import { organizationService } from './service.js';
-import { createOrgSchema, updateOrgSchema, orgParamsSchema } from './schemas.js';
+import {
+  createOrgSchema,
+  updateOrgSchema,
+  orgParamsSchema,
+  addMemberSchema,
+  removeMemberSchema,
+  updateMemberRoleSchema,
+} from './schemas.js';
 import { prisma } from '@/lib/prisma.js';
 
 const router = Router();
@@ -29,8 +36,8 @@ router.get('/my-orgs', authMiddleware, async (req, res, next) => {
   }
 });
 
-// Get organization by slug (public for feedback page, protected for dashboard)
-router.get('/:slug', validate(orgParamsSchema), async (req, res, next) => {
+// Get organization by slug (public for feedback page; member info when authed)
+router.get('/:slug', optionalAuthMiddleware, validate(orgParamsSchema), async (req, res, next) => {
   try {
     const slug = req.params.slug as string;
     const organization = await organizationService.getBySlug(slug);
@@ -116,7 +123,7 @@ router.put('/:slug', authMiddleware, validate(updateOrgSchema), async (req, res,
 });
 
 // Add member (protected, owner/admin only)
-router.post('/:slug/members', authMiddleware, async (req, res, next) => {
+router.post('/:slug/members', authMiddleware, validate(addMemberSchema), async (req, res, next) => {
   try {
     const slug = req.params.slug as string;
     const { email, role = 'member' } = req.body;
@@ -155,7 +162,11 @@ router.post('/:slug/members', authMiddleware, async (req, res, next) => {
 });
 
 // Remove member (protected, owner only)
-router.delete('/:slug/members/:userId', authMiddleware, async (req, res, next) => {
+router.delete(
+  '/:slug/members/:userId',
+  authMiddleware,
+  validate(removeMemberSchema),
+  async (req, res, next) => {
   try {
     const slug = req.params.slug as string;
     const targetUserId = req.params.userId as string;
@@ -191,5 +202,52 @@ router.delete('/:slug/members/:userId', authMiddleware, async (req, res, next) =
     next(error);
   }
 });
+
+// Update member role (protected, owner only)
+router.put(
+  '/:slug/members/:userId',
+  authMiddleware,
+  validate(updateMemberRoleSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const targetUserId = req.params.userId as string;
+      const { role } = req.body;
+      const userId = (req as any).user.id;
+
+      const organization = await organizationService.getBySlug(slug);
+      if (!organization) {
+        return res.status(404).json({ success: false, message: 'Organization not found' });
+      }
+
+      const member = await prisma.organizationMember.findUnique({
+        where: {
+          userId_organizationId: {
+            userId,
+            organizationId: organization.id,
+          },
+        },
+      });
+
+      if (!member || member.role !== 'owner') {
+        return res.status(403).json({ success: false, message: 'Forbidden - Owner only' });
+      }
+
+      // Owners keep their role
+      if (targetUserId === userId) {
+        return res.status(400).json({ success: false, message: 'Cannot change your own role' });
+      }
+
+      const updated = await organizationService.updateMemberRole(
+        organization.id,
+        targetUserId,
+        role,
+      );
+      res.json({ success: true, data: updated });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 export { router as organizationRoutes };

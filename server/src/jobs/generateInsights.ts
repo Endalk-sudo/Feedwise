@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { prisma } from '@/lib/prisma.js';
 import { generateInsights } from '@/features/ai/service.js';
+import { syncSubscriptionStatus } from '@/features/payments/service.js';
 
 /**
  * Daily insight generation job
@@ -87,45 +88,7 @@ export function startSubscriptionSyncJob(): void {
     console.log('🔄 Starting subscription sync job...');
 
     try {
-      const { stripe } = await import('../features/payments/routes.js');
-      const orgs = await prisma.organization.findMany({
-        where: { stripeSubscriptionId: { not: null } },
-        select: { id: true, stripeSubscriptionId: true },
-      });
-
-      for (const org of orgs) {
-        if (!org.stripeSubscriptionId) continue;
-
-        try {
-          const subscription = await stripe.subscriptions.retrieve(org.stripeSubscriptionId);
-          const view = subscription as unknown as {
-            status: string;
-            current_period_end: number;
-            cancel_at_period_end: boolean;
-          };
-
-          await prisma.organization.update({
-            where: { id: org.id },
-            data: {
-              subscriptionStatus: view.status,
-              stripeCurrentPeriodEnd: new Date(view.current_period_end * 1000),
-              cancelAtPeriodEnd: view.cancel_at_period_end,
-            },
-          });
-
-          await prisma.subscription.update({
-            where: { organizationId: org.id },
-            data: {
-              status: view.status,
-              stripeCurrentPeriodEnd: new Date(view.current_period_end * 1000),
-              cancelAtPeriodEnd: view.cancel_at_period_end,
-            },
-          });
-        } catch (error) {
-          console.error(`Failed to sync subscription for org ${org.id}:`, error);
-        }
-      }
-
+      await syncSubscriptionStatus();
       console.log('✅ Subscription sync job completed');
     } catch (error) {
       console.error('❌ Subscription sync job failed:', error);

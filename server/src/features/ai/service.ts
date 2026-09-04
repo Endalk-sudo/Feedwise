@@ -1,4 +1,4 @@
-import { generateText, Output } from 'ai';
+import { generateText, streamText, Output } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 import logger from '@/utils/logger.js';
@@ -169,22 +169,7 @@ export async function chatWithAI(
   message: string,
   feedbackContext: FeedbackContextItem[],
 ): Promise<string> {
-  const context = feedbackContext
-    .slice(0, 15)
-    .map(
-      (f) =>
-        `Category: ${f.category}, Sentiment: ${f.sentiment}, Urgency: ${f.urgency}, Text: ${f.text.substring(0, 300)}`,
-    )
-    .join('\n');
-
-  const prompt = `You are an AI assistant helping a business owner understand their customer feedback.
-
-Feedback context:
-${context}
-
-User question: ${message}
-
-Provide a helpful, data-driven response based on the feedback context. Be specific and actionable.`;
+  const prompt = buildChatPrompt(message, feedbackContext);
 
   try {
     const { text } = await generateText({
@@ -198,5 +183,57 @@ Provide a helpful, data-driven response based on the feedback context. Be specif
   } catch (error) {
     logger.error(`AI chat failed: ${(error as Error).message}`);
     return 'Sorry, I encountered an error analyzing your feedback. Please try again.';
+  }
+}
+
+export function buildChatPrompt(
+  message: string,
+  feedbackContext: FeedbackContextItem[],
+): string {
+  const context = feedbackContext
+    .slice(0, 15)
+    .map(
+      (f) =>
+        `Category: ${f.category}, Sentiment: ${f.sentiment}, Urgency: ${f.urgency}, Text: ${f.text.substring(0, 300)}`,
+    )
+    .join('\n');
+
+  return `You are an AI assistant helping a business owner understand their customer feedback.
+
+Feedback context:
+${context}
+
+User question: ${message}
+
+Provide a helpful, data-driven response based on the feedback context. Be specific and actionable.`;
+}
+
+/**
+ * Streaming chat: yields text chunks for SSE-style responses.
+ * On failure yields the same fallback message as chatWithAI.
+ */
+export async function* streamChat(
+  message: string,
+  feedbackContext: FeedbackContextItem[],
+): AsyncGenerator<string> {
+  let yielded = false;
+  try {
+    const { textStream } = streamText({
+      model: google(modelName),
+      prompt: buildChatPrompt(message, feedbackContext),
+      temperature: 0.5,
+      maxRetries: 3,
+    });
+
+    for await (const chunk of textStream) {
+      yielded = true;
+      yield chunk;
+    }
+  } catch (error) {
+    logger.error(`AI chat stream failed: ${(error as Error).message}`);
+  }
+
+  if (!yielded) {
+    yield 'Sorry, I encountered an error analyzing your feedback. Please try again.';
   }
 }

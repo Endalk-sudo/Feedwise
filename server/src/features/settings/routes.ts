@@ -2,91 +2,76 @@ import { Router } from 'express';
 import multer from 'multer';
 import { validate } from '@/middleware/validation.js';
 import { authMiddleware } from '@/middleware/auth.js';
-import { z } from 'zod';
-import { prisma } from '@/lib/prisma.js';
-import { uploadToCloudinary, deleteFromCloudinary } from '@/utils/cloudinary.js';
+import { logoQuerySchema, updateSettingsSchema, getSettingsSchema } from './schemas.js';
+import { SettingsError, getSettings, updateSettings, uploadLogo } from './service.js';
 
 const router = Router();
 
-const upload = multer({ storage: multer.memoryStorage() });
-
-const updateSettingsSchema = z.object({
-  body: z.object({
-    name: z.string().min(2).optional(),
-    logo: z.string().url().optional().or(z.literal('')),
-  }),
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  },
 });
 
-// Upload logo
-router.post('/logo', authMiddleware, upload.single('logo'), async (req, res, next) => {
+function settingsError(
+  res: import('express').Response,
+  error: unknown,
+): boolean {
+  if (error instanceof SettingsError) {
+    res.status(error.status).json({ success: false, message: error.message });
+    return true;
+  }
+  return false;
+}
+
+// Upload logo (owner/admin)
+router.post(
+  '/logo',
+  authMiddleware,
+  upload.single('logo'),
+  validate(logoQuerySchema),
+  async (req, res, next) => {
+    try {
+      const userId = (req as any).user.id;
+
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: 'Logo file is required' });
+      }
+
+      const data = await uploadLogo(req.query.slug as string, userId, req.file);
+      res.json({ success: true, data });
+    } catch (error) {
+      if (!settingsError(res, error)) next(error);
+    }
+  },
+);
+
+// Get organization settings (members)
+router.get('/:slug', authMiddleware, validate(getSettingsSchema), async (req, res, next) => {
   try {
-    const { slug } = req.query;
     const userId = (req as any).user.id;
-
-    if (!slug || !req.file) {
-      return res.status(400).json({ success: false, message: 'Missing slug or file' });
-    }
-
-    const organization = await prisma.organization.findUnique({ where: { slug: slug as string } });
-    if (!organization) {
-      return res.status(404).json({ success: false, message: 'Organization not found' });
-    }
-
-    const member = await prisma.organizationMember.findUnique({
-      where: { userId_organizationId: { userId, organizationId: organization.id } },
-    });
-
-    if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
-      return res.status(403).json({ success: false, message: 'Forbidden' });
-    }
-
-    // Delete old logo if exists
-    if (organization.logo) {
-      const publicId = organization.logo.split('/').pop()?.split('.')[0];
-      if (publicId) await deleteFromCloudinary(`organizations/${organization.id}/${publicId}`);
-    }
-
-    // Upload new logo
-    const result = await uploadToCloudinary(req.file.buffer, `organizations/${organization.id}`);
-
-    await prisma.organization.update({
-      where: { id: organization.id },
-      data: { logo: result.secure_url },
-    });
-
-    res.json({ success: true, data: { logo: result.secure_url } });
+    const data = await getSettings(req.params.slug as string, userId);
+    res.json({ success: true, data });
   } catch (error) {
-    next(error);
+    if (!settingsError(res, error)) next(error);
   }
 });
 
-// Update organization settings
+// Update organization settings (owner/admin)
 router.put('/:slug', authMiddleware, validate(updateSettingsSchema), async (req, res, next) => {
   try {
-    const slug = req.params.slug as string;
     const userId = (req as any).user.id;
-
-    const organization = await prisma.organization.findUnique({ where: { slug } });
-    if (!organization) {
-      return res.status(404).json({ success: false, message: 'Organization not found' });
-    }
-
-    const member = await prisma.organizationMember.findUnique({
-      where: { userId_organizationId: { userId, organizationId: organization.id } },
-    });
-
-    if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
-      return res.status(403).json({ success: false, message: 'Forbidden' });
-    }
-
-    const updated = await prisma.organization.update({
-      where: { id: organization.id },
-      data: req.body,
-    });
-
-    res.json({ success: true, data: updated });
+    const { name, logo } = req.body;
+    const data = await updateSettings(req.params.slug as string, userId, { name, logo });
+    res.json({ success: true, data });
   } catch (error) {
-    next(error);
+    if (!settingsError(res, error)) next(error);
   }
 });
 

@@ -48,6 +48,11 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
+// Custom auth endpoints (/me, /has-org) BEFORE the Better Auth catch-all,
+// otherwise toNodeHandler swallows them with a 404. Unmatched paths fall
+// through to Better Auth below.
+app.use('/api/auth', authRoutes);
+
 // CRITICAL: Mount Better Auth BEFORE body parsers.
 // Better Auth handles its own body parsing for auth routes.
 // NOTE: Express 5 requires the {*any} wildcard syntax (bare `*` throws).
@@ -68,7 +73,6 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/organization', organizationRoutes);
-app.use('/api/auth', authRoutes); // Additional custom auth routes
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
