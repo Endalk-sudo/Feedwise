@@ -6,15 +6,9 @@ import { useUIStore } from '@/lib/stores/ui.store';
 import { Building2, Upload, Save, Loader2, AlertCircle, Zap } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { updateSettingsFormSchema, type SettingsForm } from '@aifc/contracts';
 import { cn } from '@/lib/utils';
 
-const settingsSchema = z.object({
-  name: z.string().min(2, 'Organization name must be at least 2 characters'),
-  logo: z.string().url().optional().or(z.literal('')),
-});
-
-type SettingsForm = z.infer<typeof settingsSchema>;
 
 export function SettingsPage() {
   const slug = useOrgSlug();
@@ -31,7 +25,7 @@ export function SettingsPage() {
     setValue,
     reset,
   } = useForm<SettingsForm>({
-    resolver: zodResolver(settingsSchema),
+    resolver: zodResolver(updateSettingsFormSchema),
     defaultValues: {
       name: '',
       logo: '',

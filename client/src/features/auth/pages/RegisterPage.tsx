@@ -2,23 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { registerSchema, type RegisterForm } from '@aifc/contracts';
 import { Eye, EyeOff, Loader2, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useUIStore } from '@/lib/stores/ui.store';
-
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords don\'t match',
-  path: ['confirmPassword'],
-});
-
-type RegisterForm = z.infer<typeof registerSchema>;
 
 export function RegisterPage() {
   const navigate = useNavigate();

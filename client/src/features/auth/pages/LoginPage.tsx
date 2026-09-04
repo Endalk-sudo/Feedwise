@@ -2,18 +2,12 @@ import { useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { loginSchema, type LoginForm } from '@aifc/contracts';
 import { Eye, EyeOff, Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useUIStore } from '@/lib/stores/ui.store';
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
   const navigate = useNavigate();

@@ -1,15 +1,3 @@
-import { z } from 'zod';
+export { checkoutSchema, verifySessionSchema, type CheckoutInput } from '@aifc/contracts';
 
-export const checkoutSchema = z.object({
-  body: z.object({
-    plan: z.enum(['basic', 'pro']),
-  }),
-});
-
-export const verifySessionSchema = z.object({
-  params: z.object({
-    sessionId: z.string().min(1),
-  }),
-});
-
-export type CheckoutInput = z.infer<typeof checkoutSchema>;
+// NOTE: schemas live in shared/src/features/payments/schemas.ts (single source of truth).

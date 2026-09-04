@@ -1,12 +1,3 @@
-import { z } from 'zod';
+export { analyticsParamsSchema, type AnalyticsParams } from '@aifc/contracts';
 
-export const analyticsParamsSchema = z.object({
-  params: z.object({
-    slug: z.string().min(1),
-  }),
-  query: z.object({
-    days: z.coerce.number().positive().max(365).optional(),
-  }),
-});
-
-export type AnalyticsParams = z.infer<typeof analyticsParamsSchema>;
+// NOTE: schemas live in shared/src/features/analytics/schemas.ts (single source of truth).

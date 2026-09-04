@@ -2,7 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { orgSetupFormSchema, type OrgSetupForm } from '@aifc/contracts';
 import { Loader2, Building2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useCreateOrganization } from '@/features/organization/hooks';
 import { apiClient } from '@/lib/api';
@@ -39,14 +39,6 @@ const BUSINESS_TYPES = [
   'Other',
 ];
 
-const orgSetupSchema = z.object({
-  name: z.string().min(2, 'Organization name must be at least 2 characters'),
-  slug: z.string().min(2, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must be alphanumeric and hyphenated'),
-  businessType: z.string().min(1, 'Business type is required'),
-  businessDescription: z.string().min(10, 'Business description must be at least 10 characters'),
-});
-
-type OrgSetupForm = z.infer<typeof orgSetupSchema>;
 
 export function OrgSetupPage() {
   const navigate = useNavigate();
@@ -64,7 +56,7 @@ export function OrgSetupPage() {
     setValue,
     formState: { errors },
   } = useForm<OrgSetupForm>({
-    resolver: zodResolver(orgSetupSchema),
+    resolver: zodResolver(orgSetupFormSchema),
     defaultValues: {
       name: '',
       slug: '',

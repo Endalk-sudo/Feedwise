@@ -2,14 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { submitFeedbackFormSchema, type SubmitFeedbackForm } from '@aifc/contracts';
 import { MessageSquare, Loader2, CheckCircle2, Building2, Shield, Send, AlertCircle } from 'lucide-react';
 
-const feedbackSchema = z.object({
-  text: z.string().min(15, 'Feedback must be at least 15 characters').max(5000),
-});
-
-type FeedbackForm = z.infer<typeof feedbackSchema>;
 
 export function PublicFeedbackPage() {
   const { slug } = useParams({ from: '/feedback/$slug' });
@@ -24,8 +19,8 @@ export function PublicFeedbackPage() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<FeedbackForm>({
-    resolver: zodResolver(feedbackSchema),
+  } = useForm<SubmitFeedbackForm>({
+    resolver: zodResolver(submitFeedbackFormSchema),
     defaultValues: { text: '' },
   });
 
@@ -49,7 +44,7 @@ export function PublicFeedbackPage() {
     fetchOrg();
   }, [slug]);
 
-  const onSubmit = async (data: FeedbackForm) => {
+  const onSubmit = async (data: SubmitFeedbackForm) => {
     setIsSubmitting(true);
     setSubmitError(null);
 

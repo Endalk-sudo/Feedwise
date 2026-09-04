@@ -1,7 +1,3 @@
-import { z } from 'zod';
+export { meSchema, hasOrgSchema } from '@aifc/contracts';
 
-// GET /me — no input
-export const meSchema = z.object({});
-
-// GET /has-org — no input
-export const hasOrgSchema = z.object({});
+// NOTE: schemas live in shared/src/features/auth/schemas.ts (single source of truth).
