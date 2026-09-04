@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, stack-upgrade]
   pull_request:
     branches: [main]
 
@@ -22,11 +22,13 @@ jobs:
 
       - name: Install client dependencies
         working-directory: ./client
-        run: npm ci
+        # --legacy-peer-deps: npm arborist crashes on this graph (better-auth peerOptional vitest range)
+        run: npm ci --legacy-peer-deps
 
       - name: Install server dependencies
         working-directory: ./server
-        run: npm ci
+        # --legacy-peer-deps: npm arborist crashes on this graph (better-auth peerOptional vitest range)
+        run: npm ci --legacy-peer-deps
 
       - name: Run client lint
         working-directory: ./client
@@ -59,11 +61,13 @@ jobs:
 
       - name: Install client dependencies
         working-directory: ./client
-        run: npm ci
+        # --legacy-peer-deps: npm arborist crashes on this graph (better-auth peerOptional vitest range)
+        run: npm ci --legacy-peer-deps
 
       - name: Install server dependencies
         working-directory: ./server
-        run: npm ci
+        # --legacy-peer-deps: npm arborist crashes on this graph (better-auth peerOptional vitest range)
+        run: npm ci --legacy-peer-deps
 
       - name: Run client type check
         working-directory: ./client
@@ -76,6 +80,22 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: feedback_test
+          POSTGRES_DB: feedback_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d feedback_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:feedback_test@localhost:5432/feedback_test?schema=public
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -88,11 +108,13 @@ jobs:
 
       - name: Install client dependencies
         working-directory: ./client
-        run: npm ci
+        # --legacy-peer-deps: npm arborist crashes on this graph (better-auth peerOptional vitest range)
+        run: npm ci --legacy-peer-deps
 
       - name: Install server dependencies
         working-directory: ./server
-        run: npm ci
+        # --legacy-peer-deps: npm arborist crashes on this graph (better-auth peerOptional vitest range)
+        run: npm ci --legacy-peer-deps
 
       - name: Run client tests
         working-directory: ./client
@@ -118,11 +140,13 @@ jobs:
 
       - name: Install client dependencies
         working-directory: ./client
-        run: npm ci
+        # --legacy-peer-deps: npm arborist crashes on this graph (better-auth peerOptional vitest range)
+        run: npm ci --legacy-peer-deps
 
       - name: Install server dependencies
         working-directory: ./server
-        run: npm ci
+        # --legacy-peer-deps: npm arborist crashes on this graph (better-auth peerOptional vitest range)
+        run: npm ci --legacy-peer-deps
 
       - name: Build client
         working-directory: ./client

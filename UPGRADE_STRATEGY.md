@@ -42,7 +42,7 @@ legacy baggage forward.
 | UI | Tailwind CSS v4 + shadcn/ui (Radix) + lucide-react (real types, no shim) |
 | Tests | Vitest ^4 (better-auth peer range forces v4 over v5), RTL, Playwright later |
 | Tooling | `tsx` dev, `tsc && tsc-alias` build, ESLint + Prettier, GitHub Actions CI |
-| Runtime | Docker Compose (client nginx:3000, server node:5000, postgres:5433) |
+| Runtime | Docker Compose (dev: client vite:5173, server tsx:5000, postgres:5434; prod: client nginx:3000, server node:5000, postgres:5434) |
 
 ### Known toolchain quirks (do not "fix" differently)
 
@@ -113,5 +113,7 @@ existing `GEMINI_API_KEY` / `GOOGLE_GENERATIVE_AI_API_KEY` per chosen SDK.
 - [x] Phase 1b (2026-09-04): switched AI to **Vercel AI SDK `ai@7.0.92` + `@ai-sdk/google@4.0.63`** (pairing now verifiable; `@google/genai` + server `axios` removed; `stripe→22.6.1`, `express→5.2.1`, `zod→4.5.4`). Client: added `@tailwindcss/vite`, swapped wrong `@tanstack/router-devtools` → `@tanstack/react-router-devtools@1.167.1`, dropped router vite plugin, `index.html` → `main.tsx`, `index.css` customs → `@utility` (v4). Node 20→22 (Dockerfiles + CI, required by `ai@7`). Gates: server `typecheck/prisma generate/build` green, client `vite build` green + vitest 8/8; client `typecheck` (98) + lints are pre-existing slice debt (Phase 3)
 - [x] Dev runtime (2026-09-04): `docker-compose.yml` rewritten for local dev — postgres 16 (host :5434), server `Dockerfile.dev` (`migrate deploy` + `tsx watch`), client `Dockerfile.dev` (vite :5173, `VITE_PROXY_TARGET` for container DNS). Baseline migrations (`init`, `add-account-issuer`, `auth-timestamps` — better-auth 1.7 needs `Account.issuer` + `createdAt/updatedAt` on auth tables) + `prisma/seed.ts` demo org. Fixes found by live testing: Express 5 getter-only `req.query` (defineProperty in validation middleware), `feedbackParamsSchema` (`id` optional, `slug` required). Verified click-through: signup → signin → session → seed → public submit (AI fallback) → AI chat (Pro gate + fallback) → list/stats/analytics, plus client-origin proxy post
 - [x] Phase 2 backend slices + legacy deletion
-- [ ] Phase 3 frontend slices + legacy deletion
-- [ ] Phase 4 infra + docs + final gate
+- [x] Phase 3 frontend slices + legacy deletion
+- [x] Phase 4a CI postgres + legacy-peer-deps + prebuild prisma generate
+- [x] Phase 4b prod parity: server `Dockerfile` (migrate deploy on start) + `docker-compose.prod.yml` (nginx:3000, node:5000, postgres:5434), both with legacy-peer-deps
+- [x] Phase 4c docs + final gate (2026-09-04): AGENTS.md dev/runtime section updated; strategy doc runtime row fixed; CI YAML + Postgres service + legacy-peer-deps everywhere + Node 22; prod compose + server Dockerfile with migrate deploy + legacy-peer-deps. Final gate: all typecheck/lint/test/build green (server+client), Playwright smoke 8/8 routes zero errors, dev `docker compose up --build` works, prod `docker compose -f docker-compose.prod.yml up --build` images built.

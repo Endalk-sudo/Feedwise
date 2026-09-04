@@ -63,3 +63,13 @@ Dev stack with hot reload (bind mounts): `client` (vite dev :5173) → `server` 
 ## CI Pipeline
 
 GitHub Actions (`.github/workflows/ci.yml`): lint → typecheck → test → build. Build depends on all three passing.
+Postgres service + `npm ci --legacy-peer-deps` everywhere (arborist crash). Node 22.
+
+## Production Deploy
+
+```bash
+cp server/example.env server/.env   # fill production secrets
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+Prod stack: client nginx:3000 (proxies /api) → server node:5000 (`prisma migrate deploy` on start) → postgres 16 (internal 5432, host 5434).
