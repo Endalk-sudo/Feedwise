@@ -1,11 +1,11 @@
 # 🚀 AI Feedback Collector (SaaS)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/frontend-React-blue)](https://reactjs.org/)
-[![MongoDB](https://img.shields.io/badge/database-MongoDB-green)](https://www.mongodb.com/)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/frontend-React%2019-blue)](https://reactjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL%2016-green)](https://www.postgresql.org/)
 
-**AI Feedback Collector** is a full-stack SaaS platform designed to help businesses turn customer feedback into actionable insights instantly. Using QR codes for collection and Gemini AI for analysis, it categorizes, sentiments, and provides growth recommendations in real-time.
+**AI Feedback Collector** is a full-stack SaaS platform designed to help businesses turn customer feedback into actionable insights instantly. Using QR codes for collection and Gemini AI for analysis, it categorizes, measures sentiment, and provides growth recommendations in real-time.
 
 ---
 
@@ -18,20 +18,22 @@ The goal of this project is to simplify the feedback loop for small to medium bu
 - **📊 Interactive Dashboard**: Professional analytics using modern charting for sentiment trends and category breakthroughs.
 - **📱 QR Collection**: Unique, organization-specific landing pages and QR codes for easy physical-to-digital feedback.
 - **💬 Admin AI Chat**: An intelligent assistant to help admins query their own feedback data using natural language.
-- **🔐 Secure Auth**: Robust JWT-based authentication with refresh token logic.
+- **🔐 Secure Auth**: Better Auth session-based authentication with the Prisma adapter.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React, Vite, Context API, Lucide Icons, Framer Motion, Sonner.
-- **Backend**: Node.js, Express.js, Mongoose.
-- **Database**: MongoDB (Atlas).
+- **Frontend**: React 19, Vite 7, TanStack Router + Query, Zustand, Tailwind v4 + shadcn/ui, Lucide, Sonner, Recharts.
+- **Backend**: Node.js 22+, Express 5, Prisma ORM
+- **Database**: PostgreSQL 16
+- **Auth**: Better Auth (email/password, session cookies, Prisma adapter)
 - **Integrations**: 
-  - **AI**: Google Gemini (2.0 Flash).
-  - **Payments**: Stripe (Checkout & Billing Portal).
-  - **Storage**: Cloudinary (Org Logos).
-  - **QR**: QRCode.js.
+  - **AI**: Google Gemini 2.0 Flash via Vercel AI SDK (`ai` + `@ai-sdk/google`)
+  - **Payments**: Stripe (Checkout & Billing Portal,) webhooks + hourly subscription sync
+  - **Storage**: Cloudinary (Org Logos)
+  - **QR**: QRCode.js
+- **Quality**: TypeScript (strict), Zod v4 validation, Vitest, ESLint + Prettier,GitHub Actions CI,Docker Compose(dev + prod)
 
 ---
 
@@ -44,7 +46,7 @@ For a detailed look at the architecture, database schema, and technical decision
 
 ### Prerequisites
 - Node.js (v18+)
-- MongoDB Atlas account
+- PostgreSQL 16 (spins up in Docker Compose)
 - Stripe, Gemini, and Cloudinary API keys
 
 ### Installation
@@ -74,7 +76,7 @@ For a detailed look at the architecture, database schema, and technical decision
 ---
 
 ## 🌍 Deployment
-This app is ready for deployment on **Render** (Backend) and **Vercel** (Frontend). See the [Deployment Guide](./deployment.md) for full instructions.
+This app is deployed via **Docker Compose**. Two compose files ship: `docker-compose.yml` (local dev, hot reload) and `docker-compose.prod.yml` (nginx + node + postgres prod stack; Prisma migrate auto-runs on start.. See the [Deployment Guide](./deployment.md) and [`UPGRADE_STRATEGY.md`](./UPGRADE_STRATEGY.md) for details.
 
 ---
 
