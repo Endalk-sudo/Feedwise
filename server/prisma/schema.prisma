@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============= BETTER AUTH MODELS =============
+// These are managed by Better Auth - don't edit manually
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  Boolean   @default(false)
+  image          String?
+  username       String?
+  hasOrganization Boolean  @default(false)
+  stripeCustomerId String?
+  subscriptionStatus String @default("inactive")
+  currentPlan    String?
+  trialEndsAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+
+  // Application relations
+  organizations  OrganizationMember[]
+  feedbacks      Feedback[]
+
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  accountId         String
+  providerId        String
+  accessToken       String? @db.Text
+  refreshToken      String? @db.Text
+  idToken           String? @db.Text
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope             String?
+  password          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  expiresAt    DateTime
+  token        String   @unique
+  ipAddress    String?
+  userAgent    String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Verification {
+  id        String   @id @default(cuid())
+  identifier String
+  value     String
+  expiresAt DateTime
+
+  @@unique([identifier, value])
+}
+
+// ============= APPLICATION MODELS =============
+
+model Organization {
+  id                 String   @id @default(cuid())
+  name               String
+  slug               String   @unique
+  logo               String?
+  businessType       String
+  businessDescription String
+  qrDataUrl          String?
+  categories         String[] @default([])
+  settings           Json?    // Custom settings, etc.
+  stripeCustomerId   String?  @unique
+  stripeSubscriptionId String? @unique
+  stripePriceId      String?
+  stripeCurrentPeriodEnd DateTime?
+  cancelAtPeriodEnd  Boolean  @default(false)
+  subscriptionStatus String   @default("inactive")
+  currentPlan        String?  @default("basic")
+  trialEndsAt        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  members            OrganizationMember[]
+  feedbacks          Feedback[]
+  insights           Insight[]
+  subscription       Subscription?
+
+  @@index([slug])
+  @@index([stripeCustomerId])
+}
+
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String   @default("member") // owner, admin, member
+  createdAt      DateTime @default(now())
+
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model Feedback {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?
+  projectKey     String   @default("default")
+  text           String   @db.Text
+  category       String
+  rating         Int      @default(3)
+  sentiment      String?  // Positive, Negative, Neutral, Mixed
+  urgency        String?  // Low, Medium, High
+  keyPoints      String[]
+  keywords       String[]
+  confidence     Float?
+  rawAnalysis    Json?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, sentiment])
+  @@index([organizationId, urgency])
+  @@index([organizationId, category])
+}
+
+model Insight {
+  id             String   @id @default(cuid())
+  organizationId String
+  title          String
+  reason         String
+  action         String
+  priority       Int
+  periodStart    DateTime
+  periodEnd      DateTime
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+}
+
+model Subscription {
+  id                     String   @id @default(cuid())
+  organizationId         String   @unique
+  stripeCustomerId       String   @unique
+  stripeSubscriptionId   String   @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime
+  status                 String   @default("trialing")
+  cancelAtPeriodEnd      Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
