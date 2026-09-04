@@ -103,8 +103,8 @@ export const apiClient = {
     verifySession: (sessionId: string) => api.get(`/payments/verify-session/${sessionId}`),
   },
 
-  // Health
-  health: () => api.get('/health'),
+  // Health (server mounts it at /health, outside /api)
+  health: () => axios.get(`${import.meta.env.VITE_API_URL || ''}/health`),
 };
 
 export default api;

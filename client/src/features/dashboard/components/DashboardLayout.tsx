@@ -1,9 +1,9 @@
-import { Outlet, Link, useNavigate } from '@tanstack/react-router';
+import { Outlet, Link, useNavigate, useRouterState } from '@tanstack/react-router';
 import { useState } from 'react';
-import { X, Menu, LayoutDashboard, MessageSquare, BarChart3, Bot, Settings, LogOut, ChevronDown, User, Building2, Bell, Zap } from 'lucide-react';
-import { useAuthStore } from '@/lib/stores/auth.store';
+import { X, Menu, LayoutDashboard, MessageSquare, BarChart3, Bot, Settings, LogOut, ChevronDown, Building2, Bell } from 'lucide-react';
+import { useAuthStore, useSyncSession } from '@/lib/stores/auth.store';
 import { useUIStore } from '@/lib/stores/ui.store';
-import { signOut } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
 const navigation = [
@@ -33,18 +33,24 @@ function NavItem({ item, isActive }: { item: typeof navigation[0]; isActive: boo
 
 export function DashboardLayout() {
   const navigate = useNavigate();
-  const { session, user, logout } = useAuthStore();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user, activeOrganization, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
+  // Keep the persisted session in sync while inside the dashboard
+  useSyncSession();
+
   const handleLogout = async () => {
-    await signOut();
+    await authClient.signOut();
     logout();
     navigate({ to: '/' });
   };
 
-  const currentOrg = session?.organization;
+  const currentOrg = activeOrganization;
+  const isActive = (href: string) =>
+    href === '/dashboard' ? pathname === href : pathname.startsWith(href);
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -79,7 +85,7 @@ export function DashboardLayout() {
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => (
-              <NavItem key={item.name} item={item} isActive={false} />
+              <NavItem key={item.name} item={item} isActive={isActive(item.href)} />
             ))}
           </nav>
 
@@ -158,9 +164,11 @@ export function DashboardLayout() {
 
             <div className="flex items-center gap-4">
               {/* Notifications */}
-              <button className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors">
+              <button
+                className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
+                aria-label="Notifications"
+              >
                 <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs font-medium rounded-full flex items-center justify-center">3</span>
               </button>
 
               {/* User menu */}

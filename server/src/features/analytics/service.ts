@@ -30,7 +30,13 @@ export const analyticsService = {
     });
 
     return Object.entries(trends)
-      .map(([date, sentiments]) => ({ date, ...sentiments }))
+      .map(([date, sentiments]) => ({
+        date,
+        Positive: sentiments['Positive'] ?? 0,
+        Negative: sentiments['Negative'] ?? 0,
+        Neutral: sentiments['Neutral'] ?? 0,
+        Mixed: sentiments['Mixed'] ?? 0,
+      }))
       .sort((a, b) => a.date.localeCompare(b.date));
   },
 

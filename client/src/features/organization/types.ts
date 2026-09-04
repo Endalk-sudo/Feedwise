@@ -7,7 +7,7 @@ export interface Organization {
   businessDescription: string;
   qrDataUrl: string | null;
   categories: string[];
-  settings: Record<string, any> | null;
+  settings: Record<string, unknown> | null;
   subscriptionStatus: string;
   currentPlan: string | null;
   trialEndsAt: string | null;

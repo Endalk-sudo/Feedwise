@@ -41,5 +41,11 @@ export default defineConfig([
       },
     },
   },
+  {
+    files: ['vite.config.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
   prettier,
 ]);

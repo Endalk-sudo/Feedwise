@@ -47,7 +47,7 @@ router.get('/:slug', authMiddleware, validate(getFeedbacksSchema), async (req, r
     }
 
     const result = await feedbackService.getFeedbacks(organization.id, req.query as any);
-    res.json({ success: true, ...result });
+    res.json({ success: true, data: result });
   } catch (error) {
     next(error);
   }

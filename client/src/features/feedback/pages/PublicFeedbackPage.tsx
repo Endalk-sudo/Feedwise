@@ -3,8 +3,7 @@ import { useParams } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MessageSquare, Star, Loader2, CheckCircle2, Building2, Shield, Send } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { MessageSquare, Loader2, CheckCircle2, Building2, Shield, Send, AlertCircle } from 'lucide-react';
 
 const feedbackSchema = z.object({
   text: z.string().min(15, 'Feedback must be at least 15 characters').max(5000),
@@ -41,7 +40,7 @@ export function PublicFeedbackPage() {
         } else {
           setSubmitError('Organization not found');
         }
-      } catch (error) {
+      } catch {
         setSubmitError('Failed to load organization');
       } finally {
         setIsLoading(false);
@@ -75,20 +74,6 @@ export function PublicFeedbackPage() {
       setIsSubmitting(false);
     }
   };
-
-  const starRating = (rating: number) => (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={cn(
-            'w-5 h-5',
-            star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-600'
-          )}
-        />
-      ))}
-    </div>
-  );
 
   if (isLoading) {
     return (
@@ -215,10 +200,7 @@ export function PublicFeedbackPage() {
           </button>
 
           <p className="text-center text-xs text-slate-500">
-            By submitting, you agree to our{' '}
-            <a href="/privacy" className="text-blue-400 hover:text-blue-300">Privacy Policy</a>
-            {' '}and{' '}
-            <a href="/terms" className="text-blue-400 hover:text-blue-300">Terms of Service</a>
+            Anonymous feedback — no account needed
           </p>
         </form>
 
@@ -239,5 +221,3 @@ export function PublicFeedbackPage() {
     </div>
   );
 }
-
-import { cn } from '@/lib/utils';

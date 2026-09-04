@@ -1,5 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+
+/** Unwrap the standard server envelope: { success: true, data: T }. */
+function unwrapData<T>(request: Promise<{ data: { data: T } }>): Promise<T> {
+  return request.then((res) => res.data.data);
+}
 import { useUIStore } from '@/lib/stores/ui.store';
 import type { Organization, CreateOrgData, UpdateOrgData, AddMemberData } from './types';
 
@@ -9,7 +14,7 @@ import type { Organization, CreateOrgData, UpdateOrgData, AddMemberData } from '
 export function useOrganization(slug: string) {
   return useQuery<Organization>({
     queryKey: ['organization', slug],
-    queryFn: () => apiClient.organizations.getBySlug(slug).then((res) => res.data),
+    queryFn: () => unwrapData(apiClient.organizations.getBySlug(slug)),
     enabled: !!slug,
   });
 }
@@ -20,7 +25,7 @@ export function useOrganization(slug: string) {
 export function useMyOrganizations() {
   return useQuery<{ organization: Organization; role: string }[]>({
     queryKey: ['my-organizations'],
-    queryFn: () => apiClient.organizations.getMyOrgs().then((res) => res.data),
+    queryFn: () => unwrapData(apiClient.organizations.getMyOrgs()),
   });
 }
 
@@ -31,9 +36,9 @@ export function useCreateOrganization() {
   const queryClient = useQueryClient();
   const { addToast } = useUIStore();
 
-  return useMutation({
-    mutationFn: (data: CreateOrgData) => apiClient.organizations.create(data).then((res) => res.data),
-    onSuccess: (newOrg) => {
+  return useMutation<Organization, Error, CreateOrgData>({
+    mutationFn: (data: CreateOrgData) => unwrapData(apiClient.organizations.create(data)),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-organizations'] });
       addToast({ message: 'Organization created successfully!', type: 'success' });
     },
@@ -50,9 +55,9 @@ export function useUpdateOrganization(slug: string) {
   const queryClient = useQueryClient();
   const { addToast } = useUIStore();
 
-  return useMutation({
-    mutationFn: (data: UpdateOrgData) => apiClient.organizations.update(slug, data).then((res) => res.data),
-    onSuccess: (updatedOrg) => {
+  return useMutation<Organization, Error, UpdateOrgData>({
+    mutationFn: (data: UpdateOrgData) => unwrapData(apiClient.organizations.update(slug, data)),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization', slug] });
       queryClient.invalidateQueries({ queryKey: ['my-organizations'] });
       addToast({ message: 'Organization updated successfully!', type: 'success' });
@@ -70,8 +75,8 @@ export function useUploadLogo(slug: string) {
   const queryClient = useQueryClient();
   const { addToast } = useUIStore();
 
-  return useMutation({
-    mutationFn: (file: File) => apiClient.organizations.uploadLogo(slug, file).then((res) => res.data),
+  return useMutation<{ logo: string }, Error, File>({
+    mutationFn: (file: File) => unwrapData(apiClient.organizations.uploadLogo(slug, file)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization', slug] });
       addToast({ message: 'Logo uploaded successfully!', type: 'success' });
@@ -90,7 +95,7 @@ export function useAddMember(slug: string) {
   const { addToast } = useUIStore();
 
   return useMutation({
-    mutationFn: (data: AddMemberData) => apiClient.organizations.addMember(slug, data).then((res) => res.data),
+    mutationFn: (data: AddMemberData) => unwrapData(apiClient.organizations.addMember(slug, data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization', slug] });
       addToast({ message: 'Member added successfully!', type: 'success' });
@@ -109,7 +114,7 @@ export function useRemoveMember(slug: string) {
   const { addToast } = useUIStore();
 
   return useMutation({
-    mutationFn: (userId: string) => apiClient.organizations.removeMember(slug, userId).then((res) => res.data),
+    mutationFn: (userId: string) => unwrapData(apiClient.organizations.removeMember(slug, userId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization', slug] });
       addToast({ message: 'Member removed successfully!', type: 'success' });

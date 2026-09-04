@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import { useFeedbacks, useSubmitFeedback } from '@/features/feedback/hooks';
-import { useUIStore } from '@/lib/stores/ui.store';
-import { Search, Filter, ChevronLeft, ChevronRight, MoreHorizontal, Star, AlertTriangle, Tag, MessageSquare } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { useOrgSlug } from '@/lib/stores/auth.store';
+import { useFeedbacks } from '@/features/feedback/hooks';
+import { useFeedbackStore } from '@/lib/stores/feedback.store';
+import { Search, ChevronLeft, ChevronRight, MoreHorizontal, Star, AlertTriangle, Tag, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { Feedback } from '@/features/feedback/types';
 
 const sentimentColors = {
   Positive: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -27,25 +28,33 @@ const starColors = {
 };
 
 export function FeedbackPage() {
-  const { session } = useAuthStore();
-  const { addToast } = useUIStore();
-  const slug = session?.organization?.slug || '';
+  const slug = useOrgSlug();
+  const { currentPage, setPage, filters, setFilters } = useFeedbackStore();
   const { data, isLoading, isError } = useFeedbacks(slug);
-  const submitFeedback = useSubmitFeedback(slug);
-  const { currentPage, setPage, filters, setFilters, setLoading, setError } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const feedbacks = data?.feedbacks || [];
-  const totalPages = data?.totalPages || 0;
-  const total = data?.total || 0;
+  const allFeedbacks: Feedback[] = data?.feedbacks ?? [];
+  const totalPages = data?.totalPages ?? 0;
+  const total = data?.total ?? 0;
 
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
     setFilters({ ...filters, [key]: value || undefined });
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  // Client-side search over the loaded page
+  const query = searchQuery.trim().toLowerCase();
+  const feedbacks =
+    query.length === 0
+      ? allFeedbacks
+      : allFeedbacks.filter(
+          (f) =>
+            f.text.toLowerCase().includes(query) ||
+            f.category.toLowerCase().includes(query) ||
+            f.keywords.some((k) => k.toLowerCase().includes(query)),
+        );
+
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    // In a real app, you'd add search to the query
   };
 
   if (!slug) {
@@ -112,7 +121,7 @@ export function FeedbackPage() {
               className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 min-w-[150px]"
             >
               <option value="">All Categories</option>
-              {Array.from(new Set(feedbacks.map((f) => f.category))).map((cat) => (
+                {Array.from(new Set(allFeedbacks.map((f) => f.category))).map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
@@ -238,5 +247,3 @@ export function FeedbackPage() {
     </div>
   );
 }
-
-import { MessageSquare, AlertTriangle, Tag } from 'lucide-react';

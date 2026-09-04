@@ -3,8 +3,8 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, Loader2, Mail, Lock, User, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { signUp } from '@/lib/auth-client';
+import { Eye, EyeOff, Loader2, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useUIStore } from '@/lib/stores/ui.store';
 
@@ -44,19 +44,20 @@ export function RegisterPage() {
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
     try {
-      const result = await signUp({
+      const result = await authClient.signUp.email({
         name: data.name,
         email: data.email,
         password: data.password,
       });
       if (result.error) {
         addToast({ message: result.error.message || 'Registration failed', type: 'error' });
-      } else if (result.data?.session) {
-        setSession(result.data.session);
+      } else {
+        const session = await authClient.getSession({ fetchOptions: { credentials: 'include' } });
+        setSession(session.data);
         addToast({ message: 'Account created successfully!', type: 'success' });
         navigate({ to: '/org-setup' });
       }
-    } catch (error) {
+    } catch {
       addToast({ message: 'An unexpected error occurred', type: 'error' });
     } finally {
       setIsLoading(false);
@@ -204,14 +205,8 @@ export function RegisterPage() {
                 className="mt-1 w-4 h-4 bg-slate-800 border-slate-700 rounded text-blue-600 focus:ring-2 focus:ring-blue-500/20"
               />
               <label htmlFor="terms" className="text-sm text-slate-400">
-                I agree to the{' '}
-                <Link to="/terms" className="text-blue-400 hover:text-blue-300">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link to="/privacy" className="text-blue-400 hover:text-blue-300">
-                  Privacy Policy
-                </Link>
+                I agree to the <span className="text-slate-300">Terms of Service</span> and{' '}
+                <span className="text-slate-300">Privacy Policy</span>
               </label>
             </div>
 

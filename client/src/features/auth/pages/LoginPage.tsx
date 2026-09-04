@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
-import { signIn } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth-client';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useUIStore } from '@/lib/stores/ui.store';
 
@@ -37,15 +37,19 @@ export function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     try {
-      const result = await signIn(data.email, data.password);
+      const result = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+      });
       if (result.error) {
         addToast({ message: result.error.message || 'Invalid credentials', type: 'error' });
-      } else if (result.data?.session) {
-        setSession(result.data.session);
+      } else {
+        const session = await authClient.getSession({ fetchOptions: { credentials: 'include' } });
+        setSession(session.data);
         addToast({ message: 'Welcome back!', type: 'success' });
         navigate({ to: '/dashboard' });
       }
-    } catch (error) {
+    } catch {
       addToast({ message: 'An unexpected error occurred', type: 'error' });
     } finally {
       setIsLoading(false);
@@ -106,9 +110,6 @@ export function LoginPage() {
                 <label htmlFor="password" className="block text-sm font-medium text-slate-300">
                   Password
                 </label>
-                <Link to="/auth/forgot-password" className="text-sm text-blue-400 hover:text-blue-300">
-                  Forgot password?
-                </Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />

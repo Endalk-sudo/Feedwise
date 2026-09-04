@@ -4,9 +4,10 @@ import {
   createRouter,
   RouterProvider,
   Outlet,
-  Link,
+  redirect,
 } from '@tanstack/react-router';
-import { QueryClient, QueryClientProvider, useSuspenseQuery } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { lazy, Suspense } from 'react';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
@@ -21,7 +22,6 @@ import { OrgSetupPage } from '@/features/organization/pages/OrgSetupPage';
 import { DashboardLayout } from '@/features/dashboard/components/DashboardLayout';
 import { DashboardHome } from '@/features/dashboard/pages/DashboardHome';
 import { FeedbackPage } from '@/features/feedback/pages/FeedbackPage';
-import { AnalyticsPage } from '@/features/analytics/pages/AnalyticsPage';
 import { AIPage } from '@/features/ai/pages/AIPage';
 import { SettingsPage } from '@/features/settings/pages/SettingsPage';
 import { PublicFeedbackPage } from '@/features/feedback/pages/PublicFeedbackPage';
@@ -43,13 +43,32 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
   notFoundComponent: () => <NotFoundPage />,
 });
 
+// Heavy chart page is code-split (recharts) so the initial bundle stays lean
+const AnalyticsPageLazy = lazy(() =>
+  import('@/features/analytics/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })),
+);
+
+function AnalyticsRouteComponent() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-64">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <AnalyticsPageLazy />
+    </Suspense>
+  );
+}
+
 // Auth check loader
-const requireAuthLoader = async ({ context }: { context: RouterContext }) => {
+const requireAuthLoader = async () => {
   const session = await authClient.getSession({
     fetchOptions: { credentials: 'include' },
   });
   if (!session.data) {
-    throw { status: 401, redirect: '/auth/login' };
+    throw redirect({ to: '/auth/login' });
   }
   return session.data;
 };
@@ -104,7 +123,7 @@ const feedbackRoute = createRoute({
 const analyticsRoute = createRoute({
   getParentRoute: () => dashboardRoute,
   path: 'analytics',
-  component: () => <AnalyticsPage />,
+  component: AnalyticsRouteComponent,
 });
 
 const aiRoute = createRoute({
@@ -141,6 +160,7 @@ const routeTree = rootRoute.addChildren([
   publicFeedbackRoute,
 ]);
 
+// eslint-disable-next-line react-refresh/only-export-components -- TanStack Router registration pattern
 export const router = createRouter({
   routeTree,
   defaultPreload: 'intent',

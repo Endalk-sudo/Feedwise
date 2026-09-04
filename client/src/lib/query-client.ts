@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 
 /**
  * TanStack Query client configuration
@@ -14,7 +15,7 @@ export const queryClient = new QueryClient({
       // Retry failed queries up to 3 times
       retry: (failureCount, error) => {
         // Don't retry on 401/403
-        if (error instanceof Response && (error.status === 401 || error.status === 403)) {
+        if (isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
           return false;
         }
         return failureCount < 3;

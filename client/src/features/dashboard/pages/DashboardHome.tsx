@@ -1,8 +1,10 @@
-import { useAuthStore } from '@/lib/stores/auth.store';
-import { useOrganization } from '@/features/organization/hooks';
+import { useAuthStore, useOrgSlug } from '@/lib/stores/auth.store';
 import { useFeedbackStats } from '@/features/feedback/hooks';
-import { MessageSquare, TrendingUp, Bot, AlertTriangle, Users, CheckCircle2 } from 'lucide-react';
+import { useMyOrganizations } from '@/features/organization/hooks';
+import { MessageSquare, TrendingUp, Bot, AlertTriangle, CheckCircle2, Settings } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 const stats = [
   { name: 'Total Feedback', key: 'total', icon: MessageSquare, color: 'text-blue-400', bg: 'bg-blue-500/10' },
@@ -12,9 +14,40 @@ const stats = [
 ];
 
 export function DashboardHome() {
-  const { session } = useAuthStore();
-  const { data: org } = useOrganization(session?.organization?.slug || '');
-  const { data: statsData } = useFeedbackStats(session?.organization?.slug || '');
+  const { user, activeOrganization, setActiveOrganization } = useAuthStore();
+  const slug = useOrgSlug();
+  const { data: myOrgs } = useMyOrganizations();
+  const { data: statsData } = useFeedbackStats(slug);
+
+  // Default to the first membership until the user picks an org
+  useEffect(() => {
+    if (!activeOrganization && myOrgs && myOrgs.length > 0) {
+      const first = myOrgs[0];
+      if (first) {
+        setActiveOrganization({
+          id: first.organization.id,
+          slug: first.organization.slug,
+          name: first.organization.name,
+          currentPlan: first.organization.currentPlan,
+        });
+      }
+    }
+  }, [activeOrganization, myOrgs, setActiveOrganization]);
+
+  if (!slug) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold mb-2">No organization yet</h2>
+        <p className="text-slate-400 mb-6">Create your organization to start collecting feedback.</p>
+        <Link
+          to="/org-setup"
+          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl"
+        >
+          Set up organization
+        </Link>
+      </div>
+    );
+  }
 
   const positiveCount = statsData?.bySentiment?.find((s) => s.sentiment === 'Positive')?.count || 0;
   const alertsCount = statsData?.byUrgency?.find((u) => u.urgency === 'High')?.count || 0;
@@ -24,7 +57,7 @@ export function DashboardHome() {
       {/* Welcome Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Welcome back, {session?.user?.name?.split(' ')[0] || 'there'}! 👋</h1>
+          <h1 className="text-2xl font-bold">Welcome back, {user?.name?.split(' ')[0] || 'there'}! 👋</h1>
           <p className="text-slate-400 mt-1">Here&apos;s what&apos;s happening with your feedback today.</p>
         </div>
         <div className="flex gap-3">
@@ -105,4 +138,3 @@ export function DashboardHome() {
   );
 }
 
-import { cn } from '@/lib/utils';

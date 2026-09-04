@@ -47,7 +47,13 @@ export const feedbackService = {
       prisma.feedback.count({ where }),
     ]);
 
-    return { feedbacks, total, totalPages: Math.ceil(total / params.limit) };
+    return {
+      feedbacks,
+      total,
+      totalPages: Math.ceil(total / params.limit),
+      page: params.page,
+      limit: params.limit,
+    };
   },
 
   async getFeedbackById(id: string, organizationId: string) {

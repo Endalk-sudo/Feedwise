@@ -9,7 +9,6 @@ import {
   ArrowRight,
   Star,
   Users,
-  DollarSign,
 } from 'lucide-react';
 
 const features = [
@@ -95,9 +94,9 @@ export function LandingPage() {
               <span className="font-bold text-xl">FeedbackAI</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
-              <Link to="/features" className="text-slate-300 hover:text-white transition-colors">Features</Link>
-              <Link to="/pricing" className="text-slate-300 hover:text-white transition-colors">Pricing</Link>
-              <Link to="/about" className="text-slate-300 hover:text-white transition-colors">About</Link>
+              <a href="#features" className="text-slate-300 hover:text-white transition-colors">Features</a>
+              <a href="#pricing" className="text-slate-300 hover:text-white transition-colors">Pricing</a>
+              <a href="#features" className="text-slate-300 hover:text-white transition-colors">About</a>
             </div>
             <div className="flex items-center gap-4">
               <Link to="/auth/login" className="text-slate-300 hover:text-white transition-colors hidden sm:block">
@@ -146,7 +145,7 @@ export function LandingPage() {
               <ArrowRight className="w-5 h-5 inline ml-2" />
             </Link>
             <Link
-              to="/demo"
+              to="/auth/register"
               className="w-full sm:w-auto border-2 border-slate-700 px-8 py-4 rounded-xl text-slate-300 font-semibold text-lg hover:border-slate-500 hover:text-white transition-all"
             >
               View Demo
@@ -328,27 +327,27 @@ export function LandingPage() {
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><Link to="/features" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link to="/integrations" className="hover:text-white transition-colors">Integrations</Link></li>
-                <li><Link to="/api-docs" className="hover:text-white transition-colors">API Docs</Link></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><span className="text-slate-600">Integrations</span></li>
+                <li><span className="text-slate-600">API Docs</span></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-                <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
-                <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+                <li><span className="text-slate-600">About</span></li>
+                <li><span className="text-slate-600">Blog</span></li>
+                <li><span className="text-slate-600">Careers</span></li>
+                <li><span className="text-slate-600">Contact</span></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-                <li><Link to="/security" className="hover:text-white transition-colors">Security</Link></li>
+                <li><span className="text-slate-600">Privacy Policy</span></li>
+                <li><span className="text-slate-600">Terms of Service</span></li>
+                <li><span className="text-slate-600">Security</span></li>
               </ul>
             </div>
           </div>

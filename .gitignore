@@ -61,3 +61,6 @@ client/dist/
 # dotenv environment variables file
 client/.env
 server/.env
+
+# TypeScript build info
+*.tsbuildinfo

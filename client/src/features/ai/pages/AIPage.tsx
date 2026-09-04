@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useAuthStore } from '@/lib/stores/auth.store';
+import { useState, type FormEvent } from 'react';
+import { useAuthStore, useOrgSlug } from '@/lib/stores/auth.store';
 import { useAIChat } from '@/features/feedback/hooks';
+import type { AIChatResponse } from '@/features/feedback/types';
 import { Send, Bot, Zap, Lightbulb, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -62,9 +63,9 @@ function TypingIndicator() {
 function InputForm({ input, setInput, handleSubmit, isPending, currentPlan }: {
   input: string;
   setInput: (v: string) => void;
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
   isPending: boolean;
-  currentPlan: string | undefined;
+  currentPlan: string | null | undefined;
 }) {
   return (
     <form onSubmit={handleSubmit} className="p-4 border-t border-slate-800">
@@ -91,25 +92,23 @@ function InputForm({ input, setInput, handleSubmit, isPending, currentPlan }: {
 }
 
 export function AIPage() {
-  const { session } = useAuthStore();
-  const slug = session?.user?.organization?.slug || '';
+  const { activeOrganization } = useAuthStore();
+  const slug = useOrgSlug();
   const { mutate: sendMessage, isPending } = useAIChat(slug);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [input, setInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!input.trim() || isPending) return;
+  const submitMessage = (userMessage: string) => {
+    if (!userMessage.trim() || isPending) return;
 
-    const userMessage = input.trim();
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setInput('');
     setShowSuggestions(false);
 
     sendMessage(userMessage, {
-      onSuccess: (reply: any) => {
-        setMessages((prev) => [...prev, { role: 'assistant', content: reply.data?.reply || reply.reply || '' }]);
+      onSuccess: (reply: AIChatResponse) => {
+        setMessages((prev) => [...prev, { role: 'assistant', content: reply.reply }]);
       },
       onError: () => {
         setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
@@ -117,10 +116,13 @@ export function AIPage() {
     });
   };
 
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    submitMessage(input.trim());
+  };
+
   const handleSuggestionClick = (suggestion: string) => {
-    setInput(suggestion);
-    // We don't need to call handleSubmit here since we're just preventing default
-    // The actual form submission will happen when the user clicks a suggestion button
+    submitMessage(suggestion);
   };
 
   const copyToClipboard = (text: string) => {
@@ -137,7 +139,7 @@ export function AIPage() {
     );
   }
 
-  const { currentPlan } = session?.user?.organization || {};
+  const { currentPlan } = activeOrganization ?? {};
 
   return (
     <div className="space-y-6">

@@ -11,7 +11,7 @@ export const authClient = createAuthClient({
   },
 });
 
-// Export commonly used methods
+// Export commonly used methods (only what the client actually provides)
 export const {
   signIn,
   signUp,
@@ -20,14 +20,12 @@ export const {
   getSession,
   updateUser,
   changePassword,
-  forgetPassword,
   resetPassword,
   verifyEmail,
   deleteUser,
   revokeSession,
-  revokeAllSessions,
 } = authClient;
 
 // Type exports
 export type Session = typeof authClient.$Infer.Session;
-export type User = typeof authClient.$Infer.User;
+export type User = Session['user'];

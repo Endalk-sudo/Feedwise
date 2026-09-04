@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Building2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useCreateOrganization } from '@/features/organization/hooks';
+import { apiClient } from '@/lib/api';
+import { useAuthStore } from '@/lib/stores/auth.store';
 import { useUIStore } from '@/lib/stores/ui.store';
 
 const BUSINESS_TYPES = [
@@ -49,6 +51,7 @@ type OrgSetupForm = z.infer<typeof orgSetupSchema>;
 export function OrgSetupPage() {
   const navigate = useNavigate();
   const { addToast } = useUIStore();
+  const setActiveOrganization = useAuthStore((state) => state.setActiveOrganization);
   const createOrg = useCreateOrganization();
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
@@ -70,10 +73,8 @@ export function OrgSetupPage() {
     },
   });
 
-  const name = watch('name');
-
   // Auto-generate slug from name
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setValue('name', value, { shouldValidate: true });
 
@@ -87,7 +88,7 @@ export function OrgSetupPage() {
     setSlugError(null);
   };
 
-  // Check slug availability
+  // Check slug availability against the real API (200 = taken, 404 = free)
   const handleSlugBlur = async () => {
     const slug = watch('slug');
     if (!slug || slug.length < 2) return;
@@ -97,13 +98,21 @@ export function OrgSetupPage() {
     setSlugError(null);
 
     try {
-      // In a real app, you'd call an API endpoint to check slug availability
-      // For now, we'll simulate it
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setSlugAvailable(true);
-    } catch {
+      await apiClient.organizations.getBySlug(slug);
       setSlugAvailable(false);
       setSlugError('This slug is already taken');
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        (error as { response?: { status?: number } }).response?.status === 404
+      ) {
+        setSlugAvailable(true);
+      } else {
+        // Unknown error: don't block, server validates on submit
+        setSlugAvailable(null);
+      }
     } finally {
       setIsCheckingSlug(false);
     }
@@ -112,9 +121,15 @@ export function OrgSetupPage() {
   const onSubmit = async (data: OrgSetupForm) => {
     try {
       const org = await createOrg.mutateAsync(data);
+      setActiveOrganization({
+        id: org.id,
+        slug: org.slug,
+        name: org.name,
+        currentPlan: org.currentPlan,
+      });
       addToast({ message: 'Organization created successfully!', type: 'success' });
       navigate({ to: '/dashboard' });
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };
@@ -158,7 +173,7 @@ export function OrgSetupPage() {
             {/* Slug */}
             <div>
               <label htmlFor="slug" className="block text-sm font-medium text-slate-300 mb-2">
-                URL Slug <span className="text-slate-500">(feedback.yourapp.com/{your-slug})</span>
+                URL Slug <span className="text-slate-500">(feedback.yourapp.com/your-slug)</span>
               </label>
               <div className="relative">
                 <input

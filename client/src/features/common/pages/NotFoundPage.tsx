@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Home, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export function NotFoundPage() {
   return (

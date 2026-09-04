@@ -11,7 +11,7 @@ export interface Feedback {
   keyPoints: string[];
   keywords: string[];
   confidence: number | null;
-  rawAnalysis: Record<string, any> | null;
+  rawAnalysis: Record<string, unknown> | null;
   ipAddress: string | null;
   createdAt: string;
   updatedAt: string;
@@ -64,8 +64,8 @@ export interface Alert {
   id: string;
   text: string;
   category: string;
-  urgency: string;
-  sentiment: string;
+  urgency: string | null;
+  sentiment: string | null;
   createdAt: string;
 }
 

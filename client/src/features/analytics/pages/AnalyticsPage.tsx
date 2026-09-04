@@ -1,153 +1,145 @@
-import { useAuthStore } from '@/lib/stores/auth.store';
+import { useOrgSlug } from '@/lib/stores/auth.store';
 import { useSentimentTrends, useCategoryBreakdown, useHeatmap, useTopIssues, useAlerts, useRecommendations } from '@/features/feedback/hooks';
+import type { SentimentTrend, CategoryBreakdown, HeatmapData, TopIssue, Alert, Recommendation } from '@/features/feedback/types';
 import { TrendingUp, BarChart3, AlertTriangle, Lightbulb, Zap } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  BarChart,
+  Bar,
+  Cell,
+  Legend,
+} from 'recharts';
 import { cn } from '@/lib/utils';
 
-const chartColors = [
-  'hsl(199, 89%, 48%)',
-  'hsl(0, 84%, 60%)',
-  'hsl(217, 91%, 60%)',
-  'hsl(45, 93%, 47%)',
-];
+const SENTIMENTS = ['Positive', 'Negative', 'Neutral', 'Mixed'] as const;
 
-const sentimentColors = {
+const sentimentFill: Record<(typeof SENTIMENTS)[number], string> = {
+  Positive: '#22c55e',
+  Negative: '#ef4444',
+  Neutral: '#64748b',
+  Mixed: '#eab308',
+};
+
+const barPalette = ['#38bdf8', '#a855f7', '#f472b6', '#22c55e', '#eab308', '#f97316'];
+
+const sentimentBadge: Record<string, string> = {
   Positive: 'bg-green-500/20 text-green-400 border-green-500/30',
   Negative: 'bg-red-500/20 text-red-400 border-red-500/30',
   Neutral: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
   Mixed: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
 };
 
-const urgencyColors = {
+const urgencyBadge: Record<string, string> = {
   High: 'bg-red-500/20 text-red-400 border-red-500/30',
   Medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
   Low: 'bg-green-500/20 text-green-400 border-green-500/30',
 };
 
-function SentimentTrendsChart({ trends }: { trends: any[] | undefined }) {
+const tooltipStyle = {
+  backgroundColor: '#0f172a',
+  border: '1px solid #1e293b',
+  borderRadius: '12px',
+  color: '#e2e8f0',
+};
+
+function SentimentTrendsChart({ trends }: { trends: SentimentTrend[] | undefined }) {
+  const data = (trends ?? []).slice(-30).map((t) => ({
+    ...t,
+    label: t.date.slice(5),
+  }));
+  if (data.length === 0) {
+    return <p className="text-slate-500 text-center py-8">No trend data yet</p>;
+  }
   return (
-    <div className="h-full flex items-end justify-around gap-2">
-      {trends?.slice(-14).map((trend) => (
-        <div key={trend.date} className="flex-1 flex flex-col items-center justify-end gap-1">
-          <div className="w-full flex flex-col gap-1">
-            {['Positive', 'Negative', 'Neutral', 'Mixed'].map((sentiment) => {
-              const value = trend[sentiment as keyof typeof trend] || 0;
-              const total = (trend.Positive || 0) + (trend.Negative || 0) + (trend.Neutral || 0) + (trend.Mixed || 0);
-              const height = total > 0 ? (value / total) * 100 : 0;
-              const colorIndex = ['Positive', 'Negative', 'Neutral', 'Mixed'].indexOf(sentiment);
-              return (
-                <div
-                  key={sentiment}
-                  className="rounded-t"
-                  style={{
-                    height: `${height}%`,
-                    backgroundColor: chartColors[colorIndex],
-                    minHeight: height > 0 ? '2px' : '0',
-                  }}
-                />
-              );
-            })}
-          </div>
-          <span className="text-xs text-slate-500">{trend.date.split('-').slice(1).join('-')}</span>
-        </div>
-      ))}
-    </div>
+    <ResponsiveContainer width="100%" height={260}>
+      <AreaChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+        <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <YAxis allowDecimals={false} tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <Tooltip contentStyle={tooltipStyle} />
+        <Legend />
+        {SENTIMENTS.map((s) => (
+          <Area key={s} type="monotone" dataKey={s} stackId="1" stroke={sentimentFill[s]} fill={sentimentFill[s]} fillOpacity={0.35} />
+        ))}
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
 
-function SentimentLegend() {
+function CategoryBreakdownChart({ categories }: { categories: CategoryBreakdown[] | undefined }) {
+  const data = (categories ?? []).slice(0, 10);
+  if (data.length === 0) {
+    return <p className="text-slate-500 text-center py-8">No category data yet</p>;
+  }
   return (
-    <div className="flex gap-4 mt-4 text-sm text-slate-400">
-      {['Positive', 'Negative', 'Neutral', 'Mixed'].map((sentiment, i) => (
-        <span key={sentiment} className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded" style={{ backgroundColor: chartColors[i] }} />
-          {sentiment}
-        </span>
-      ),)}
-    </div>
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 16, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
+        <XAxis type="number" allowDecimals={false} tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <YAxis type="category" dataKey="name" width={110} tick={{ fill: '#cbd5e1', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <Tooltip contentStyle={tooltipStyle} />
+        <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+          {data.map((_, i) => (
+            <Cell key={i} fill={barPalette[i % barPalette.length]} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
 
-function CategoryBreakdownChart({ categories }: { categories: any[] | undefined }) {
-  const maxCount = categories?.[0]?.count || 1;
-  return (
-    <div className="space-y-3">
-      {categories?.slice(0, 10).map((cat, i) => {
-        const width = (cat.count / maxCount) * 100;
-        return (
-          <div key={cat.name} className="group">
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-slate-300 truncate pr-2">{cat.name}</span>
-              <span className="text-slate-500 whitespace-nowrap">{cat.count}</span>
-            </div>
-            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${width}%`,
-                  backgroundColor: chartColors[i % chartColors.length],
-                }}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function HeatmapTable({ heatmap }: { heatmap: any[] | undefined }) {
-  const cats = Array.from(new Set(heatmap?.map((h) => h.category) || []));
+function HeatmapTable({ heatmap }: { heatmap: HeatmapData[] | undefined }) {
+  const cats = Array.from(new Set((heatmap ?? []).map((h) => h.category)));
+  if (cats.length === 0) {
+    return <p className="text-slate-500 text-center py-8">No heatmap data yet</p>;
+  }
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="text-slate-500 border-b border-slate-800">
             <th className="text-left p-2">Category</th>
-            <th className="p-2">Positive</th>
-            <th className="p-2">Negative</th>
-            <th className="p-2">Neutral</th>
-            <th className="p-2">Mixed</th>
+            {SENTIMENTS.map((s) => (
+              <th key={s} className="p-2">{s}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {cats.map((cat) => {
-            const catData = heatmap?.filter((h) => h.category === cat) || [];
-            return (
-              <tr key={cat} className="border-b border-slate-800/50">
-                <td className="p-2 font-medium text-slate-300">{cat}</td>
-                {['Positive', 'Negative', 'Neutral', 'Mixed'].map((sentiment) => {
-                  const item = catData.find((h) => h.sentiment === sentiment);
-                  const count = item?.count || 0;
-                  const sentimentIndex = ['Positive', 'Negative', 'Neutral', 'Mixed'].indexOf(sentiment);
-                  const cellContent = count > 0 ? (
-                    <span
-                      className="inline-block px-2 py-0.5 rounded text-xs font-medium"
-                      style={{
-                        backgroundColor: `${chartColors[sentimentIndex]}20`,
-                        color: chartColors[sentimentIndex],
-                      }}
-                    >
-                      {count}
-                    </span>
-                  ) : (
-                    <span className="text-slate-500">—</span>
-                  );
-                  return (
-                    <td key={sentiment} className="p-2 text-center">
-                      {cellContent}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
+          {cats.map((cat) => (
+            <tr key={cat} className="border-b border-slate-800/50">
+              <td className="p-2 font-medium text-slate-300">{cat}</td>
+              {SENTIMENTS.map((sentiment) => {
+                const count = heatmap?.find((h) => h.category === cat && h.sentiment === sentiment)?.count ?? 0;
+                return (
+                  <td key={sentiment} className="p-2 text-center">
+                    {count > 0 ? (
+                      <span
+                        className="inline-block px-2 py-0.5 rounded text-xs font-medium"
+                        style={{ backgroundColor: `${sentimentFill[sentiment]}20`, color: sentimentFill[sentiment] }}
+                      >
+                        {count}
+                      </span>
+                    ) : (
+                      <span className="text-slate-500">—</span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
 
-function TopIssuesList({ issues }: { issues: any[] | undefined }) {
+function TopIssuesList({ issues }: { issues: TopIssue[] | undefined }) {
   if (!issues?.length) return <p className="text-slate-500 text-center py-8">No recurring issues found</p>;
   return (
     <div className="space-y-4">
@@ -158,10 +150,10 @@ function TopIssuesList({ issues }: { issues: any[] | undefined }) {
               <p className="text-slate-300 text-sm line-clamp-2">{issue.text}</p>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className="px-2 py-0.5 text-xs bg-slate-700 text-slate-400 rounded">{issue.category}</span>
-                <span className={cn('px-2 py-0.5 text-xs rounded', urgencyColors[issue.urgency as keyof typeof urgencyColors])}>
+                <span className={cn('px-2 py-0.5 text-xs rounded', urgencyBadge[issue.urgency] ?? '')}>
                   {issue.urgency}
                 </span>
-                <span className={cn('px-2 py-0.5 text-xs rounded', sentimentColors[issue.sentiment as keyof typeof sentimentColors])}>
+                <span className={cn('px-2 py-0.5 text-xs rounded', sentimentBadge[issue.sentiment] ?? '')}>
                   {issue.sentiment}
                 </span>
               </div>
@@ -174,16 +166,16 @@ function TopIssuesList({ issues }: { issues: any[] | undefined }) {
   );
 }
 
-function AlertsList({ alerts }: { alerts: any[] | undefined }) {
+function AlertsList({ alerts }: { alerts: Alert[] | undefined }) {
   if (!alerts?.length) return <p className="text-slate-500 text-center py-8">No alerts</p>;
   return (
     <div className="space-y-3">
-      {alerts.slice(0, 10).map((alert, i) => (
-        <div key={i} className="p-3 bg-slate-800/50 rounded-xl border-l-4 border-red-500">
+      {alerts.slice(0, 10).map((alert) => (
+        <div key={alert.id} className="p-3 bg-slate-800/50 rounded-xl border-l-4 border-red-500">
           <p className="text-slate-300 text-sm line-clamp-1">{alert.text}</p>
           <div className="flex gap-2 mt-2">
             <span className="px-2 py-0.5 text-xs rounded bg-red-500/20 text-red-400">{alert.urgency}</span>
-            <span className={cn('px-2 py-0.5 text-xs rounded', sentimentColors[alert.sentiment as keyof typeof sentimentColors])}>
+            <span className={cn('px-2 py-0.5 text-xs rounded', sentimentBadge[alert.sentiment ?? ''] ?? '')}>
               {alert.sentiment}
             </span>
             <span className="text-xs text-slate-500 ml-auto">
@@ -196,7 +188,7 @@ function AlertsList({ alerts }: { alerts: any[] | undefined }) {
   );
 }
 
-function RecommendationsList({ recommendations }: { recommendations: any[] | undefined }) {
+function RecommendationsList({ recommendations }: { recommendations: Recommendation[] | undefined }) {
   if (!recommendations?.length) return null;
   return (
     <section>
@@ -214,7 +206,7 @@ function RecommendationsList({ recommendations }: { recommendations: any[] | und
                 <p className="text-blue-400 text-sm font-medium">Action: {rec.action}</p>
               </div>
               <div className="text-right">
-                <span className={cn('px-3 py-1 rounded-full text-sm font-medium', rec.priority >= 7 ? 'bg-red-500/20 text-red-400' : rec.priority >= 4 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400')}>
+                <span className={cn('px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap', rec.priority >= 7 ? 'bg-red-500/20 text-red-400' : rec.priority >= 4 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400')}>
                   Priority: {rec.priority}/10
                 </span>
               </div>
@@ -227,8 +219,7 @@ function RecommendationsList({ recommendations }: { recommendations: any[] | und
 }
 
 export function AnalyticsPage() {
-  const { session } = useAuthStore();
-  const slug = session?.user?.organization?.slug || '';
+  const slug = useOrgSlug();
 
   const { data: trends } = useSentimentTrends(slug);
   const { data: categories } = useCategoryBreakdown(slug);
@@ -260,9 +251,8 @@ export function AnalyticsPage() {
           <TrendingUp className="w-5 h-5 text-blue-400" />
           Sentiment Trends (30 days)
         </h2>
-        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 h-80">
+        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6">
           <SentimentTrendsChart trends={trends} />
-          <SentimentLegend />
         </div>
       </section>
 
