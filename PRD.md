@@ -282,7 +282,7 @@ services:
 | **Database** | PostgreSQL 16, Prisma 6 | PostgreSQL 16, Prisma 6 (keep) |
 | **AI** | Gemini 2.0 Flash | Gemini 2.0 Flash (keep) |
 | **Payments** | Stripe | Stripe (keep) |
-| **Storage** | Cloudinary | Cloudinary (keep) |
+| **Storage** | S3-compatible object storage | S3-compatible object storage (keep) |
 | **Auth** | Better-Auth session cookies | Better-Auth session cookies (keep) |
 | **Testing** | None | Vitest, React Testing Library, Playwright |
 | **CI/CD** | None | GitHub Actions |
@@ -503,9 +503,10 @@ AI-Feedback-collector-app/
 - `AI_MODEL`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-- `CLOUDINARY_CLOUD_NAME`
-- `CLOUDINARY_API_KEY`
-- `CLOUDINARY_API_SECRET`
+- `S3_BUCKET`
+- `S3_ACCESS_KEY_ID`
+- `S3_SECRET_ACCESS_KEY`
+- `S3_ENDPOINT`
 - `CLIENT_URL`
 
 **Frontend:**

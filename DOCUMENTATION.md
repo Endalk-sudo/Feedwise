@@ -18,7 +18,7 @@ graph TD
     Server -->|Queries| DB[(PostgreSQL)]
     Server -->|Analysis| AI[Gemini 2.0 via Vercel AI SDK]
     Server -->|Payments| Stripe[Stripe API]
-    Server -->|Images| Cloudinary[Cloudinary]
+    Server -->|Images| S3[S3-Compatible Storage]
 ```
 
 ### Key Technical Decisions

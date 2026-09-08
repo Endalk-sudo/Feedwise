@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma.js';
-import { uploadToCloudinary, deleteFromCloudinary } from '@/utils/cloudinary.js';
+import { uploadToS3, deleteFromS3, objectKeyFromUrl } from '@/utils/s3.js';
 
 export class SettingsError extends Error {
   constructor(
@@ -82,17 +82,17 @@ export async function uploadLogo(
   }
 
   if (organization.logo) {
-    const publicId = organization.logo.split('/').pop()?.split('.')[0];
-    if (publicId) {
-      await deleteFromCloudinary(`organizations/${organization.id}/${publicId}`);
+    const key = objectKeyFromUrl(organization.logo);
+    if (key) {
+      await deleteFromS3(key);
     }
   }
 
-  const result = await uploadToCloudinary(file.buffer, `organizations/${organization.id}`);
+  const result = await uploadToS3(file.buffer, `organizations/${organization.id}`, file.mimetype);
   await prisma.organization.update({
     where: { id: organization.id },
-    data: { logo: result.secure_url },
+    data: { logo: result.url },
   });
 
-  return { logo: result.secure_url };
+  return { logo: result.url };
 }

@@ -31,10 +31,19 @@ const envSchema = z.object({
   STRIPE_BASIC_PRICE_ID: z.string().min(1, 'STRIPE_BASIC_PRICE_ID is required'),
   STRIPE_PRO_PRICE_ID: z.string().min(1, 'STRIPE_PRO_PRICE_ID is required'),
 
-  // Cloudinary
-  CLOUDINARY_CLOUD_NAME: z.string().min(1, 'CLOUDINARY_CLOUD_NAME is required'),
-  CLOUDINARY_API_KEY: z.string().min(1, 'CLOUDINARY_API_KEY is required'),
-  CLOUDINARY_API_SECRET: z.string().min(1, 'CLOUDINARY_API_SECRET is required'),
+  // Object storage (S3-compatible: AWS S3, MinIO, R2, ...)
+  S3_BUCKET: z.string().min(1, 'S3_BUCKET is required'),
+  S3_REGION: z.string().default('us-east-1'),
+  S3_ACCESS_KEY_ID: z.string().min(1, 'S3_ACCESS_KEY_ID is required'),
+  S3_SECRET_ACCESS_KEY: z.string().min(1, 'S3_SECRET_ACCESS_KEY is required'),
+  S3_ENDPOINT: z.string().url('S3_ENDPOINT must be a URL'),
+  S3_FORCE_PATH_STYLE: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
+  S3_PUBLIC_URL: z.string().url().optional(),
+  // Canned ACL for uploads (providers without ACL support, e.g. R2, use bucket policy instead)
+  S3_OBJECT_ACL: z.string().default('public-read'),
 
   // URLs
   CLIENT_URL: z.string().url().default('http://localhost:3000'),

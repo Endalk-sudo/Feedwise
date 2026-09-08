@@ -31,7 +31,7 @@ The goal of this project is to simplify the feedback loop for small to medium bu
 - **Integrations**: 
   - **AI**: Google Gemini 2.0 Flash via Vercel AI SDK (`ai` + `@ai-sdk/google`)
   - **Payments**: Stripe (Checkout & Billing Portal,) webhooks + hourly subscription sync
-  - **Storage**: Cloudinary (Org Logos)
+  - **Storage**: S3-compatible object storage (Org Logos)
   - **QR**: QRCode.js
 - **Quality**: TypeScript (strict), Zod v4 validation, Vitest, ESLint + Prettier,GitHub Actions CI,Docker Compose(dev + prod)
 
@@ -47,7 +47,7 @@ For a detailed look at the architecture, database schema, and technical decision
 ### Prerequisites
 - Node.js (v18+)
 - PostgreSQL 16 (spins up in Docker Compose)
-- Stripe, Gemini, and Cloudinary API keys
+- Stripe, Gemini, and S3-compatible storage credentials
 
 ### Installation
 

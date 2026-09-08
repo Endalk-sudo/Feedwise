@@ -8,7 +8,7 @@
 ## Prerequisites
 
 - Docker + Docker Compose
-- API keys for: Stripe (Test/Live Mode), Gemini AI, and Cloudinary
+- API keys for: Stripe (Test/Live Mode), Gemini AI, and S3-compatible storage
 - Production secrets in `server/.env` (copy from `server/example.env`)
 
 ## 1. Local dev (hot reload)
