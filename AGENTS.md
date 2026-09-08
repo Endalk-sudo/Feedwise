@@ -4,8 +4,9 @@
 
 Two-package monorepo: AI Feedback Collector SaaS. Businesses get QR codes for customer feedback; AI (Gemini) analyzes sentiment/category/urgency in real-time.
 
-- `client/` — React 19 + Vite 7 SPA (TypeScript config, but many `.jsx` files remain)
-- `server/` — Node.js + Express 5 + MongoDB API (TypeScript config, but source files are `.js` in `src/`)
+- `client/` — React 19 + Vite 7 SPA (TypeScript strict, `.tsx` in `src/`)
+- `server/` — Node.js + Express 5 + PostgreSQL API (TypeScript strict, `.ts` in `src/`)
+- `shared/` — `@aifc/contracts` Zod schemas (single source of truth for server + client)
 
 ## Critical Commands
 
@@ -27,17 +28,17 @@ npm run test         # Vitest run
 
 ## Architecture Facts
 
-- **Server entry**: `server/src/index.js` — Express app with routes mounted at `/api/auth`, `/api/feedback`, `/api/ai`, `/api/user`, `/api/setting`, `/api/payments`, `/api/`
+- **Server entry**: `server/src/index.ts` → `server/src/app.ts` — Express app with routes mounted at `/api/auth`, `/api/feedback`, `/api/analytics`, `/api/ai`, `/api/organization`, `/api/settings`, `/api/payments`
 - **Stripe webhook** route is defined BEFORE `express.json()` middleware — this is intentional (needs raw body)
-- **Auth**: JWT access tokens (15min) in localStorage + refresh tokens (15d) in HTTP-only cookies. Refresh token rotation on each refresh.
-- **Client API client**: `client/src/services/api.js` — Axios with auto-refresh interceptor. Skips refresh for `/auth/login`, `/auth/register`, `/auth/logout`.
-- **Validation**: Zod schemas in `server/src/middleware/schemas.js`, validated via `validationMiddleware.js`
-- **AI**: Google Gemini 2.0 Flash via `@google/genai` SDK. Retry logic with exponential backoff in `server/src/services/aiServices.js`
-- **Cron job**: Daily 2AM insight generation for Pro orgs (`server/src/jobs/generateInsights.js`)
+- **Auth**: Better-Auth session cookies via Prisma adapter (`/api/auth/{*any}` catch-all; custom `/me`, `/has-org` in `features/auth/routes.ts`). No custom JWT.
+- **Client API client**: `client/src/lib/api.ts` — Axios (cookie-based, no token header) + `client/src/lib/auth-client.ts` (Better-Auth client). Query state via TanStack Query v5, local state via Zustand.
+- **Validation**: Zod v4 schemas per slice (`server/src/features/<domain>/schemas.ts` + `shared/` contracts), validated via `middleware/validation.ts`
+- **AI**: Google Gemini 2.0 Flash via Vercel AI SDK (`ai` + `@ai-sdk/google`). Service in `server/src/features/ai/service.ts` with fallbacks.
+- **Cron jobs**: Daily 2AM insight generation for Pro orgs + hourly subscription sync (`server/src/jobs/generateInsights.ts`)
 
 ## TypeScript Migration Status
 
-Both packages have `tsconfig.json` with strict mode enabled, but source files are still `.js`. The server tsconfig has `allowJs: true, checkJs: false` to allow incremental migration. Client build runs `tsc -b` before Vite — ensure no type errors before building.
+Both packages have `tsconfig.json` with strict mode enabled and are fully TypeScript (`.ts`/`.tsx`). The server tsconfig keeps `allowJs: true, checkJs: false` for safety, but no `.js` sources remain in `src/`. Client build runs `tsc -b` before Vite — ensure no type errors before building.
 
 Path alias `@/*` maps to `./src/*` in both packages.
 
@@ -48,8 +49,8 @@ Prettier config (root `.prettierrc`): single quotes, trailing commas, 100 char w
 ## Environment Variables
 
 Copy `server/example.env` to `server/.env` and `client/example.env` to `client/.env`. Key vars:
-- Server: `MONGODB_URI`, `JWT_SECRET_ACCESS`, `JWT_SECRET_REFRESH`, `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLIENT_URL`
-- Client: `VITE_API_URL`, `VITE_STRIPE_PUBLISHABLE_KEY`
+- Server: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GEMINI_API_KEY`, `AI_MODEL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_BASIC_PRICE_ID`, `STRIPE_PRO_PRICE_ID`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLIENT_URL`
+- Client: `VITE_API_URL`, `VITE_STRIPE_PUBLISHABLE_KEY` (+ price IDs)
 
 ## Docker (local dev)
 

@@ -4,7 +4,7 @@
 **Version:** 2.0
 **Date:** September 2026
 **Author:** Endalk
-**Status:** Draft
+**Status:** Superseded by `stack-upgrade` implementation — see `UPGRADE_STRATEGY.md`, `DOCUMENTATION.md`, and `deployment.md` for the current stack (PostgreSQL + Prisma, Better-Auth session cookies, Vercel AI SDK, Docker Compose). Sections below referencing MongoDB/Mongoose, custom JWT, Render/Vercel deploys, and the old project layout are historical.
 
 ---
 
@@ -64,7 +64,7 @@ Small businesses lose customers because they don't understand feedback. Manual a
 ## 5. Current State Analysis
 
 ### What Works Well
-- ✅ Complete user authentication flow (JWT + refresh tokens)
+- ✅ Complete user authentication flow (Better-Auth session cookies via Prisma adapter)
 - ✅ Organization setup with custom categories
 - ✅ QR code generation and public feedback submission
 - ✅ Real-time AI analysis with Gemini
@@ -99,8 +99,8 @@ Small businesses lose customers because they don't understand feedback. Manual a
 - Enable strict mode in `tsconfig.json`
 
 **Backend:**
-- Convert all `.js` → `.ts`
-- Type all Mongoose models, controllers, middleware
+- Convert all `.js` → `.ts` (done — no `.js` sources remain in `server/src/`)
+- Type all Prisma models, controllers, middleware
 - Create type definitions for Express request/response
 - Use Zod schemas for runtime validation (already done)
 
@@ -113,13 +113,13 @@ Small businesses lose customers because they don't understand feedback. Manual a
 ### 6.2 Testing Strategy (Priority: HIGH)
 
 **Unit Tests:**
-- Services (aiServices, paymentService)
+- Services (ai service, paymentService)
 - Utilities (timeUtils, logger)
 - Middleware (auth, validation)
 
 **Integration Tests:**
 - API endpoints (auth, feedback, analytics, payments)
-- Database operations (Mongoose models)
+- Database operations (Prisma models)
 - AI pipeline (mock Gemini calls)
 
 **E2E Tests:**
@@ -144,8 +144,7 @@ Small businesses lose customers because they don't understand feedback. Manual a
 5. Build (Vite + TypeScript)
 
 # On main branch merge:
-6. Deploy to Render (backend)
-7. Deploy to Vercel (frontend)
+6. Build + publish Docker images (client nginx + server node, see `docker-compose.prod.yml`)
 ```
 
 **Quality Gates:**
@@ -167,21 +166,20 @@ services:
   server:
     build: ./server
     ports: ["5000:5000"]
-    depends_on: [mongo]
+    depends_on: [postgres]
     
-  mongo:
-    image: mongo:7
-    ports: ["27017:27017"]
-    volumes: [mongo-data:/data/db]
+  postgres:
+    image: postgres:16-alpine
+    ports: ["5434:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
 ```
 
 **Hosting Options:**
-1. **Render** - Free tier (current, keeps working)
-2. **Vercel** - Free tier for frontend (current)
-3. **Railway** - Free tier with Docker support
-4. **Fly.io** - Free tier with Docker deployment
+1. **Docker Compose prod stack** (current: client nginx:3000 + server node:5000 + postgres, see `docker-compose.prod.yml`)
+2. **Railway** - Free tier with Docker support
+3. **Fly.io** - Free tier with Docker deployment
 
-**Recommendation:** Keep Render for backend, Vercel for frontend, provide Docker Compose for local dev and self-hosting.
+**Recommendation:** Docker Compose for prod and self-hosting (local dev also via `docker-compose.yml`). The old Render + Vercel workflow (`.github/workflows/deploy.yml`) has been removed.
 
 ### 6.5 UI/UX Redesign (Priority: MEDIUM)
 
@@ -235,7 +233,7 @@ services:
 
 | Feature | Description | Priority |
 |---------|-------------|----------|
-| User Auth | Registration, login, logout, refresh tokens | P0 |
+| User Auth | Registration, login, logout, session (Better-Auth cookies) | P0 |
 | Organization Setup | Create org, custom categories, QR generation | P0 |
 | Feedback Submission | Public page, text input, AI analysis | P0 |
 | Dashboard | Overview, feedback list, pagination | P0 |
@@ -281,11 +279,11 @@ services:
 |-------|---------|----------|
 | **Frontend** | React 19, Vite, Plain CSS | React 19, Vite, TypeScript, Tailwind CSS, shadcn/ui |
 | **Backend** | Node.js, Express 5, JavaScript | Node.js, Express 5, TypeScript |
-| **Database** | MongoDB, Mongoose 8 | MongoDB Atlas, Mongoose 8 |
+| **Database** | PostgreSQL 16, Prisma 6 | PostgreSQL 16, Prisma 6 (keep) |
 | **AI** | Gemini 2.0 Flash | Gemini 2.0 Flash (keep) |
 | **Payments** | Stripe | Stripe (keep) |
 | **Storage** | Cloudinary | Cloudinary (keep) |
-| **Auth** | JWT + Refresh Tokens | JWT + Refresh Tokens (keep) |
+| **Auth** | Better-Auth session cookies | Better-Auth session cookies (keep) |
 | **Testing** | None | Vitest, React Testing Library, Playwright |
 | **CI/CD** | None | GitHub Actions |
 | **Docker** | None | Docker + Docker Compose |
@@ -320,12 +318,10 @@ AI-Feedback-collector-app/
 │   └── package.json
 ├── server/                    # Node.js backend
 │   ├── src/
-│   │   ├── config/           # Configuration
-│   │   ├── controllers/      # Route handlers
+│   │   ├── config/           # Configuration (cloudinary, etc.)
+│   │   ├── features/<domain>/ # Route handlers + services + Zod schemas per slice
+│   │   ├── lib/              # env, auth, prisma clients
 │   │   ├── middleware/        # Custom middleware
-│   │   ├── models/           # Mongoose models
-│   │   ├── routes/           # Express routes
-│   │   ├── services/         # Business logic
 │   │   ├── types/            # TypeScript types
 │   │   ├── utils/            # Utility functions
 │   │   └── jobs/             # Cron jobs
@@ -345,12 +341,10 @@ AI-Feedback-collector-app/
 
 ### 8.3 Database Schema (Current - Keep)
 
-- **User** - Auth, org link, subscription
+- **User/Account/Session/Verification** - Better-Auth tables (Prisma)
 - **Organization** - Name, slug, QR, categories
 - **Feedback** - Text, AI analysis (sentiment, urgency, rating, keywords)
 - **Subscription** - Stripe mirror
-- **RefreshToken** - JWT refresh tokens
-- **OrgLogo** - Cloudinary references
 - **Insight** - Cached AI recommendations
 
 ---
@@ -456,7 +450,7 @@ AI-Feedback-collector-app/
 
 1. **Should we add team collaboration now or later?** (Recommended: Later, focus on core)
 2. **Do we want to support self-hosting or just SaaS?** (Recommended: Both)
-3. **Should we migrate to a different database?** (Recommended: Keep MongoDB, it's working)
+3. **Should we migrate to a different database?** (Decided: PostgreSQL 16 + Prisma — MongoDB migration explicitly rejected per `UPGRADE_STRATEGY.md`)
 4. **Do we want to add authentication providers (Google, GitHub)?** (Recommended: Later)
 5. **Should we add rate limiting to AI features?** (Recommended: Yes, to control costs)
 
@@ -466,25 +460,24 @@ AI-Feedback-collector-app/
 
 ### A. Current API Endpoints
 
-**Auth:**
-- POST `/api/auth/register`
-- POST `/api/auth/login`
-- POST `/api/auth/logout`
-- POST `/api/auth/refresh`
-- POST `/api/auth/org-setup`
+**Auth (Better-Auth at `/api/auth/*` + custom endpoints):**
+- POST `/api/auth/sign-up/email` (Better-Auth)
+- POST `/api/auth/sign-in/email` (Better-Auth)
+- POST `/api/auth/sign-out` (Better-Auth)
+- GET `/api/auth/me`
+- GET `/api/auth/has-org`
 
 **Feedback:**
 - POST `/api/feedback/:slug`
 - GET `/api/feedback/:slug`
 
-**Analytics:**
-- GET `/basic/sentiment/:slug`
-- GET `/basic/categories/:slug`
-- GET `/pro/trends/:slug`
-- GET `/pro/heatmap/:slug`
-- GET `/pro/issues/:slug`
-- GET `/pro/alerts/:slug`
-- GET `/pro/recommendations/:slug`
+**Analytics (mounted at `/api/analytics`, auth + org membership required):**
+- GET `/api/analytics/:slug/sentiment`
+- GET `/api/analytics/:slug/categories`
+- GET `/api/analytics/:slug/heatmap`
+- GET `/api/analytics/:slug/issues`
+- GET `/api/analytics/:slug/alerts`
+- GET `/api/analytics/:slug/recommendations` (Pro only)
 
 **AI:**
 - POST `/api/ai/chat`
@@ -495,17 +488,19 @@ AI-Feedback-collector-app/
 - POST `/api/payments/webhook`
 - GET `/api/payments/verify-session`
 
-**Settings:**
-- PUT `/api/setting/org`
+**Settings (mounted at `/api/settings`):**
+- GET `/api/settings/:slug`
+- PUT `/api/settings/:slug`
 
 ### B. Environment Variables
 
 **Backend:**
 - `PORT`
-- `MONGODB_URI`
-- `JWT_SECRET`
-- `JWT_REFRESH_SECRET`
+- `DATABASE_URL` (PostgreSQL)
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
 - `GEMINI_API_KEY`
+- `AI_MODEL`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `CLOUDINARY_CLOUD_NAME`
@@ -519,9 +514,9 @@ AI-Feedback-collector-app/
 
 ### C. Deployment Links
 
-- Frontend: Vercel (configured)
-- Backend: Render (configured)
-- Database: MongoDB Atlas (configured)
+- Frontend: Docker prod stack (client nginx:3000, see `docker-compose.prod.yml`)
+- Backend: Docker prod stack (server node:5000, `prisma migrate deploy` on start)
+- Database: PostgreSQL 16 (see `docker-compose.prod.yml`)
 - Payments: Stripe (configured)
 
 ---
