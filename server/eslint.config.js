@@ -20,6 +20,7 @@ export default defineConfig([
         clearInterval: true,
         URL: true,
         Buffer: true,
+        ReadableStream: true,
         __dirname: true,
         __filename: true,
       },

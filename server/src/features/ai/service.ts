@@ -1,4 +1,13 @@
-import { generateText, streamText, Output } from 'ai';
+import {
+  generateText,
+  streamText,
+  Output,
+  convertToModelMessages,
+  toUIMessageStream,
+  smoothStream,
+  type UIMessage,
+  type UIMessageChunk,
+} from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 import logger from '@/utils/logger.js';
@@ -186,10 +195,7 @@ export async function chatWithAI(
   }
 }
 
-export function buildChatPrompt(
-  message: string,
-  feedbackContext: FeedbackContextItem[],
-): string {
+export function buildChatPrompt(message: string, feedbackContext: FeedbackContextItem[]): string {
   const context = feedbackContext
     .slice(0, 15)
     .map(
@@ -236,4 +242,48 @@ export async function* streamChat(
   if (!yielded) {
     yield 'Sorry, I encountered an error analyzing your feedback. Please try again.';
   }
+}
+
+/**
+ * System prompt for history-aware chat. Feedback context is injected
+ * server-side; the client only ever sends conversation messages.
+ */
+export function buildChatSystemPrompt(feedbackContext: FeedbackContextItem[]): string {
+  const context = feedbackContext
+    .slice(0, 15)
+    .map(
+      (f) =>
+        `Category: ${f.category}, Sentiment: ${f.sentiment}, Urgency: ${f.urgency}, Text: ${f.text.substring(0, 300)}`,
+    )
+    .join('\n');
+
+  return `You are an AI assistant helping a business owner understand their customer feedback.
+
+Feedback context:
+${context}
+
+Provide helpful, data-driven responses based on the feedback context. Be specific and actionable.`;
+}
+
+/**
+ * History-aware chat stream in AI SDK UI-message protocol.
+ * Consumed by pipeUIMessageStreamToResponse in the route handler.
+ * Word-chunk smoothing gives the client a typewriter effect.
+ */
+export async function createChatMessageStream(
+  messages: UIMessage[],
+  feedbackContext: FeedbackContextItem[],
+): Promise<ReadableStream<UIMessageChunk>> {
+  const modelMessages = await convertToModelMessages(messages);
+
+  const result = streamText({
+    model: google(modelName),
+    system: buildChatSystemPrompt(feedbackContext),
+    messages: modelMessages,
+    temperature: 0.5,
+    maxRetries: 3,
+    experimental_transform: smoothStream({ chunking: 'word' }),
+  });
+
+  return toUIMessageStream({ stream: result.stream });
 }

@@ -2,8 +2,9 @@ import { Router } from 'express';
 import { validate } from '@/middleware/validation.js';
 import { authMiddleware } from '@/middleware/auth.js';
 import { resolveOrganizationMember } from '@/middleware/organization.js';
-import { chatSchema } from './schemas.js';
-import { chatWithAI, streamChat } from './service.js';
+import { pipeUIMessageStreamToResponse, type UIMessage } from 'ai';
+import { chatSchema, chatStreamSchema } from './schemas.js';
+import { chatWithAI, createChatMessageStream } from './service.js';
 import { prisma } from '@/lib/prisma.js';
 
 const router = Router();
@@ -49,35 +50,33 @@ router.post('/:slug/chat', authMiddleware, validate(chatSchema), async (req, res
   }
 });
 
-// AI Chat streaming endpoint (protected, Pro only) — plain-text chunk stream
-router.post('/:slug/chat/stream', authMiddleware, validate(chatSchema), async (req, res, next) => {
-  try {
-    const slug = req.params.slug as string;
-    const { message } = req.body;
-    const userId = (req as any).user.id;
+// AI Chat streaming endpoint (protected, Pro only) — AI SDK UI-message
+// stream protocol, consumed by useChat + DefaultChatTransport.
+router.post(
+  '/:slug/chat/stream',
+  authMiddleware,
+  validate(chatStreamSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const { messages } = req.body as { messages: UIMessage[] };
+      const userId = (req as any).user.id;
 
-    const ctx = await chatContext(slug, userId);
-    if (!ctx.ok) {
-      return res.status(ctx.status).json({ success: false, message: ctx.message });
-    }
-
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('X-Accel-Buffering', 'no');
-
-    for await (const chunk of streamChat(message, ctx.feedbacks)) {
-      if (!res.write(chunk)) {
-        await new Promise((resolve) => res.once('drain', resolve));
+      const ctx = await chatContext(slug, userId);
+      if (!ctx.ok) {
+        return res.status(ctx.status).json({ success: false, message: ctx.message });
       }
+
+      const stream = await createChatMessageStream(messages, ctx.feedbacks);
+      await pipeUIMessageStreamToResponse({ response: res, stream });
+    } catch (error) {
+      if (!res.headersSent) {
+        next(error);
+        return;
+      }
+      res.end();
     }
-    res.end();
-  } catch (error) {
-    if (!res.headersSent) {
-      next(error);
-      return;
-    }
-    res.end();
-  }
-});
+  },
+);
 
 export { router as aiRoutes };

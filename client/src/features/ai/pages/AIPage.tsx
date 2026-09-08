@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport, type TextUIPart, type UIMessage } from 'ai';
 import { useAuthStore, useOrgSlug } from '@/lib/stores/auth.store';
-import { useAIChat } from '@/features/feedback/hooks';
-import type { AIChatResponse } from '@/features/feedback/types';
-import { Send, Bot, Zap, Lightbulb, Copy } from 'lucide-react';
+import { useUIStore } from '@/lib/stores/ui.store';
+import { Send, Bot, Zap, Lightbulb, Copy, Square, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const suggestions = [
@@ -11,8 +12,15 @@ const suggestions = [
   'Which category has the most negative feedback?',
   'What are customers saying about pricing?',
   'Give me 3 actionable improvements',
-  'Summarize this week\'s feedback',
+  "Summarize this week's feedback",
 ];
+
+function messageText(message: UIMessage): string {
+  return (message.parts ?? [])
+    .filter((part): part is TextUIPart => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
+}
 
 function EmptyState() {
   return (
@@ -24,19 +32,29 @@ function EmptyState() {
   );
 }
 
-function MessageBubble({ message, onCopy }: { message: { role: 'user' | 'assistant'; content: string }; onCopy: (text: string) => void }) {
+function MessageBubble({
+  message,
+  onCopy,
+}: {
+  message: UIMessage;
+  onCopy: (text: string) => void;
+}) {
+  const text = messageText(message);
+  if (!text) return null;
   return (
     <div className={cn('flex gap-3', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-      <div className={cn(
-        'max-w-[80%] rounded-xl px-4 py-3',
-        message.role === 'user'
-          ? 'bg-primary text-primary-foreground rounded-tr-none'
-          : 'bg-secondary text-foreground rounded-tl-none'
-      )}>
-        <p className="whitespace-pre-wrap">{message.content}</p>
+      <div
+        className={cn(
+          'max-w-[80%] rounded-xl px-4 py-3',
+          message.role === 'user'
+            ? 'bg-primary text-primary-foreground rounded-tr-none'
+            : 'bg-secondary text-foreground rounded-tl-none',
+        )}
+      >
+        <p className="whitespace-pre-wrap">{text}</p>
         {message.role === 'assistant' && (
           <button
-            onClick={() => onCopy(message.content)}
+            onClick={() => onCopy(text)}
             className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <Copy className="w-3 h-3" />
@@ -52,19 +70,38 @@ function TypingIndicator() {
   return (
     <div className="px-4 pb-4 flex justify-start">
       <div className="bg-secondary rounded-xl rounded-tl-none px-4 py-3 flex items-center gap-1">
-        <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        <span
+          className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce"
+          style={{ animationDelay: '0ms' }}
+        />
+        <span
+          className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce"
+          style={{ animationDelay: '150ms' }}
+        />
+        <span
+          className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce"
+          style={{ animationDelay: '300ms' }}
+        />
       </div>
     </div>
   );
 }
 
-function InputForm({ input, setInput, handleSubmit, isPending, currentPlan }: {
+function InputForm({
+  input,
+  setInput,
+  handleSubmit,
+  isBusy,
+  isStreaming,
+  onStop,
+  currentPlan,
+}: {
   input: string;
   setInput: (v: string) => void;
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
-  isPending: boolean;
+  isBusy: boolean;
+  isStreaming: boolean;
+  onStop: () => void;
   currentPlan: string | null | undefined;
 }) {
   return (
@@ -74,18 +111,29 @@ function InputForm({ input, setInput, handleSubmit, isPending, currentPlan }: {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={currentPlan !== 'pro' ? 'Upgrade to Pro to use AI Chat' : 'Ask me anything about your feedback...'}
-          disabled={isPending || currentPlan !== 'pro'}
+          placeholder={
+            currentPlan !== 'pro'
+              ? 'Upgrade to Pro to use AI Chat'
+              : 'Ask me anything about your feedback...'
+          }
+          disabled={isBusy || currentPlan !== 'pro'}
           className="flex-1 px-4 py-3 bg-secondary border border-input rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all disabled:opacity-50"
         />
-        <button
-          type="submit"
-          disabled={!input.trim() || isPending || currentPlan !== 'pro'}
-          className="px-6 py-3 btn-brand"
-        >
-          <Send className="w-5 h-5" />
-          Send
-        </button>
+        {isStreaming ? (
+          <button type="button" onClick={onStop} className="px-6 py-3 btn-brand">
+            <Square className="w-5 h-5" />
+            Stop
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={!input.trim() || isBusy || currentPlan !== 'pro'}
+            className="px-6 py-3 btn-brand"
+          >
+            <Send className="w-5 h-5" />
+            Send
+          </button>
+        )}
       </div>
     </form>
   );
@@ -93,27 +141,47 @@ function InputForm({ input, setInput, handleSubmit, isPending, currentPlan }: {
 
 export function AIPage() {
   const { activeOrganization } = useAuthStore();
+  const { addToast } = useUIStore();
   const slug = useOrgSlug();
-  const { mutate: sendMessage, isPending } = useAIChat(slug);
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [input, setInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: `${
+          import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
+        }/ai/${slug}/chat/stream`,
+        credentials: 'include',
+      }),
+    [slug],
+  );
+
+  const { messages, sendMessage, status, stop, regenerate, error, clearError } = useChat({
+    id: `ai-chat-${slug}`,
+    transport,
+    onError: (err) => {
+      addToast({
+        message: err instanceof Error ? err.message : 'Failed to send message',
+        type: 'error',
+      });
+    },
+  });
+
+  const isBusy = status === 'submitted' || status === 'streaming';
+  const isStreaming = status === 'streaming';
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+  }, [messages]);
 
   const submitMessage = (userMessage: string) => {
-    if (!userMessage.trim() || isPending) return;
-
-    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+    if (!userMessage.trim() || isBusy || !slug) return;
+    clearError();
     setInput('');
     setShowSuggestions(false);
-
-    sendMessage(userMessage, {
-      onSuccess: (reply: AIChatResponse) => {
-        setMessages((prev) => [...prev, { role: 'assistant', content: reply.reply }]);
-      },
-      onError: () => {
-        setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
-      },
-    });
+    void sendMessage({ text: userMessage });
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -126,7 +194,7 @@ export function AIPage() {
   };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text);
   };
 
   if (!slug) {
@@ -183,21 +251,37 @@ export function AIPage() {
 
       {/* Chat Messages */}
       <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl flex flex-col h-[500px] overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {messages.length === 0 ? <EmptyState /> : (
-            messages.map((message, i) => (
-              <MessageBubble key={i} message={message} onCopy={copyToClipboard} />
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
+          {messages.length === 0 ? (
+            <EmptyState />
+          ) : (
+            messages.map((message) => (
+              <MessageBubble key={message.id} message={message} onCopy={copyToClipboard} />
             ))
           )}
         </div>
 
-        {isPending && <TypingIndicator />}
+        {status === 'submitted' && <TypingIndicator />}
+
+        {status === 'error' && (
+          <div className="px-4 pb-2">
+            <button
+              onClick={() => regenerate()}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Retry — {error?.message ?? 'something went wrong'}
+            </button>
+          </div>
+        )}
 
         <InputForm
           input={input}
           setInput={setInput}
           handleSubmit={handleSubmit}
-          isPending={isPending}
+          isBusy={isBusy}
+          isStreaming={isStreaming}
+          onStop={stop}
           currentPlan={currentPlan}
         />
       </div>

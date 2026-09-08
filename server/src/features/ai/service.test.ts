@@ -4,6 +4,9 @@ vi.mock('ai', () => ({
   generateText: vi.fn(),
   streamText: vi.fn(),
   Output: { object: vi.fn((arg: unknown) => arg), array: vi.fn((arg: unknown) => arg) },
+  convertToModelMessages: vi.fn(),
+  toUIMessageStream: vi.fn(),
+  smoothStream: vi.fn((arg: unknown) => arg),
 }));
 
 vi.mock('@ai-sdk/google', () => ({
@@ -14,17 +17,21 @@ vi.mock('@/utils/logger.js', () => ({
   default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-import { generateText, streamText } from 'ai';
+import { generateText, streamText, convertToModelMessages, toUIMessageStream } from 'ai';
 import {
   analyzeFeedback,
   generateCategoriesForBusiness,
   generateInsights,
   streamChat,
   buildChatPrompt,
+  buildChatSystemPrompt,
+  createChatMessageStream,
 } from './service.js';
 
 const mockedGenerateText = vi.mocked(generateText);
 const mockedStreamText = vi.mocked(streamText);
+const mockedConvertToModelMessages = vi.mocked(convertToModelMessages);
+const mockedToUIMessageStream = vi.mocked(toUIMessageStream);
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -71,10 +78,7 @@ describe('generateCategoriesForBusiness', () => {
   it('returns model categories on success', async () => {
     mockedGenerateText.mockResolvedValue({ output: { categories: ['A', 'B'] } } as never);
 
-    await expect(generateCategoriesForBusiness('Cafe', 'coffee shop')).resolves.toEqual([
-      'A',
-      'B',
-    ]);
+    await expect(generateCategoriesForBusiness('Cafe', 'coffee shop')).resolves.toEqual(['A', 'B']);
   });
 
   it('returns default categories on failure', async () => {
@@ -139,5 +143,34 @@ describe('buildChatPrompt / streamChat', () => {
     }
 
     expect(chunks.join('')).toBe('hello');
+  });
+});
+
+describe('buildChatSystemPrompt / createChatMessageStream', () => {
+  it('injects feedback context into the system prompt', () => {
+    const prompt = buildChatSystemPrompt([
+      { category: 'Pricing', text: 'too expensive', sentiment: 'Negative', urgency: 'High' },
+    ]);
+
+    expect(prompt).toContain('too expensive');
+    expect(prompt).not.toContain('User question');
+  });
+
+  it('converts UI messages and returns a UI-message stream', async () => {
+    const modelMessages = [{ role: 'user', content: 'top issues?' }];
+    mockedConvertToModelMessages.mockResolvedValue(modelMessages as never);
+    mockedStreamText.mockReturnValue({ stream: 'model-stream' } as never);
+    mockedToUIMessageStream.mockReturnValue('ui-stream' as never);
+
+    const messages = [
+      { id: 'm1', role: 'user', parts: [{ type: 'text', text: 'top issues?' }] },
+    ] as never;
+
+    await expect(createChatMessageStream(messages, [])).resolves.toBe('ui-stream');
+    expect(mockedConvertToModelMessages).toHaveBeenCalledWith(messages);
+    expect(mockedStreamText).toHaveBeenCalledWith(
+      expect.objectContaining({ messages: modelMessages }),
+    );
+    expect(mockedToUIMessageStream).toHaveBeenCalledWith({ stream: 'model-stream' });
   });
 });
