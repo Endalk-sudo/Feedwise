@@ -74,17 +74,19 @@ Small businesses lose customers because they don't understand feedback. Manual a
 - ✅ Daily insight generation cron job
 
 ### What Needs Improvement
-| Area | Current | Target |
-|------|---------|--------|
-| Language | JavaScript (ESM) | TypeScript (strict mode) |
-| Testing | None | Unit + Integration + E2E |
-| CI/CD | None | GitHub Actions |
-| Docker | None | Docker + Docker Compose |
-| Styling | Plain CSS files | Tailwind CSS + Design System |
-| State Management | Context API | Zustand or TanStack Query |
-| Form Handling | React Hook Form | React Hook Form + Zod (already used) |
-| Error Handling | Basic try/catch | Global error boundary + structured logging |
-| API Design | REST | REST + OpenAPI spec |
+> Status 2026-09: all rows below are **done** (TypeScript strict, Vitest, GitHub Actions CI, Docker Compose dev+prod, Tailwind v4 + custom UI kit, Zustand + TanStack Query, Zod validation, Winston logging, express-rate-limit). Remaining gaps live in §7.2 / §9 Phase 5.
+
+| Area | Before | After |
+|------|---------|-------|
+| Language | JavaScript (ESM) | TypeScript (strict mode) ✅ |
+| Testing | None | Vitest (unit + service tests) ✅ |
+| CI/CD | None | GitHub Actions ✅ |
+| Docker | None | Docker + Docker Compose (dev + prod) ✅ |
+| Styling | Plain CSS files | Tailwind CSS + custom UI kit ✅ |
+| State Management | Context API | Zustand + TanStack Query ✅ |
+| Form Handling | React Hook Form | React Hook Form + Zod ✅ |
+| Error Handling | Basic try/catch | ErrorBoundary + structured logging ✅ |
+| API Design | REST | REST + Zod-validated contracts (`@aifc/contracts`) ✅ |
 
 ---
 
@@ -134,18 +136,16 @@ Small businesses lose customers because they don't understand feedback. Manual a
 
 ### 6.3 CI/CD Pipeline (Priority: HIGH)
 
-**GitHub Actions Workflow:**
+**GitHub Actions Workflow (`ci.yml` — current):**
 ```yaml
-# On every push/PR:
-1. Lint (ESLint + Prettier)
-2. Type Check (TypeScript)
-3. Unit Tests (Vitest)
-4. Integration Tests (Vitest + test DB)
-5. Build (Vite + TypeScript)
-
-# On main branch merge:
-6. Build + publish Docker images (client nginx + server node, see `docker-compose.prod.yml`)
+# On push to main/develop/stack-upgrade and PRs to main:
+1. Lint (ESLint + Prettier check, client + server)
+2. Type Check (TypeScript, client + server)
+3. Unit Tests (Vitest + Postgres service, client + server)
+4. Build (tsc/vite, depends on 1-3; uploads client/dist + server/dist)
 ```
+> No image publish or CD pipeline exists yet — prod deploys via
+> `docker-compose.prod.yml` (see `deployment.md`).
 
 **Quality Gates:**
 - All tests must pass
@@ -155,24 +155,20 @@ Small businesses lose customers because they don't understand feedback. Manual a
 
 ### 6.4 Docker Deployment (Priority: HIGH)
 
-**Docker Setup:**
+**Docker Setup (current — all builds use repo-root context so the
+`file:../shared` contracts dependency resolves):**
 ```yaml
-# docker-compose.yml
+# docker-compose.yml (dev, hot reload)
 services:
-  client:
-    build: ./client
-    ports: ["3000:3000"]
-    
-  server:
-    build: ./server
-    ports: ["5000:5000"]
-    depends_on: [postgres]
-    
-  postgres:
-    image: postgres:16-alpine
-    ports: ["5434:5432"]
-    volumes: [pgdata:/var/lib/postgresql/data]
+  client:                     # client/Dockerfile.dev → vite :5173
+    build: { context: ., dockerfile: client/Dockerfile.dev }
+  server:                     # server/Dockerfile.dev → tsx watch :5000
+    build: { context: ., dockerfile: server/Dockerfile.dev }
+  postgres:                   # postgres:16-alpine, host 5434
+  redis:                      # redis:7-alpine, host 6379 (BullMQ + rate limits)
 ```
+Prod (`docker-compose.prod.yml`): client nginx:3000 + server node:5000 +
+internal-only postgres; `prisma migrate deploy` on server start.
 
 **Hosting Options:**
 1. **Docker Compose prod stack** (current: client nginx:3000 + server node:5000 + postgres, see `docker-compose.prod.yml`)
@@ -183,11 +179,11 @@ services:
 
 ### 6.5 UI/UX Redesign (Priority: MEDIUM)
 
-**Design System:**
-- **Framework:** Tailwind CSS 4
-- **Component Library:** shadcn/ui (accessible, customizable)
-- **Icons:** Lucide React (already used)
-- **Animations:** Framer Motion (already used)
+**Design System (as built):**
+- **Framework:** Tailwind CSS 4 (CSS-first, no config file)
+- **Component Library:** custom kit in `client/src/components/ui` (Button, Card, Badge, Input, PageHeader, Logo, Spinner, EmptyState, Drawer, Container) — no shadcn/ui, no Radix usage
+- **Icons:** Lucide React
+- **Animations:** CSS keyframes in `index.css` (no Framer Motion — not adopted)
 
 **Pages to Redesign:**
 1. **Landing Page** - Modern SaaS landing with hero, features, pricing, testimonials
@@ -243,17 +239,17 @@ services:
 | Stripe Payments | Checkout, billing portal, webhooks | P0 |
 | Settings | Org name, logo upload | P0 |
 
-### 7.2 New Features (Add)
+### 7.2 New Features (Status 2026-09)
 
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| Team Collaboration | Invite team members, role-based access | P1 |
-| Multi-language Support | i18n for feedback page | P2 |
-| Email Notifications | Alert on high-urgency feedback | P1 |
-| Export Data | CSV/PDF export of feedback and analytics | P2 |
-| Custom Branding | White-label feedback page | P2 |
-| API Access | REST API for integrations | P2 |
-| Webhooks | Push notifications to external services | P2 |
+| Feature | Description | Priority | Status |
+|---------|-------------|----------|--------|
+| Team Collaboration | Invite team members, role-based access | P1 | Partial — server member endpoints exist (`POST/DELETE /api/organization/:slug/members[/:userId]`, `PUT …/members/:userId` role); no client UI yet |
+| Multi-language Support | i18n for feedback page | P2 | Deferred |
+| Email Notifications | Alert on high-urgency feedback | P1 | Deferred (no mail provider wired) |
+| Export Data | CSV/PDF export of feedback and analytics | P2 | Deferred |
+| Custom Branding | White-label feedback page | P2 | Partial — org logo upload + public-page branding exist; no full white-label |
+| API Access | REST API for integrations | P2 | Partial — internal REST API exists, no public tokens/docs |
+| Webhooks | Push notifications to external services | P2 | Deferred (inbound Stripe webhook only) |
 
 ### 7.3 Landing Page Redesign
 
@@ -275,67 +271,51 @@ services:
 
 ### 8.1 Proposed Tech Stack
 
-| Layer | Current | Proposed |
-|-------|---------|----------|
-| **Frontend** | React 19, Vite, Plain CSS | React 19, Vite, TypeScript, Tailwind CSS, shadcn/ui |
-| **Backend** | Node.js, Express 5, JavaScript | Node.js, Express 5, TypeScript |
-| **Database** | PostgreSQL 16, Prisma 6 | PostgreSQL 16, Prisma 6 (keep) |
-| **AI** | Gemini 2.0 Flash | Gemini 2.0 Flash (keep) |
-| **Payments** | Stripe | Stripe (keep) |
-| **Storage** | S3-compatible object storage | S3-compatible object storage (keep) |
-| **Auth** | Better-Auth session cookies | Better-Auth session cookies (keep) |
-| **Testing** | None | Vitest, React Testing Library, Playwright |
-| **CI/CD** | None | GitHub Actions |
-| **Docker** | None | Docker + Docker Compose |
-| **Linting** | ESLint (basic) | ESLint + Prettier (strict) |
+| Layer | Before | After (2026-09) |
+|-------|---------|-----------------|
+| **Frontend** | React 19, Vite, Plain CSS | React 19, Vite 7, TypeScript strict, Tailwind v4, custom UI kit ✅ |
+| **Backend** | Node.js, Express 5, JavaScript | Node.js 22, Express 5, TypeScript strict ✅ |
+| **Database** | PostgreSQL 16, Prisma 6 | PostgreSQL 16, Prisma 6 (kept) ✅ |
+| **AI** | Gemini 2.0 Flash | Gemini 2.0 Flash via Vercel AI SDK ✅ |
+| **Payments** | Stripe | Stripe v22 ✅ |
+| **Storage** | S3-compatible object storage | S3-compatible object storage (kept) ✅ |
+| **Auth** | Better-Auth session cookies | Better-Auth session cookies (kept) ✅ |
+| **Testing** | None | Vitest (+ RTL) ✅ |
+| **CI/CD** | None | GitHub Actions (lint → typecheck → test → build) ✅ |
+| **Docker** | None | Docker + Docker Compose (dev + prod) ✅ |
+| **Linting** | ESLint (basic) | ESLint + Prettier ✅ |
 
-### 8.2 Project Structure (Proposed)
+### 8.2 Project Structure (Actual)
 
 ```
 AI-Feedback-collector-app/
 ├── client/                    # React frontend
 │   ├── src/
-│   │   ├── app/              # App entry, routes, providers
-│   │   ├── components/       # Shared UI components
-│   │   │   └── ui/          # shadcn/ui components
-│   │   ├── features/         # Feature-based modules
-│   │   │   ├── auth/
-│   │   │   ├── dashboard/
-│   │   │   ├── feedback/
-│   │   │   ├── analytics/
-│   │   │   ├── ai/
-│   │   │   ├── payments/
-│   │   │   └── settings/
-│   │   ├── hooks/            # Shared custom hooks
-│   │   ├── lib/              # Utilities, API client
-│   │   ├── types/            # TypeScript types
-│   │   └── styles/           # Global styles
-│   ├── public/               # Static assets
-│   ├── tests/                # Frontend tests
-│   ├── Dockerfile
-│   ├── tailwind.config.ts
+│   │   ├── app/              # router (TanStack Router, code-based)
+│   │   ├── components/ui/    # shared UI kit (Button, Card, Badge, …)
+│   │   ├── features/<domain>/# pages, hooks, types, components per slice
+│   │   ├── lib/              # api client, auth-client, query-client, stores, utils
+│   │   └── styles/           # index.css (Tailwind v4 CSS-first theme)
+│   ├── nginx.conf
+│   ├── Dockerfile(.dev)      # repo-root build context (resolves shared/)
+│   ├── eslint.config.js
 │   ├── tsconfig.json
 │   └── package.json
 ├── server/                    # Node.js backend
 │   ├── src/
-│   │   ├── config/           # Configuration (cloudinary, etc.)
-│   │   ├── features/<domain>/ # Route handlers + services + Zod schemas per slice
-│   │   ├── lib/              # env, auth, prisma clients
-│   │   ├── middleware/        # Custom middleware
-│   │   ├── types/            # TypeScript types
-│   │   ├── utils/            # Utility functions
-│   │   └── jobs/             # Cron jobs
-│   ├── tests/                # Backend tests
-│   ├── Dockerfile
+│   │   ├── features/<domain>/# routes + service + schemas per slice
+│   │   ├── lib/              # env, auth, prisma, redis, queue
+│   │   ├── middleware/       # validation, rate-limit, …
+│   │   ├── jobs/             # node-cron (insight generation, subscription sync)
+│   │   └── workers/          # BullMQ workers
+│   ├── prisma/               # schema, migrations, seed
+│   ├── Dockerfile(.dev)      # repo-root build context (resolves shared/)
 │   └── package.json
-├── docker-compose.yml
-├── .github/
-│   └── workflows/
-│       ├── ci.yml            # CI pipeline
-│       └── deploy.yml        # CD pipeline
-├── .eslintrc.js
+├── shared/                    # @aifc/contracts — Zod v4 schemas (built to dist/)
+├── docker-compose.yml         # dev: vite:5173 + tsx:5000 + postgres:5434 + redis:6379
+├── docker-compose.prod.yml    # prod: nginx:3000 + node:5000 + internal postgres
+├── .github/workflows/ci.yml   # lint → typecheck → test → build
 ├── .prettierrc
-├── tsconfig.base.json        # Shared TS config
 └── PRD.md
 ```
 
@@ -349,54 +329,55 @@ AI-Feedback-collector-app/
 
 ---
 
-## 9. Implementation Roadmap
+## 9. Implementation Roadmap (Status 2026-09)
 
-### Phase 1: Foundation (Week 1-2)
-- [ ] Initialize TypeScript in both client and server
-- [ ] Set up ESLint + Prettier with strict rules
-- [ ] Create shared type definitions
-- [ ] Convert critical files to TypeScript (auth, feedback)
-- [ ] Set up Vitest for backend
-- [ ] Write unit tests for services and utilities
+### Phase 1: Foundation (Week 1-2) ✅ Done
+- [x] Initialize TypeScript in both client and server
+- [x] Set up ESLint + Prettier
+- [x] Create shared contracts package (`shared/`, Zod v4)
+- [x] Convert critical files to TypeScript (auth, feedback)
+- [x] Set up Vitest for backend
+- [x] Write unit tests for services and utilities
 
-### Phase 2: Testing & CI (Week 3-4)
-- [ ] Complete TypeScript migration
-- [ ] Write integration tests for API endpoints
-- [ ] Set up GitHub Actions CI pipeline
-- [ ] Add lint + type-check + test steps
-- [ ] Configure build pipeline
-- [ ] Add test coverage reporting
+### Phase 2: Testing & CI (Week 3-4) ✅ Done
+- [x] Complete TypeScript migration
+- [x] Service-level tests for API logic
+- [x] Set up GitHub Actions CI pipeline
+- [x] Add lint + type-check + test steps
+- [x] Configure build pipeline
+- [ ] Test coverage reporting
+- [ ] Playwright E2E (deferred)
 
-### Phase 3: Docker & Deployment (Week 5)
-- [ ] Create Dockerfiles for client and server
-- [ ] Set up Docker Compose for local dev
-- [ ] Test Docker deployment locally
-- [ ] Update deployment configs
-- [ ] Document deployment process
+### Phase 3: Docker & Deployment (Week 5) ✅ Done
+- [x] Create Dockerfiles for client and server (repo-root context for `shared/`)
+- [x] Set up Docker Compose for local dev (+ prod parity file)
+- [x] Test Docker deployment locally
+- [x] Document deployment process
 
-### Phase 4: UI/UX Redesign (Week 6-8)
-- [ ] Install and configure Tailwind CSS
-- [ ] Install shadcn/ui components
-- [ ] Create design tokens (colors, typography, spacing)
-- [ ] Redesign landing page
-- [ ] Redesign auth pages
-- [ ] Redesign dashboard
-- [ ] Redesign analytics pages
-- [ ] Ensure mobile responsiveness
+### Phase 4: UI/UX Redesign (Week 6-8) ✅ Done
+- [x] Configure Tailwind CSS v4 (CSS-first)
+- [x] Build custom UI kit (`components/ui`) + success/warning theme tokens
+- [x] Create design tokens (colors, typography, spacing)
+- [x] Redesign landing page
+- [x] Redesign auth pages
+- [x] Redesign dashboard
+- [x] Redesign analytics pages
+- [x] Mobile responsiveness pass
+- [ ] Full WCAG audit (deferred)
 
-### Phase 5: New Features (Week 9-10)
-- [ ] Add email notifications (high-urgency feedback)
-- [ ] Add team collaboration (invite members, roles)
-- [ ] Add data export (CSV/PDF)
-- [ ] Add loading states and skeleton screens
-- [ ] Add error boundaries
-- [ ] Optimize performance
+### Phase 5: New Features (Week 9-10) — open, see §7.2
+- [ ] Email notifications (high-urgency feedback)
+- [ ] Team collaboration client UI (server endpoints exist)
+- [ ] Data export (CSV/PDF)
+- [x] Loading states (Spinner/LoadingState/Skeleton primitives)
+- [x] Error boundaries (ErrorBoundary component)
+- [ ] Performance optimization (Lighthouse)
 
-### Phase 6: Polish & Launch (Week 11-12)
-- [ ] Final UI polish and accessibility audit
+### Phase 6: Polish & Launch (Week 11-12) — open
+- [ ] Final accessibility audit
 - [ ] Performance optimization (Lighthouse)
 - [ ] Security audit
-- [ ] Documentation update
+- [x] Documentation update (this sync)
 - [ ] Production deployment
 - [ ] Post-launch monitoring setup
 
@@ -452,24 +433,28 @@ AI-Feedback-collector-app/
 2. **Do we want to support self-hosting or just SaaS?** (Recommended: Both)
 3. **Should we migrate to a different database?** (Decided: PostgreSQL 16 + Prisma — MongoDB migration explicitly rejected per `UPGRADE_STRATEGY.md`)
 4. **Do we want to add authentication providers (Google, GitHub)?** (Recommended: Later)
-5. **Should we add rate limiting to AI features?** (Recommended: Yes, to control costs)
+5. **Should we add rate limiting to AI features?** (Decided: Yes — `aiRateLimiter` on chat endpoints + Redis-backed `express-rate-limit` with `ipKeyGenerator` IPv6 handling)
 
 ---
 
 ## 13. Appendices
 
-### A. Current API Endpoints
+### A. Current API Endpoints (verified 2026-09)
 
-**Auth (Better-Auth at `/api/auth/*` + custom endpoints):**
+**Auth (`/api/auth` — custom routes run before the Better-Auth catch-all `/{*any}`):**
 - POST `/api/auth/sign-up/email` (Better-Auth)
 - POST `/api/auth/sign-in/email` (Better-Auth)
 - POST `/api/auth/sign-out` (Better-Auth)
 - GET `/api/auth/me`
 - GET `/api/auth/has-org`
 
-**Feedback:**
-- POST `/api/feedback/:slug`
-- GET `/api/feedback/:slug`
+**Feedback (mounted at `/api/feedback`):**
+- POST `/api/feedback/:slug` (public, rate-limited)
+- GET `/api/feedback/:slug` (auth)
+- GET `/api/feedback/:slug/stats` (auth)
+- GET `/api/feedback/:slug/:id` (auth)
+- PATCH `/api/feedback/:slug/:id/status` (close the loop: status/reply/note)
+- PATCH `/api/feedback/:slug/:id/correct` (human correction of AI analysis)
 
 **Analytics (mounted at `/api/analytics`, auth + org membership required):**
 - GET `/api/analytics/:slug/sentiment`
@@ -479,39 +464,45 @@ AI-Feedback-collector-app/
 - GET `/api/analytics/:slug/alerts`
 - GET `/api/analytics/:slug/recommendations` (Pro only)
 
-**AI:**
-- POST `/api/ai/chat`
+**AI (mounted at `/api/ai`, auth; chat is Pro-gated):**
+- POST `/api/ai/:slug/chat` (blocking fallback)
+- POST `/api/ai/:slug/chat/stream` (UI-message stream, `useChat` + `DefaultChatTransport`)
 
-**Payments:**
+**Organization (mounted at `/api/organization` unless noted):**
+- POST `/api/organization/` (create org)
+- GET `/api/organization/my-orgs`
+- GET `/api/organization/:slug` (public — powers the QR landing page)
+- PUT `/api/organization/:slug`
+- POST `/api/organization/:slug/members`, DELETE `/api/organization/:slug/members/:userId`, PUT `/api/organization/:slug/members/:userId` (owner only)
+
+**Payments (mounted at `/api/payments`):**
 - POST `/api/payments/checkout`
 - POST `/api/payments/portal`
-- POST `/api/payments/webhook`
-- GET `/api/payments/verify-session`
+- POST `/api/payments/webhook` (raw body, before `express.json()`)
+- GET `/api/payments/verify-session/:sessionId`
 
 **Settings (mounted at `/api/settings`):**
 - GET `/api/settings/:slug`
 - PUT `/api/settings/:slug`
+- POST `/api/settings/logo` (multipart logo upload, owner/admin)
 
-### B. Environment Variables
+### B. Environment Variables (from `server/example.env` / `client/example.env`)
 
-**Backend:**
-- `PORT`
+**Backend (`server/.env`):**
+- `PORT`, `NODE_ENV`
 - `DATABASE_URL` (PostgreSQL)
-- `BETTER_AUTH_SECRET`
-- `BETTER_AUTH_URL`
-- `GEMINI_API_KEY`
-- `AI_MODEL`
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `S3_BUCKET`
-- `S3_ACCESS_KEY_ID`
-- `S3_SECRET_ACCESS_KEY`
-- `S3_ENDPOINT`
+- `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`
+- `GEMINI_API_KEY`, `AI_MODEL`
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_BASIC_PRICE_ID`, `STRIPE_PRO_PRICE_ID`
+- `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`, (+ `S3_FORCE_PATH_STYLE`, `S3_PUBLIC_URL`, `S3_OBJECT_ACL`)
+- `REDIS_URL` (local Redis or Upstash; empty = in-memory fallbacks)
 - `CLIENT_URL`
 
-**Frontend:**
-- `VITE_API_URL`
+**Frontend (`client/.env`):**
+- `VITE_API_URL` (empty = same-origin, Vite proxies `/api`)
 - `VITE_STRIPE_PUBLISHABLE_KEY`
+- `VITE_STRIPE_BASIC_PRICE_ID`, `VITE_STRIPE_PRO_PRICE_ID`
 
 ### C. Deployment Links
 

@@ -24,8 +24,9 @@ The goal of this project is to simplify the feedback loop for small to medium bu
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19, Vite 7, TanStack Router + Query, Zustand, Tailwind v4 + shadcn/ui, Lucide, Sonner, Recharts.
+- **Frontend**: React 19, Vite 7, TanStack Router + Query, Zustand, Tailwind v4 + custom UI kit (`client/src/components/ui`), Lucide, Sonner, Recharts.
 - **Backend**: Node.js 22+, Express 5, Prisma ORM
+- **Shared**: `@aifc/contracts` — Zod v4 schemas as the single source of truth for client + server (`file:../shared`, built to `shared/dist`)
 - **Database**: PostgreSQL 16
 - **Auth**: Better Auth (email/password, session cookies, Prisma adapter)
 - **Reliability & Background Jobs**:
@@ -48,11 +49,17 @@ For a detailed look at the architecture, database schema, and technical decision
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
+- Node.js (v22+ — required by the Vercel AI SDK v7)
 - PostgreSQL 16 + Redis 7 (both spin up in Docker Compose)
 - Stripe, Gemini, and S3-compatible storage credentials
 
 ### Installation
+
+> Three packages: `client/`, `server/`, `shared/` (`@aifc/contracts`).
+> Always install with `npm ci --legacy-peer-deps` (npm arborist crash on
+> this graph — see `UPGRADE_STRATEGY.md`). Install + build `shared/` first;
+> `client`/`server` consume it via `file:../shared` (client `predev`/`prebuild`
+> hooks rebuild contracts automatically).
 
 1. **Clone the repo**
    ```bash
@@ -60,26 +67,50 @@ For a detailed look at the architecture, database schema, and technical decision
    cd AI-Feedback-collector-app
    ```
 
-2. **Setup Server**
+2. **Setup shared contracts**
+   ```bash
+   cd shared
+   npm ci --legacy-peer-deps
+   npm run build
+   cd ..
+   ```
+
+3. **Setup Server**
    ```bash
    cd server
-   npm install
-   # Copy .env.example to .env and fill in your keys
+   npm ci --legacy-peer-deps
+   cp example.env .env   # fill in your keys
    npm run dev
    ```
 
-3. **Setup Client**
+4. **Setup Client**
    ```bash
    cd ../client
-   npm install
-   # Copy .env.example to .env
+   npm ci --legacy-peer-deps
+   cp example.env .env   # VITE_API_URL etc. (empty = same-origin, Vite proxies /api)
    npm run dev
    ```
+
+5. **Seed demo data** (in `server/`, with Postgres running):
+   ```bash
+   npx prisma migrate dev
+   npm run prisma:seed   # demo org `demo-coffee`
+   ```
+   Then register `demo@example.com` in the UI to explore with the seeded org.
+
+### Docker (recommended)
+```bash
+cp server/example.env server/.env   # once; fill secrets (BETTER_AUTH_SECRET etc.)
+docker compose up --build            # client :5173, server :5000, postgres :5434, redis :6379
+```
+If the client container was created before the Dockerfiles moved to repo-root
+context, drop the stale volume first: `docker volume rm project_client-node-modules`
+(never `docker compose down -v` — that deletes the database).
 
 ---
 
 ## 🌍 Deployment
-This app is deployed via **Docker Compose**. Two compose files ship: `docker-compose.yml` (local dev, hot reload) and `docker-compose.prod.yml` (nginx + node + postgres prod stack; Prisma migrate auto-runs on start.. See the [Deployment Guide](./deployment.md) and [`UPGRADE_STRATEGY.md`](./UPGRADE_STRATEGY.md) for details.
+This app is deployed via **Docker Compose**. Two compose files ship: `docker-compose.yml` (local dev, hot reload) and `docker-compose.prod.yml` (nginx + node + postgres prod stack; Prisma migrate auto-runs on start). See the [Deployment Guide](./deployment.md) and [`UPGRADE_STRATEGY.md`](./UPGRADE_STRATEGY.md) for details.
 
 ---
 

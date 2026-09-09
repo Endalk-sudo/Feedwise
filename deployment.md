@@ -21,6 +21,8 @@ docker compose up --build
 - client Vite dev: http://localhost:5173
 - server tsx watch: http://localhost:5000 (`GET /health`)
 - postgres 16: host port 5434
+- redis 7: host port 6379 (powers BullMQ queues + distributed rate limiting;
+  the app still boots with in-memory fallbacks if Redis is down)
 - First DB setup: `docker compose up -d postgres`, then in `server/` run
   `npx prisma migrate dev --name <x>` and `npm run prisma:seed`.
 
@@ -33,7 +35,9 @@ docker compose -f docker-compose.prod.yml up --build -d
 
 - client nginx:3000 (proxies `/api` to server)
 - server node:5000 (`prisma migrate deploy` auto-runs on start)
-- postgres 16 (internal 5432, host 5434)
+- postgres 16 (internal port 5432 only — no host port published)
+- redis: use Upstash in production — set `REDIS_URL=rediss://…` in
+  `server/.env` (see `DOCUMENTATION.md` → Reliability & Background Jobs)
 
 ## 3. Post-deployment steps
 
@@ -51,3 +55,16 @@ docker compose -f docker-compose.prod.yml up --build -d
 - Visit the client URL.
 - Register a new user → create organization → QR code appears.
 - Submit public feedback and check AI analysis on the dashboard.
+
+## 5. Troubleshooting
+
+- **Vite `Failed to resolve import "@aifc/contracts"`**: the client image was
+  built without `shared/`. All Dockerfiles use repo-root context — rebuild
+  cleanly: `docker compose build --no-cache client && docker compose up --build`.
+- **Stale `node_modules` after Dockerfile changes**: named volumes persist
+  across rebuilds. If a service's install layout changed, drop just that
+  volume, e.g. `docker volume rm project_client-node-modules`
+  (never `docker compose down -v` — that deletes the `pgdata` database).
+- **npm `ETIMEDOUT`/`ECONNRESET` during image builds**: transient registry
+  flakiness; Dockerfiles carry retry config (`fetch-retries 5`), just rerun
+  the build.

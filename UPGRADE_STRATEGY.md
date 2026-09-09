@@ -1,8 +1,8 @@
 # Upgrade Strategy — AI Feedback Collector v2.0
 
-**Status:** Active
-**Branch:** `stack-upgrade`
-**Date:** 2026-09-04
+**Status:** Complete (maintenance on `dev`)
+**Branch:** `stack-upgrade` (merged forward)
+**Date:** 2026-09-04 (progress log continued below)
 
 ## 1. Goal
 
@@ -39,10 +39,10 @@ legacy baggage forward.
 | Client routing | TanStack Router (code-based, no vite plugin) |
 | Server state | TanStack Query v5 (no `onSuccess` in `useQuery` — sync via effects) |
 | Client state | Zustand v5 (auth/UI/feedback stores) |
-| UI | Tailwind CSS v4 + shadcn/ui (Radix) + lucide-react (real types, no shim) |
+| UI | Tailwind CSS v4 + custom kit (`client/src/components/ui`: Button, Card, Badge, Input, PageHeader, Logo, Spinner, EmptyState, Drawer, Container) + lucide-react (real types, no shim). No shadcn/ui, no Radix usage, no Framer Motion |
 | Tests | Vitest ^4 (better-auth peer range forces v4 over v5), RTL, Playwright later |
 | Tooling | `tsx` dev, `tsc && tsc-alias` build, ESLint + Prettier, GitHub Actions CI |
-| Runtime | Docker Compose (dev: client vite:5173, server tsx:5000, postgres:5434; prod: client nginx:3000, server node:5000, postgres:5434) |
+| Runtime | Docker Compose (dev: client vite:5173, server tsx:5000, postgres host :5434, redis host :6379; prod: client nginx:3000, server node:5000, postgres internal-only) — all builds use repo-root context so `file:../shared` resolves |
 
 ### Known toolchain quirks (do not "fix" differently)
 
@@ -117,3 +117,6 @@ existing `GEMINI_API_KEY` / `GOOGLE_GENERATIVE_AI_API_KEY` per chosen SDK.
 - [x] Phase 4a CI postgres + legacy-peer-deps + prebuild prisma generate
 - [x] Phase 4b prod parity: server `Dockerfile` (migrate deploy on start) + `docker-compose.prod.yml` (nginx:3000, node:5000, postgres:5434), both with legacy-peer-deps
 - [x] Phase 4c docs + final gate (2026-09-04): AGENTS.md dev/runtime section updated; strategy doc runtime row fixed; CI YAML + Postgres service + legacy-peer-deps everywhere + Node 22; prod compose + server Dockerfile with migrate deploy + legacy-peer-deps. Final gate: all typecheck/lint/test/build green (server+client), Playwright smoke 8/8 routes zero errors, dev `docker compose up --build` works, prod `docker compose -f docker-compose.prod.yml up --build` images built.
+- [x] Phase 5a contracts Docker fix (2026-09-09): client images (dev + prod) moved to repo-root build context with `shared/` install + `tsc` build; `./shared` bind-mounted in dev (client runs `tsc --watch`, server rebuilds on start); `server/Dockerfile` prod stage ships `shared/dist`; client `build:contracts` + pre-hooks added; server prod `tsc` surfaced + fixed `rate-limit.ts` typing (`SendCommandFn`) and `ipKeyGenerator` IPv6 compliance. Verified: dev/prod images build, contracts resolve at runtime.
+- [x] Phase 5b frontend UI alignment (2026-09-09): custom `components/ui` kit built (Button/Card/Badge/Input/PageHeader/Logo/Spinner/EmptyState/Drawer/Container) and all 11 pages migrated; `success`/`warning` theme tokens added (light + dark); follow-ups: inputs/badges/chat/org-switcher/tags/analytics rows `bg-secondary` → `bg-background`/`bg-muted`, all `hover:bg-secondary/*` → `hover:bg-muted` (navy flash in light mode). Gates green: client typecheck/lint/test/vite-build.
+- [x] Phase 5c doc sync (2026-09-09): README (setup, shared, demo seed), DOCUMENTATION (3 packages, contracts + UI-kit sections, BullMQ diagram), deployment (redis, prod postgres internal-only, volume troubleshooting), PRD appendix (actual routes/env) + roadmap status, this log.

@@ -8,7 +8,7 @@ The **AI Feedback Collector** is a SaaS platform designed to transform raw, over
 ## 🏗️ System Architecture
 
 ### High-Level Overview
-The application is a two-package monorepo (`client/` + `server/`)with a PostgreSQL database, plus specialized third-party integrations for AI and Payments.
+The application is a three-package monorepo (`client/` + `server/` + `shared/`) with a PostgreSQL database, Redis-backed job queues, plus specialized third-party integrations for AI and Payments.
 
 ```mermaid
 graph TD
@@ -16,6 +16,7 @@ graph TD
     Admin((Business Owner)) -->|Dashboard| Client
     Client -->|API Requests| Server[Node/Express Backend]
     Server -->|Queries| DB[(PostgreSQL)]
+    Server -->|Queues / rate limits| Redis[(Redis / Upstash)]
     Server -->|Analysis| AI[Gemini 2.0 via Vercel AI SDK]
     Server -->|Payments| Stripe[Stripe API]
     Server -->|Images| S3[S3-Compatible Storage]
@@ -36,8 +37,8 @@ graph TD
     - *Link*: Can belong to many Organizations via memberships.
 2.  **Organization**: Contains business details, custom AI categories, and a unique slug for the QR landing page.
     - *Link*: Belongs to many Users. Contains many Feedbacks.
-3.  **Feedback**: Stores the raw message and AI-enriched analysis (sentiment, rating, keywords).
-    - *Link*: Belongs to an Organization.
+3.  **Feedback**: Stores the raw message and AI-enriched analysis (sentiment, urgency, rating, category, keywords, themes, root cause, suggested action, confidence), plus close-the-loop state (`open` | `in_progress` | `resolved` | `ignored`), internal notes, owner reply, and human corrections.
+     - *Link*: Belongs to an Organization.
 4.  **Subscription**: Persisted Stripe subscription state (plan, status, period end,, linked to an Organization).
     - *Link*: Belongs to an Organization.
 
@@ -56,15 +57,36 @@ The core "magic" happens in the `analyzeFeedback` pipeline:
 ## 💳 SaaS & Monetization
 The app features a fully functional subscription engine:
 - **Plans**: Basic and Pro tiers.
-- **Access Control**: Middleware checks for active subscriptions and redirects users to a "Reactivate" or "Payment" page if their status is invalid.
+- **Access Control**: AI Chat (`POST /api/ai/:slug/chat/stream`) and AI growth recommendations are Pro-gated server-side; other features serve all plans.
 - **Billing Portal**: Integrated Stripe Customer Portal allows users to manage their own billing without manual support.
 
 ---
 
 ## 🚀 Deployment Strategy
-- **Local dev**: Docker Compose(client vite :5173, server tsx :5000, postgres :5434; hot reload.).
-- **Production**: Containerized via Docker Compose prod stack(nginx + node + postgres, `prisma migrate deploy` auto-runs).
-- **CI/CD**: GitHub Actions -- lint, typecheck, test, build,with a Postgres service).
+- **Local dev**: Docker Compose (client vite :5173, server tsx :5000, postgres host :5434, redis host :6379; hot reload).
+- **Production**: Containerized via Docker Compose prod stack (client nginx :3000, server node :5000, postgres internal-only; `prisma migrate deploy` auto-runs).
+- **CI/CD**: GitHub Actions — lint, typecheck, test, build, with a Postgres service.
+
+---
+
+## 📦 Shared contracts (`@aifc/contracts`)
+
+`shared/` is the single source of truth for validation: Zod v4 schemas re-exported from `shared/src/index.ts` and consumed by both `server/` and `client/` via `"@aifc/contracts": "file:../shared"` (compiled with `tsc` to `shared/dist/`).
+
+Rules that follow from this:
+- Install + build `shared/` before `client/`/`server` (`npm ci --legacy-peer-deps`, then `npm run build`); both packages auto-rebuild contracts via `build:contracts` hooks (`predev`/`prebuild`/`pretypecheck`/`pretest`).
+- **All Dockerfiles use repo-root build context** so `file:../shared` resolves inside the image (`/app/shared`); `docker-compose.yml` bind-mounts `./shared` for hot reload (client runs `tsc --watch` in the background).
+
+---
+
+## 🎨 Frontend UI kit
+
+No external component library — `client/src/components/ui/` is the shared kit (Tailwind v4 + `cn()`): `Button` (brand/secondary/outline/ghost/destructive/success/warning), `Card`, `PageHeader`, `Badge` (success/warning/destructive/info/neutral/muted), `Input`/`Textarea`/`Select`/`Field`, `Logo`, `Spinner`/`LoadingState`, `EmptyState`, `Drawer`, `Container`/`CenteredLayout`.
+
+Conventions (enforced in review, not by tooling):
+- Colors only via theme tokens (`primary/secondary/muted/accent/destructive/success/warning/chart-*`); no raw `slate/emerald/amber/red/pink` in pages.
+- Cards `rounded-xl p-6`; inputs `bg-background rounded-lg`; hovers use `hover:bg-muted` (never `hover:bg-secondary/*`, which flashes navy in light mode).
+- Theme tokens (`--success`, `--warning`, light + dark) live in `client/src/styles/index.css` (Tailwind v4 CSS-first, no config file).
 
 ---
 
