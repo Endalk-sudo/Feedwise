@@ -4,19 +4,35 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install dependencies (legacy-peer-deps: better-auth peerOptional vitest range,
-# see UPGRADE_STRATEGY.md toolchain quirks)
-COPY package*.json ./
+# Copy server + shared manifests for dependency resolution
+COPY server/package*.json server/
+COPY shared/package*.json shared/
+
+# Install server deps (file:../shared resolves to /app/shared)
+WORKDIR /app/server
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 180000 \
+    && npm config set fetch-timeout 900000 \
+    && npm ci --legacy-peer-deps
+
+# Install shared package deps (needs zod + typescript to build)
+WORKDIR /app/shared
 RUN npm ci --legacy-peer-deps
 
+WORKDIR /app
 COPY . .
 
-# Sync Prisma client with the schema at build time
-# (re-run on schema changes: docker compose exec server npx prisma generate)
+# Build shared contracts (tsc -> dist/) so server can import compiled output
+RUN npm --prefix shared run build
+
+# Generate Prisma client from server context (where prisma is installed)
+WORKDIR /app/server
 RUN npx prisma generate
 
 EXPOSE 5000
 
-# Deploy pending migrations, then start with hot reload.
+# Rebuild contracts on start (./shared is bind-mounted and overlays the
+# image-built dist/), deploy pending migrations, then start with hot reload.
 # Source is bind-mounted by docker-compose for live editing.
-CMD ["sh", "-c", "npx prisma migrate deploy && exec npx tsx watch src/index.ts"]
+CMD ["sh", "-c", "npm run build:contracts && npx prisma migrate deploy && exec npx tsx watch src/index.ts"]

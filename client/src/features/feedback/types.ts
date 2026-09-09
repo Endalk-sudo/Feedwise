@@ -1,3 +1,5 @@
+export type FeedbackStatus = 'open' | 'in_progress' | 'resolved' | 'ignored';
+
 export interface Feedback {
   id: string;
   organizationId: string;
@@ -10,7 +12,16 @@ export interface Feedback {
   urgency: 'Low' | 'Medium' | 'High' | null;
   keyPoints: string[];
   keywords: string[];
+  themes?: string[];
+  rootCause?: string | null;
+  suggestedAction?: string | null;
   confidence: number | null;
+  contextTags?: string[];
+  status?: FeedbackStatus;
+  ownerReply?: string | null;
+  internalNote?: string | null;
+  resolvedAt?: string | null;
+  correctedByHuman?: boolean;
   rawAnalysis: Record<string, unknown> | null;
   ipAddress: string | null;
   createdAt: string;
@@ -30,7 +41,23 @@ export interface FeedbackStats {
   bySentiment: { sentiment: string; count: number }[];
   byCategory: { category: string; count: number }[];
   byUrgency: { urgency: string; count: number }[];
+  byStatus?: { status: string; count: number }[];
   recentCount: number;
+  resolvedCount?: number;
+  highUrgencyOpen?: number;
+  actedOnRate?: number;
+  topActions?: Array<{
+    id: string;
+    text: string;
+    category: string;
+    sentiment: string | null;
+    urgency: string | null;
+    suggestedAction: string | null;
+    rootCause: string | null;
+    status: string;
+    confidence: number | null;
+    createdAt: string;
+  }>;
 }
 
 export interface SentimentTrend {

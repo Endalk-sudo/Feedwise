@@ -3,32 +3,64 @@ import { useParams } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { submitFeedbackFormSchema, type SubmitFeedbackForm } from '@aifc/contracts';
-import { MessageSquare, Loader2, CheckCircle2, Building2, Shield, Send, AlertCircle } from 'lucide-react';
+import {
+  MessageSquare,
+  Loader2,
+  CheckCircle2,
+  Building2,
+  Shield,
+  Send,
+  AlertCircle,
+  Star,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { CenteredLayout, Button, Logo, EmptyState, LoadingState } from '@/components/ui';
 
+const CONTEXT_OPTIONS = [
+  'First visit',
+  'Returning',
+  'Dine-in',
+  'Takeaway',
+  'Delivery',
+  'Online',
+  'In-person',
+];
 
 export function PublicFeedbackPage() {
   const { slug } = useParams({ from: '/feedback/$slug' });
-  const [org, setOrg] = useState<{ name: string; logo: string | null; slug: string; categories: string[] } | null>(null);
+  const [org, setOrg] = useState<{
+    name: string;
+    logo: string | null;
+    slug: string;
+    categories: string[];
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [rating, setRating] = useState<number | undefined>(undefined);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm<SubmitFeedbackForm>({
     resolver: zodResolver(submitFeedbackFormSchema),
     defaultValues: { text: '' },
   });
 
-  // Fetch organization data
+  const textValue = watch('text') || '';
+
   useEffect(() => {
     const fetchOrg = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/organization/${slug}`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || ''}/api/organization/${slug}`,
+        );
         if (response.ok) {
           const data = await response.json();
           setOrg(data.data);
@@ -44,6 +76,12 @@ export function PublicFeedbackPage() {
     fetchOrg();
   }, [slug]);
 
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : prev.length < 4 ? [...prev, tag] : prev,
+    );
+  };
+
   const onSubmit = async (data: SubmitFeedbackForm) => {
     setIsSubmitting(true);
     setSubmitError(null);
@@ -53,7 +91,11 @@ export function PublicFeedbackPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ text: data.text }),
+        body: JSON.stringify({
+          text: data.text,
+          rating,
+          contextTags: selectedTags.length ? selectedTags : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -63,6 +105,8 @@ export function PublicFeedbackPage() {
 
       setSubmitted(true);
       reset();
+      setRating(undefined);
+      setSelectedTags([]);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Failed to submit feedback');
     } finally {
@@ -72,147 +116,178 @@ export function PublicFeedbackPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
+      <CenteredLayout width="sm">
+        <LoadingState message="Loading…" />
+      </CenteredLayout>
     );
   }
 
   if (!org) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-center">
-          <MessageSquare className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Organization not found</h1>
-          <p className="text-muted-foreground">The feedback page you&apos;re looking for doesn&apos;t exist.</p>
-        </div>
-      </div>
+      <CenteredLayout width="sm">
+        <EmptyState
+          icon={MessageSquare}
+          title="Page not found"
+          description="This feedback link is invalid or the organization no longer exists."
+        />
+      </CenteredLayout>
     );
   }
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md text-center">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-primary" />
+      <CenteredLayout width="sm">
+        <div className="text-center animate-slide-in">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
+            <CheckCircle2 className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Thank you for your feedback!</h1>
-          <p className="text-muted-foreground mb-8">Your feedback has been submitted and will be analyzed by our AI.</p>
-          <button
-            onClick={() => setSubmitted(false)}
-            className="px-6 py-3 btn-brand hover:from-blue-700 hover:to-purple-700 transition-all"
-          >
-            Submit Another
-          </button>
+          <h1 className="text-2xl font-bold mb-2">Thank you!</h1>
+          <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+            Your feedback helps {org.name} improve. It will be reviewed shortly.
+          </p>
+          <Button onClick={() => setSubmitted(false)}>Submit another</Button>
         </div>
-      </div>
+      </CenteredLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            {org.logo ? (
-              <img src={org.logo} alt={org.name} className="w-12 h-12 rounded-lg object-cover" />
-            ) : (
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-foreground" />
-              </div>
-            )}
-            <div>
-              <h1 className="text-2xl font-bold">{org.name}</h1>
-              <p className="text-muted-foreground">We value your feedback</p>
-            </div>
+    <CenteredLayout width="sm">
+      {/* Brand header */}
+      <div className="text-center mb-7">
+        {org.logo ? (
+          <img
+            src={org.logo}
+            alt={org.name}
+            className="w-14 h-14 rounded-xl object-cover mx-auto mb-3 border border-border"
+          />
+        ) : (
+          <div className="flex justify-center mb-3">
+            <Logo icon={Building2} size="lg" />
           </div>
-          <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Shield className="w-4 h-4" />
-              Anonymous
-            </span>
-            <span className="flex items-center gap-1">
-              <MessageSquare className="w-4 h-4" />
-              AI Analyzed
-            </span>
+        )}
+        <h1 className="text-xl font-bold tracking-tight">{org.name}</h1>
+        <p className="text-muted-foreground text-sm mt-1">How was your experience?</p>
+      </div>
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm space-y-5"
+      >
+        {/* Star rating — optional but prominent */}
+        <div>
+          <label className="text-sm font-medium text-foreground mb-2 block">
+            Overall rating <span className="text-muted-foreground font-normal">(optional)</span>
+          </label>
+          <div className="flex gap-1.5" role="group" aria-label="Rating">
+            {[1, 2, 3, 4, 5].map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setRating(rating === value ? undefined : value)}
+                onMouseEnter={() => setHoverRating(value)}
+                onMouseLeave={() => setHoverRating(0)}
+                className="p-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={`${value} star${value > 1 ? 's' : ''}`}
+              >
+                <Star
+                  className={cn(
+                    'w-8 h-8 transition-colors',
+                    (hoverRating || rating || 0) >= value
+                      ? 'fill-primary text-primary'
+                      : 'text-muted-foreground/40',
+                  )}
+                />
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6 sm:p-8 space-y-6">
-          <div>
-            <label htmlFor="text" className="block text-sm font-medium text-foreground mb-2">
-              Your Feedback
-            </label>
-            <textarea
-              {...register('text')}
-              id="text"
-              rows={6}
-              className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all resize-none ${
-                errors.text ? 'border-destructive' : 'border-input'
-              }`}
-              placeholder="Tell us about your experience... (minimum 15 characters)"
-              disabled={isSubmitting}
-            />
-            {errors.text && (
-              <p className="mt-1 text-sm text-destructive flex items-center gap-1">
-                <AlertCircle className="w-4 h-4" />
+        {/* Context tags */}
+        <div>
+          <label className="text-sm font-medium text-foreground mb-2 block">
+            Context <span className="text-muted-foreground font-normal">(optional)</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {CONTEXT_OPTIONS.map((tag) => {
+              const active = selectedTags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+                    active
+                      ? 'bg-primary/15 border-primary/40 text-foreground'
+                      : 'bg-secondary/40 border-border text-muted-foreground hover:border-primary/30',
+                  )}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Feedback text — only required field */}
+        <div>
+          <label htmlFor="feedback-text" className="text-sm font-medium text-foreground mb-2 block">
+            Your feedback
+          </label>
+          <textarea
+            id="feedback-text"
+            {...register('text')}
+            rows={4}
+            className={cn(
+              'w-full px-3.5 py-3 bg-background border rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all resize-none',
+              errors.text ? 'border-destructive' : 'border-input',
+            )}
+            placeholder="What went well? What could be better?"
+            disabled={isSubmitting}
+            autoFocus
+          />
+          <div className="mt-1.5 flex items-center justify-between text-xs">
+            {errors.text ? (
+              <p className="text-destructive flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" />
                 {errors.text.message}
               </p>
-            )}
-            <p className="mt-2 text-xs text-muted-foreground text-right">
-              {errors.text ? '' : 'Minimum 15 characters'}
-            </p>
-          </div>
-
-          {submitError && (
-            <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
-              {submitError}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-3 px-4 btn-brand hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Submitting...
-              </>
             ) : (
-              <>
-                <Send className="w-5 h-5" />
-                Submit Feedback
-              </>
+              <span className="text-muted-foreground">Be specific — it helps us improve</span>
             )}
-          </button>
-
-          <p className="text-center text-xs text-muted-foreground">
-            Anonymous feedback — no account needed
-          </p>
-        </form>
-
-        {/* Features */}
-        <div className="mt-8 grid gap-4 text-center">
-          <div className="p-4 bg-card/80 backdrop-blur-sm border border-border rounded-lg">
-            <MessageSquare className="w-8 h-8 text-primary mx-auto mb-2" />
-            <h3 className="font-medium">AI Analysis</h3>
-            <p className="text-sm text-muted-foreground mt-1">Your feedback is instantly analyzed for sentiment, category, and urgency</p>
-          </div>
-          <div className="p-4 bg-card/80 backdrop-blur-sm border border-border rounded-lg">
-            <Shield className="w-8 h-8 text-primary mx-auto mb-2" />
-            <h3 className="font-medium">Anonymous & Secure</h3>
-            <p className="text-sm text-muted-foreground mt-1">Your identity is never shared. Feedback is encrypted and securely stored.</p>
+            <span className="text-muted-foreground tabular-nums">{textValue.length}/5000</span>
           </div>
         </div>
-      </div>
-    </div>
+
+        {submitError && (
+          <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            {submitError}
+          </div>
+        )}
+
+        <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Sending…
+            </>
+          ) : (
+            <>
+              <Send className="w-4 h-4" />
+              Send feedback
+            </>
+          )}
+        </Button>
+
+        <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+          <Shield className="w-3.5 h-3.5" />
+          Anonymous · No account needed
+        </p>
+      </form>
+
+      <p className="mt-6 text-center text-xs text-muted-foreground">Powered by FeedbackAI</p>
+    </CenteredLayout>
   );
 }

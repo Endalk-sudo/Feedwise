@@ -1,14 +1,26 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { useOrgSlug } from '@/lib/stores/auth.store';
-import { useOrganization, useUpdateOrganization, useUploadLogo } from '@/features/organization/hooks';
+import {
+  useOrganization,
+  useUpdateOrganization,
+  useUploadLogo,
+} from '@/features/organization/hooks';
 import { apiClient } from '@/lib/api';
 import { useUIStore } from '@/lib/stores/ui.store';
-import { Building2, Upload, Save, Loader2, AlertCircle, Zap } from 'lucide-react';
+import { Building2, Upload, Save, Zap } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateSettingsFormSchema, type SettingsForm } from '@aifc/contracts';
-import { cn } from '@/lib/utils';
-
+import {
+  PageHeader,
+  Card,
+  Button,
+  Input,
+  Field,
+  FieldError,
+  EmptyState,
+  LoadingState,
+} from '@/components/ui';
 
 export function SettingsPage() {
   const slug = useOrgSlug();
@@ -94,37 +106,29 @@ export function SettingsPage() {
 
   if (!slug) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold mb-2">No organization selected</h2>
-        <p className="text-muted-foreground">Please select an organization to manage settings</p>
-      </div>
+      <EmptyState
+        title="No organization selected"
+        description="Please select an organization to manage settings"
+      />
     );
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingState message="Loading settings…" className="h-64" />;
   }
 
   const currentPlan = org?.currentPlan || 'basic';
   const subscriptionStatus = org?.subscriptionStatus || 'inactive';
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your organization settings</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader title="Settings" description="Manage your organization settings" />
 
       {/* Plan Status */}
-      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
+      <Card>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={cn('w-12 h-12 rounded-lg flex items-center justify-center', currentPlan === 'pro' ? 'bg-primary/10' : 'bg-primary/10')}>
+            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
               {currentPlan === 'pro' ? (
                 <Zap className="w-6 h-6 text-primary" />
               ) : (
@@ -136,24 +140,17 @@ export function SettingsPage() {
               <p className="text-sm text-muted-foreground capitalize">{subscriptionStatus}</p>
             </div>
           </div>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleManageSubscription}
-              disabled={isPortalLoading}
-              className="px-4 py-2 bg-secondary border border-input rounded-lg text-sm font-medium text-foreground hover:text-foreground hover:border-input transition-all disabled:opacity-50"
-            >
-              {isPortalLoading ? 'Opening…' : 'Manage Subscription'}
-            </button>
-          </div>
+          <Button variant="secondary" onClick={handleManageSubscription} disabled={isPortalLoading}>
+            {isPortalLoading ? 'Opening…' : 'Manage Subscription'}
+          </Button>
         </div>
-      </div>
+      </Card>
 
       {/* Organization Details */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Card>
           <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
+            <Building2 className="w-5 h-5 text-primary" />
             Organization Details
           </h2>
 
@@ -164,14 +161,18 @@ export function SettingsPage() {
               <div className="flex items-center gap-6">
                 <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-secondary border border-input flex-shrink-0">
                   {logoPreview ? (
-                    <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
+                    <img
+                      src={logoPreview}
+                      alt="Logo preview"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <Building2 className="w-8 h-8" />
                     </div>
                   )}
-                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors">
-                    <Upload className="w-4 h-4 text-foreground" />
+                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors">
+                    <Upload className="w-4 h-4 text-primary-foreground" />
                     <input
                       type="file"
                       accept="image/*"
@@ -181,80 +182,62 @@ export function SettingsPage() {
                   </label>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground mb-2">Upload a logo (PNG, JPG up to 2MB)</p>
-                  <input
-                    type="text"
-                    {...register('logo')}
-                    placeholder="Or enter logo URL"
-                    className="w-full px-4 py-3 bg-secondary border border-input rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring"
-                  />
-                  {errors.logo && (
-                    <p className="mt-1 text-sm text-destructive flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.logo.message}
-                    </p>
-                  )}
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Upload a logo (PNG, JPG up to 2MB)
+                  </p>
+                  <Input type="text" {...register('logo')} placeholder="Or enter logo URL" />
+                  {errors.logo && <FieldError message={errors.logo.message} />}
                 </div>
               </div>
             </div>
 
             {/* Name */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                Organization Name
-              </label>
-              <input
+            <Field label="Organization Name" htmlFor="name" error={errors.name?.message}>
+              <Input
                 {...register('name')}
                 id="name"
                 type="text"
-                className={cn(
-                  'w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all',
-                  errors.name ? 'border-destructive' : 'border-input'
-                )}
+                className={errors.name ? 'border-destructive' : undefined}
                 placeholder="Acme Inc."
               />
-              {errors.name && (
-                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
+            </Field>
 
             {/* Read-only fields */}
             <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-border">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">Slug</label>
-                <input type="text" value={org?.slug ?? ''} readOnly className="w-full px-4 py-3 bg-secondary border border-input rounded-lg text-muted-foreground" />
+                <Input
+                  type="text"
+                  value={org?.slug ?? ''}
+                  readOnly
+                  className="text-muted-foreground"
+                />
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">Business Type</label>
-                <input type="text" value={org?.businessType ?? ''} readOnly className="w-full px-4 py-3 bg-secondary border border-input rounded-lg text-muted-foreground" />
+                <Input
+                  type="text"
+                  value={org?.businessType ?? ''}
+                  readOnly
+                  className="text-muted-foreground"
+                />
               </div>
             </div>
           </div>
 
           {/* Save Button */}
-          <div className="pt-4 border-t border-border">
-            <button
+          <div className="pt-4 mt-6 border-t border-border">
+            <Button
               type="submit"
+              size="lg"
               disabled={updateOrg.isPending}
-              className="w-full sm:w-auto px-6 py-3 btn-brand hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full sm:w-auto"
             >
-              {updateOrg.isPending ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  Save Changes
-                </>
-              )}
-            </button>
+              <Save className="w-5 h-5" />
+              {updateOrg.isPending ? 'Saving...' : 'Save Changes'}
+            </Button>
           </div>
-        </div>
+        </Card>
       </form>
     </div>
   );

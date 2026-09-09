@@ -5,6 +5,7 @@ import { useAuthStore, useOrgSlug } from '@/lib/stores/auth.store';
 import { useUIStore } from '@/lib/stores/ui.store';
 import { Send, Bot, Zap, Lightbulb, Copy, Square, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PageHeader, Card, Badge, Button, Input, EmptyState } from '@/components/ui';
 
 const suggestions = [
   'What are the top 3 issues customers are reporting?',
@@ -20,16 +21,6 @@ function messageText(message: UIMessage): string {
     .filter((part): part is TextUIPart => part.type === 'text')
     .map((part) => part.text)
     .join('');
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-      <Bot className="w-16 h-16 text-muted-foreground mb-4" />
-      <h3 className="text-lg font-medium mb-2">Ready to help</h3>
-      <p className="text-sm">Ask me anything about your customer feedback</p>
-    </div>
-  );
 }
 
 function MessageBubble({
@@ -107,7 +98,7 @@ function InputForm({
   return (
     <form onSubmit={handleSubmit} className="p-4 border-t border-border">
       <div className="flex gap-2">
-        <input
+        <Input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -117,22 +108,22 @@ function InputForm({
               : 'Ask me anything about your feedback...'
           }
           disabled={isBusy || currentPlan !== 'pro'}
-          className="flex-1 px-4 py-3 bg-secondary border border-input rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all disabled:opacity-50"
         />
         {isStreaming ? (
-          <button type="button" onClick={onStop} className="px-6 py-3 btn-brand">
+          <Button size="lg" onClick={onStop} className="shrink-0">
             <Square className="w-5 h-5" />
             Stop
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
+            size="lg"
             type="submit"
             disabled={!input.trim() || isBusy || currentPlan !== 'pro'}
-            className="px-6 py-3 btn-brand"
+            className="shrink-0"
           >
             <Send className="w-5 h-5" />
             Send
-          </button>
+          </Button>
         )}
       </div>
     </form>
@@ -199,11 +190,11 @@ export function AIPage() {
 
   if (!slug) {
     return (
-      <div className="text-center py-12">
-        <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-        <h2 className="text-xl font-semibold mb-2">No organization selected</h2>
-        <p className="text-muted-foreground">Please select an organization to use AI Assistant</p>
-      </div>
+      <EmptyState
+        icon={Bot}
+        title="No organization selected"
+        description="Please select an organization to use AI Assistant"
+      />
     );
   }
 
@@ -211,26 +202,23 @@ export function AIPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Bot className="w-6 h-6 text-primary" />
-            AI Assistant
-          </h1>
-          <p className="text-muted-foreground mt-1">Ask questions about your feedback data</p>
-        </div>
-        {currentPlan !== 'pro' && (
-          <div className="bg-warning/10 border border-warning/30 text-warning px-4 py-2 rounded-lg text-sm">
-            <Zap className="w-4 h-4 inline mr-1" />
-            Pro plan required for AI Chat
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="AI Assistant"
+        icon={Bot}
+        description="Ask questions about your feedback data"
+        actions={
+          currentPlan !== 'pro' ? (
+            <Badge size="md" variant="warning">
+              <Zap className="w-4 h-4" />
+              Pro plan required for AI Chat
+            </Badge>
+          ) : undefined
+        }
+      />
 
       {/* Suggestions */}
       {showSuggestions && messages.length === 0 && (
-        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
+        <Card>
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-warning" />
             Try asking:
@@ -240,20 +228,25 @@ export function AIPage() {
               <button
                 key={suggestion}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="p-4 bg-secondary/50 border border-input rounded-lg text-left text-foreground hover:border-blue-500/50 hover:bg-secondary transition-all text-sm"
+                className="p-4 bg-secondary/50 border border-input rounded-lg text-left text-foreground hover:border-primary/50 hover:bg-secondary transition-all text-sm"
               >
                 {suggestion}
               </button>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Chat Messages */}
-      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl flex flex-col h-[500px] overflow-hidden">
+      <Card padding="none" className="flex flex-col h-[500px] overflow-hidden">
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
           {messages.length === 0 ? (
-            <EmptyState />
+            <EmptyState
+              icon={Bot}
+              title="Ready to help"
+              description="Ask me anything about your customer feedback"
+              className="h-full flex flex-col items-center justify-center"
+            />
           ) : (
             messages.map((message) => (
               <MessageBubble key={message.id} message={message} onCopy={copyToClipboard} />
@@ -284,7 +277,7 @@ export function AIPage() {
           onStop={stop}
           currentPlan={currentPlan}
         />
-      </div>
+      </Card>
     </div>
   );
 }

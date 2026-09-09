@@ -74,11 +74,43 @@ export const apiClient = {
 
   // Feedback
   feedback: {
-    submit: (slug: string, text: string) => api.post(`/feedback/${slug}`, { text }),
-    getAll: (slug: string, params?: { page?: number; limit?: number; sentiment?: string; category?: string; urgency?: string }) =>
-      api.get(`/feedback/${slug}`, { params }),
+    submit: (
+      slug: string,
+      payload: { text: string; rating?: number; contextTags?: string[] } | string,
+    ) =>
+      api.post(
+        `/feedback/${slug}`,
+        typeof payload === 'string' ? { text: payload } : payload,
+      ),
+    getAll: (
+      slug: string,
+      params?: {
+        page?: number;
+        limit?: number;
+        sentiment?: string;
+        category?: string;
+        urgency?: string;
+        status?: string;
+      },
+    ) => api.get(`/feedback/${slug}`, { params }),
     getStats: (slug: string) => api.get(`/feedback/${slug}/stats`),
     getById: (slug: string, id: string) => api.get(`/feedback/${slug}/${id}`),
+    updateStatus: (
+      slug: string,
+      id: string,
+      data: { status?: string; ownerReply?: string | null; internalNote?: string | null },
+    ) => api.patch(`/feedback/${slug}/${id}/status`, data),
+    correct: (
+      slug: string,
+      id: string,
+      data: {
+        category?: string;
+        sentiment?: string;
+        urgency?: string;
+        suggestedAction?: string;
+        rootCause?: string;
+      },
+    ) => api.patch(`/feedback/${slug}/${id}/correct`, data),
   },
 
   // Analytics

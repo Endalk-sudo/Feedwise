@@ -23,8 +23,11 @@ const feedbackAnalysisSchema = z.object({
   sentiment: z.enum(['Positive', 'Negative', 'Neutral', 'Mixed']),
   urgency: z.enum(['Low', 'Medium', 'High']),
   rating: z.number().min(1).max(5),
-  keyPoints: z.array(z.string()),
+  keyPoints: z.array(z.string()).describe('Main points the customer is making'),
   keywords: z.array(z.string()),
+  themes: z.array(z.string()).describe('Short theme labels, e.g. Wait time, Staff attitude'),
+  rootCause: z.string().describe('Likely underlying cause in one short sentence'),
+  suggestedAction: z.string().describe('One concrete action the business owner should take'),
   confidence: z.number().min(0).max(1),
 });
 
@@ -35,6 +38,9 @@ export interface FeedbackAnalysis {
   rating: number;
   keyPoints: string[];
   keywords: string[];
+  themes: string[];
+  rootCause: string;
+  suggestedAction: string;
   confidence: number;
 }
 
@@ -48,23 +54,31 @@ const insightSchema = z.object({
 export async function analyzeFeedback(
   text: string,
   categories: string[],
+  contextTags: string[] = [],
 ): Promise<FeedbackAnalysis> {
   const fallbackCategory = categories[0] ?? 'General';
   const categoriesList = categories.join(', ');
-  const prompt = `Analyze this customer feedback and return structured JSON.
+  const contextLine =
+    contextTags.length > 0
+      ? `\nCustomer context tags: ${contextTags.join(', ')}`
+      : '';
+  const prompt = `You are an advisor for a small business owner. Analyze this customer feedback and return structured JSON that helps them ACT, not just measure.
 
-Feedback: "${text}"
+Feedback: "${text}"${contextLine}
 
 Available categories: ${categoriesList}
 
-Return JSON with:
+Rules:
 - category: must match one of the available categories
 - sentiment: Positive, Negative, Neutral, or Mixed
-- urgency: Low, Medium, or High
-- rating: 1-5 inferred rating
-- keyPoints: array of main insights
-- keywords: array of important keywords
-- confidence: 0.0-1.0 confidence score`;
+- urgency: High only for safety, refunds, repeated severe complaints, or clear churn risk; otherwise Medium/Low
+- rating: 1-5 inferred overall rating
+- keyPoints: 2-5 short factual points
+- keywords: important terms
+- themes: 1-4 short labels (e.g. "Wait time", "Food quality")
+- rootCause: one short sentence on the likely underlying cause (or "Unknown" if unclear)
+- suggestedAction: one concrete next step the owner can take this week (start with a verb)
+- confidence: 0.0-1.0 how sure you are of the analysis`;
 
   try {
     const { output } = await generateText({
@@ -80,6 +94,9 @@ Return JSON with:
     if (!categories.includes(analysis.category)) {
       analysis.category = fallbackCategory;
     }
+    if (!analysis.themes) analysis.themes = [];
+    if (!analysis.rootCause) analysis.rootCause = 'Unknown';
+    if (!analysis.suggestedAction) analysis.suggestedAction = 'Review this feedback with your team';
 
     return analysis;
   } catch (error) {
@@ -91,6 +108,9 @@ Return JSON with:
       rating: 3,
       keyPoints: ['Analysis failed'],
       keywords: [],
+      themes: [],
+      rootCause: 'Unknown',
+      suggestedAction: 'Review this feedback manually',
       confidence: 0.1,
     };
   }

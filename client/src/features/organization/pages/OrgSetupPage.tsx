@@ -3,11 +3,23 @@ import { useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { orgSetupFormSchema, type OrgSetupForm } from '@aifc/contracts';
-import { Loader2, Building2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Building2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useCreateOrganization } from '@/features/organization/hooks';
 import { apiClient } from '@/lib/api';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useUIStore } from '@/lib/stores/ui.store';
+import {
+  CenteredLayout,
+  Card,
+  Button,
+  Input,
+  Textarea,
+  Select,
+  Field,
+  FieldError,
+  Logo,
+  Spinner,
+} from '@/components/ui';
 
 const BUSINESS_TYPES = [
   'SaaS',
@@ -38,7 +50,6 @@ const BUSINESS_TYPES = [
   'Sports',
   'Other',
 ];
-
 
 export function OrgSetupPage() {
   const navigate = useNavigate();
@@ -127,162 +138,130 @@ export function OrgSetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-2xl">
-        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-8 h-8 text-foreground" />
-            </div>
-            <h1 className="text-3xl font-bold mb-2">Set up your organization</h1>
-            <p className="text-muted-foreground">Tell us about your business so we can customize your feedback experience</p>
+    <CenteredLayout width="md">
+      <Card padding="lg">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <Logo icon={Building2} size="xl" />
           </div>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Name */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                Organization Name
-              </label>
-              <input
-                {...register('name', { onChange: handleNameChange })}
-                id="name"
-                type="text"
-                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all ${
-                  errors.name ? 'border-destructive' : 'border-input'
-                }`}
-                placeholder="Acme Inc."
-                disabled={createOrg.isPending}
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
-
-            {/* Slug */}
-            <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-foreground mb-2">
-                URL Slug <span className="text-muted-foreground">(feedback.yourapp.com/your-slug)</span>
-              </label>
-              <div className="relative">
-                <input
-                  {...register('slug')}
-                  id="slug"
-                  type="text"
-                  onBlur={handleSlugBlur}
-                  className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all ${
-                    errors.slug ? 'border-destructive' :
-                    isCheckingSlug ? 'border-primary' :
-                    slugAvailable === true ? 'border-green-500' :
-                    slugAvailable === false ? 'border-destructive' :
-                    'border-input'
-                  }`}
-                  placeholder="acme-inc"
-                  disabled={createOrg.isPending || isCheckingSlug}
-                />
-                {isCheckingSlug && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  </div>
-                )}
-                {slugAvailable === true && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                )}
-                {slugAvailable === false && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
-                    <AlertCircle className="w-5 h-5" />
-                  </div>
-                )}
-              </div>
-              {errors.slug && (
-                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.slug.message}
-                </p>
-              )}
-              {slugError && (
-                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {slugError}
-                </p>
-              )}
-            </div>
-
-            {/* Business Type */}
-            <div>
-              <label htmlFor="businessType" className="block text-sm font-medium text-foreground mb-2">
-                Business Type
-              </label>
-              <select
-                {...register('businessType')}
-                id="businessType"
-                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all ${
-                  errors.businessType ? 'border-destructive' : 'border-input'
-                }`}
-                disabled={createOrg.isPending}
-              >
-                <option value="">Select your business type</option>
-                {BUSINESS_TYPES.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-              {errors.businessType && (
-                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.businessType.message}
-                </p>
-              )}
-            </div>
-
-            {/* Business Description */}
-            <div>
-              <label htmlFor="businessDescription" className="block text-sm font-medium text-foreground mb-2">
-                Business Description
-              </label>
-              <textarea
-                {...register('businessDescription')}
-                id="businessDescription"
-                rows={4}
-                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all resize-none ${
-                  errors.businessDescription ? 'border-destructive' : 'border-input'
-                }`}
-                placeholder="Describe your business, products, and target audience. This helps our AI generate relevant feedback categories."
-                disabled={createOrg.isPending}
-              />
-              {errors.businessDescription && (
-                <p className="mt-1 text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.businessDescription.message}
-                </p>
-              )}
-              <p className="mt-1 text-xs text-muted-foreground">
-                This helps our AI generate relevant feedback categories for your business.
-              </p>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={createOrg.isPending}
-              className="w-full py-3 px-4 btn-brand hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {createOrg.isPending ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Creating organization...
-                </>
-              ) : (
-                'Create Organization'
-              )}
-            </button>
-          </form>
+          <h1 className="text-3xl font-bold mb-2">Set up your organization</h1>
+          <p className="text-muted-foreground">
+            Tell us about your business so we can customize your feedback experience
+          </p>
         </div>
-      </div>
-    </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Name */}
+          <Field label="Organization Name" htmlFor="name" error={errors.name?.message}>
+            <Input
+              {...register('name', { onChange: handleNameChange })}
+              id="name"
+              type="text"
+              className={errors.name ? 'border-destructive' : undefined}
+              placeholder="Acme Inc."
+              disabled={createOrg.isPending}
+            />
+          </Field>
+
+          {/* Slug */}
+          <Field
+            label={
+              <>
+                URL Slug{' '}
+                <span className="text-muted-foreground">(feedback.yourapp.com/your-slug)</span>
+              </>
+            }
+            htmlFor="slug"
+            error={errors.slug?.message}
+          >
+            <div className="relative">
+              <Input
+                {...register('slug')}
+                id="slug"
+                type="text"
+                onBlur={handleSlugBlur}
+                className={`pr-10 ${
+                  errors.slug
+                    ? 'border-destructive'
+                    : isCheckingSlug
+                      ? 'border-primary'
+                      : slugAvailable === true
+                        ? 'border-success'
+                        : slugAvailable === false
+                          ? 'border-destructive'
+                          : ''
+                }`}
+                placeholder="acme-inc"
+                disabled={createOrg.isPending || isCheckingSlug}
+              />
+              {isCheckingSlug && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Spinner size="sm" />
+                </div>
+              )}
+              {slugAvailable === true && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-success">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+              )}
+              {slugAvailable === false && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
+              )}
+            </div>
+            {slugError && <FieldError message={slugError} />}
+          </Field>
+
+          {/* Business Type */}
+          <Field label="Business Type" htmlFor="businessType" error={errors.businessType?.message}>
+            <Select
+              {...register('businessType')}
+              id="businessType"
+              className={errors.businessType ? 'border-destructive' : undefined}
+              disabled={createOrg.isPending}
+            >
+              <option value="">Select your business type</option>
+              {BUSINESS_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          {/* Business Description */}
+          <Field
+            label="Business Description"
+            htmlFor="businessDescription"
+            error={errors.businessDescription?.message}
+          >
+            <Textarea
+              {...register('businessDescription')}
+              id="businessDescription"
+              rows={4}
+              className={`resize-none ${errors.businessDescription ? 'border-destructive' : ''}`}
+              placeholder="Describe your business, products, and target audience. This helps our AI generate relevant feedback categories."
+              disabled={createOrg.isPending}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              This helps our AI generate relevant feedback categories for your business.
+            </p>
+          </Field>
+
+          {/* Submit Button */}
+          <Button type="submit" size="lg" disabled={createOrg.isPending} className="w-full">
+            {createOrg.isPending ? (
+              <>
+                <Spinner size="md" className="text-primary-foreground" />
+                Creating organization...
+              </>
+            ) : (
+              'Create Organization'
+            )}
+          </Button>
+        </form>
+      </Card>
+    </CenteredLayout>
   );
 }

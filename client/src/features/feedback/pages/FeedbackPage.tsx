@@ -1,47 +1,74 @@
 import { useState, type FormEvent } from 'react';
 import { useOrgSlug } from '@/lib/stores/auth.store';
-import { useFeedbacks } from '@/features/feedback/hooks';
+import { useFeedbacks, useUpdateFeedbackStatus } from '@/features/feedback/hooks';
 import { useFeedbackStore } from '@/lib/stores/feedback.store';
-import { Search, ChevronLeft, ChevronRight, MoreHorizontal, Star, AlertTriangle, Tag, MessageSquare } from 'lucide-react';
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  AlertTriangle,
+  MessageSquare,
+  Lightbulb,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Circle,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Feedback } from '@/features/feedback/types';
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  Select,
+  Textarea,
+  EmptyState,
+  LoadingState,
+  type BadgeProps,
+} from '@/components/ui';
+import type { Feedback, FeedbackStatus } from '@/features/feedback/types';
 
-const sentimentColors = {
-  Positive: 'bg-primary/10 text-primary border-green-500/30',
-  Negative: 'bg-red-500/20 text-destructive border-destructive/30',
-  Neutral: 'bg-slate-500/20 text-muted-foreground border-slate-500/30',
-  Mixed: 'bg-warning/10 text-warning border-yellow-500/30',
+const sentimentVariant: Record<string, BadgeProps['variant']> = {
+  Positive: 'success',
+  Negative: 'destructive',
+  Neutral: 'neutral',
+  Mixed: 'warning',
 };
 
-const urgencyColors = {
-  High: 'bg-red-500/20 text-destructive border-destructive/30',
-  Medium: 'bg-warning/10 text-warning border-yellow-500/30',
-  Low: 'bg-primary/10 text-primary border-green-500/30',
+const urgencyVariant: Record<string, BadgeProps['variant']> = {
+  High: 'destructive',
+  Medium: 'warning',
+  Low: 'success',
 };
 
-const starColors = {
-  5: 'text-warning',
-  4: 'text-warning',
-  3: 'text-warning',
-  2: 'text-muted-foreground',
-  1: 'text-muted-foreground',
+const statusConfig: Record<
+  FeedbackStatus,
+  { label: string; icon: typeof Circle; className: string }
+> = {
+  open: { label: 'Open', icon: Circle, className: 'text-muted-foreground' },
+  in_progress: { label: 'In progress', icon: Clock, className: 'text-warning' },
+  resolved: { label: 'Resolved', icon: CheckCircle2, className: 'text-success' },
+  ignored: { label: 'Ignored', icon: XCircle, className: 'text-muted-foreground' },
 };
 
 export function FeedbackPage() {
   const slug = useOrgSlug();
   const { currentPage, setPage, filters, setFilters } = useFeedbackStore();
   const { data, isLoading, isError } = useFeedbacks(slug);
+  const updateStatus = useUpdateFeedbackStatus(slug || '');
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState('');
 
   const allFeedbacks: Feedback[] = data?.feedbacks ?? [];
   const totalPages = data?.totalPages ?? 0;
   const total = data?.total ?? 0;
 
-  const handleFilterChange = (key: keyof typeof filters, value: string) => {
+  const handleFilterChange = (key: string, value: string) => {
     setFilters({ ...filters, [key]: value || undefined });
   };
 
-  // Client-side search over the loaded page
   const query = searchQuery.trim().toLowerCase();
   const feedbacks =
     query.length === 0
@@ -50,174 +77,286 @@ export function FeedbackPage() {
           (f) =>
             f.text.toLowerCase().includes(query) ||
             f.category.toLowerCase().includes(query) ||
-            f.keywords.some((k) => k.toLowerCase().includes(query)),
+            f.keywords.some((k) => k.toLowerCase().includes(query)) ||
+            (f.suggestedAction || '').toLowerCase().includes(query),
         );
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
   };
 
+  const setStatus = (id: string, status: FeedbackStatus) => {
+    if (!slug) return;
+    updateStatus.mutate({
+      id,
+      status,
+      internalNote: noteDraft.trim() || undefined,
+    });
+    setNoteDraft('');
+    setExpandedId(null);
+  };
+
   if (!slug) {
     return (
-      <div className="text-center py-12">
-        <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-        <h2 className="text-xl font-semibold mb-2">No organization selected</h2>
-        <p className="text-muted-foreground">Please select an organization to view feedback</p>
-      </div>
+      <EmptyState
+        icon={MessageSquare}
+        title="No organization selected"
+        description="Select an organization to view feedback"
+      />
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Feedback</h1>
-          <p className="text-muted-foreground mt-1">View and manage all customer feedback</p>
-        </div>
-      </div>
+      <PageHeader title="Feedback" description="Review, act, and close the loop with customers" />
 
-      {/* Filters & Search */}
-      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 sm:p-6">
-        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search feedback..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-secondary border border-input rounded-lg text-foreground placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all"
-            />
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <select
-              value={filters.sentiment || ''}
-              onChange={(e) => handleFilterChange('sentiment', e.target.value)}
-              className="px-4 py-2 bg-secondary border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring"
-            >
-              <option value="">All Sentiments</option>
-              <option value="Positive">Positive</option>
-              <option value="Negative">Negative</option>
-              <option value="Neutral">Neutral</option>
-              <option value="Mixed">Mixed</option>
-            </select>
-
-            <select
-              value={filters.urgency || ''}
-              onChange={(e) => handleFilterChange('urgency', e.target.value)}
-              className="px-4 py-2 bg-secondary border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring"
-            >
-              <option value="">All Urgency</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-
-            <select
-              value={filters.category || ''}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
-              className="px-4 py-2 bg-secondary border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring min-w-[150px]"
-            >
-              <option value="">All Categories</option>
-                {Array.from(new Set(allFeedbacks.map((f) => f.category))).map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <form onSubmit={handleSearch} className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search feedback, themes, actions…"
+            className="w-full pl-9 pr-3 py-2.5 bg-background border border-input rounded-lg text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring"
+          />
         </form>
+        <Select
+          value={filters.sentiment || ''}
+          onChange={(e) => handleFilterChange('sentiment', e.target.value)}
+          className="bg-background sm:w-auto"
+          aria-label="Filter by sentiment"
+        >
+          <option value="">All sentiments</option>
+          <option value="Positive">Positive</option>
+          <option value="Negative">Negative</option>
+          <option value="Neutral">Neutral</option>
+          <option value="Mixed">Mixed</option>
+        </Select>
+        <Select
+          value={filters.urgency || ''}
+          onChange={(e) => handleFilterChange('urgency', e.target.value)}
+          className="bg-background sm:w-auto"
+          aria-label="Filter by urgency"
+        >
+          <option value="">All urgency</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </Select>
+        <Select
+          value={(filters as { status?: string }).status || ''}
+          onChange={(e) => handleFilterChange('status', e.target.value)}
+          className="bg-background sm:w-auto"
+          aria-label="Filter by status"
+        >
+          <option value="">All status</option>
+          <option value="open">Open</option>
+          <option value="in_progress">In progress</option>
+          <option value="resolved">Resolved</option>
+          <option value="ignored">Ignored</option>
+        </Select>
       </div>
 
-      {/* Feedback List */}
-      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl overflow-hidden">
+      <Card padding="none" className="overflow-hidden">
         {isLoading ? (
-          <div className="p-8 text-center">
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="mt-4 text-muted-foreground">Loading feedback...</p>
-          </div>
+          <LoadingState message="Loading feedback…" />
         ) : isError ? (
-          <div className="p-8 text-center text-destructive">Failed to load feedback</div>
+          <div className="p-12 text-center text-destructive text-sm">Failed to load feedback</div>
         ) : feedbacks.length === 0 ? (
-          <div className="p-12 text-center">
-            <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No feedback yet</h3>
-            <p className="text-muted-foreground">Customer feedback will appear here once submitted</p>
-          </div>
+          <EmptyState
+            compact
+            icon={MessageSquare}
+            title="No feedback yet"
+            description="Share your public link or QR code. Once customers respond, you’ll see AI actions here."
+          />
         ) : (
           <>
             <div className="divide-y divide-border">
-              {feedbacks.map((feedback) => (
-                <div key={feedback.id} className="p-4 sm:p-6 hover:bg-secondary/50 transition-colors">
-                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                    {/* Rating & Sentiment */}
-                    <div className="flex flex-col items-center sm:w-20 gap-2">
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={cn(
-                              'w-4 h-4',
-                              star <= feedback.rating ? 'fill-current' : 'text-muted-foreground',
-                              starColors[feedback.rating as keyof typeof starColors]
-                            )}
-                          />
-                        ))}
-                      </div>
-                      <span
-                        className={cn(
-                          'px-2 py-1 text-xs font-medium rounded-full',
-                          sentimentColors[feedback.sentiment as keyof typeof sentimentColors] || 'bg-secondary text-muted-foreground'
-                        )}
-                      >
-                        {feedback.sentiment}
-                      </span>
-                    </div>
+              {feedbacks.map((feedback) => {
+                const status = (feedback.status || 'open') as FeedbackStatus;
+                const StatusIcon = statusConfig[status].icon;
+                const isExpanded = expandedId === feedback.id;
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-start gap-2 mb-2">
-                        <span className={cn('px-2 py-0.5 text-xs font-medium rounded', urgencyColors[feedback.urgency as keyof typeof urgencyColors] || 'bg-secondary text-muted-foreground')}>
-                          <AlertTriangle className="w-3 h-3 inline mr-1" />
-                          {feedback.urgency}
+                return (
+                  <div
+                    key={feedback.id}
+                    className="p-4 sm:p-5 hover:bg-secondary/20 transition-colors"
+                  >
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {feedback.sentiment && (
+                          <Badge
+                            variant={
+                              sentimentVariant[
+                                feedback.sentiment as keyof typeof sentimentVariant
+                              ] ?? 'neutral'
+                            }
+                          >
+                            {feedback.sentiment}
+                          </Badge>
+                        )}
+                        {feedback.urgency && (
+                          <Badge
+                            variant={
+                              urgencyVariant[feedback.urgency as keyof typeof urgencyVariant] ??
+                              'neutral'
+                            }
+                          >
+                            {feedback.urgency === 'High' && <AlertTriangle className="w-3 h-3" />}
+                            {feedback.urgency}
+                          </Badge>
+                        )}
+                        <Badge>{feedback.category}</Badge>
+                        <span
+                          className={cn(
+                            'px-2 py-0.5 text-[10px] font-medium rounded-full inline-flex items-center gap-1',
+                            statusConfig[status].className,
+                          )}
+                        >
+                          <StatusIcon className="w-3 h-3" />
+                          {statusConfig[status].label}
                         </span>
-                        <span className="px-2 py-0.5 text-xs font-medium bg-secondary text-muted-foreground rounded">
-                          <Tag className="w-3 h-3 inline mr-1" />
-                          {feedback.category}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-[10px] text-muted-foreground ml-auto">
                           {new Date(feedback.createdAt).toLocaleDateString()}
                         </span>
                       </div>
 
-                      <p className="text-foreground mb-3 line-clamp-3">{feedback.text}</p>
+                      <p className="text-sm text-foreground leading-relaxed">{feedback.text}</p>
 
-                      {feedback.keyPoints.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {feedback.keyPoints.slice(0, 3).map((point, i) => (
-                            <span key={i} className="px-2 py-0.5 text-xs bg-secondary text-muted-foreground rounded">
-                              {point}
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <Star
+                            key={n}
+                            className={cn(
+                              'w-3.5 h-3.5',
+                              n <= feedback.rating
+                                ? 'fill-primary text-primary'
+                                : 'text-muted-foreground/30',
+                            )}
+                          />
+                        ))}
+                        {typeof feedback.confidence === 'number' && (
+                          <span className="text-[10px] text-muted-foreground ml-2">
+                            AI confidence {Math.round(feedback.confidence * 100)}%
+                            {feedback.correctedByHuman ? ' · corrected' : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      {feedback.suggestedAction && (
+                        <div className="flex items-start gap-2 text-xs bg-primary/5 border border-primary/15 rounded-lg px-3 py-2">
+                          <Lightbulb className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                          <span>
+                            <span className="font-medium text-foreground">Suggested action: </span>
+                            <span className="text-muted-foreground">
+                              {feedback.suggestedAction}
                             </span>
-                          ))}
-                          {feedback.keyPoints.length > 3 && (
-                            <span className="px-2 py-0.5 text-xs text-muted-foreground">+{feedback.keyPoints.length - 3} more</span>
-                          )}
+                          </span>
                         </div>
                       )}
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center sm:justify-end gap-2">
-                      <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
+                      {feedback.rootCause && feedback.rootCause !== 'Unknown' && (
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium text-foreground">Root cause: </span>
+                          {feedback.rootCause}
+                        </p>
+                      )}
+
+                      {/* Close-the-loop actions */}
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {status !== 'resolved' && (
+                          <Button
+                            size="xs"
+                            variant="success"
+                            onClick={() => setStatus(feedback.id, 'resolved')}
+                            disabled={updateStatus.isPending}
+                          >
+                            Mark resolved
+                          </Button>
+                        )}
+                        {status !== 'in_progress' && status !== 'resolved' && (
+                          <Button
+                            size="xs"
+                            variant="warning"
+                            onClick={() => setStatus(feedback.id, 'in_progress')}
+                            disabled={updateStatus.isPending}
+                          >
+                            In progress
+                          </Button>
+                        )}
+                        {status !== 'ignored' && status !== 'resolved' && (
+                          <Button
+                            size="xs"
+                            variant="secondary"
+                            className="text-muted-foreground"
+                            onClick={() => setStatus(feedback.id, 'ignored')}
+                            disabled={updateStatus.isPending}
+                          >
+                            Ignore
+                          </Button>
+                        )}
+                        {status !== 'open' && (
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            className="text-muted-foreground"
+                            onClick={() => setStatus(feedback.id, 'open')}
+                            disabled={updateStatus.isPending}
+                          >
+                            Reopen
+                          </Button>
+                        )}
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          className="text-muted-foreground ml-auto"
+                          onClick={() => {
+                            setExpandedId(isExpanded ? null : feedback.id);
+                            setNoteDraft(feedback.internalNote || '');
+                          }}
+                        >
+                          {isExpanded ? 'Hide note' : 'Internal note'}
+                        </Button>
+                      </div>
+
+                      {isExpanded && (
+                        <div className="space-y-2 pt-1">
+                          <Textarea
+                            value={noteDraft}
+                            onChange={(e) => setNoteDraft(e.target.value)}
+                            rows={2}
+                            placeholder="Internal note (not visible to customers)"
+                            className="bg-background text-sm resize-none"
+                          />
+                          <Button
+                            size="xs"
+                            onClick={() => {
+                              updateStatus.mutate({
+                                id: feedback.id,
+                                internalNote: noteDraft,
+                              });
+                              setExpandedId(null);
+                            }}
+                            disabled={updateStatus.isPending}
+                          >
+                            Save note
+                          </Button>
+                        </div>
+                      )}
+
+                      {feedback.ownerReply && (
+                        <p className="text-xs text-muted-foreground border-l-2 border-primary/40 pl-3">
+                          <span className="font-medium text-foreground">Reply: </span>
+                          {feedback.ownerReply}
+                        </p>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="p-4 border-t border-border flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
@@ -227,14 +366,16 @@ export function FeedbackPage() {
                   <button
                     onClick={() => setPage(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Previous page"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 disabled:opacity-50 transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Next page"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 disabled:opacity-50 transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -243,7 +384,7 @@ export function FeedbackPage() {
             )}
           </>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

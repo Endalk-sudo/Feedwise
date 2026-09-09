@@ -43,6 +43,8 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
   notFoundComponent: () => <NotFoundPage />,
 });
 
+import { LoadingState } from '@/components/ui';
+
 // Heavy chart page is code-split (recharts) so the initial bundle stays lean
 const AnalyticsPageLazy = lazy(() =>
   import('@/features/analytics/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })),
@@ -50,13 +52,7 @@ const AnalyticsPageLazy = lazy(() =>
 
 function AnalyticsRouteComponent() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingState message="Loading analytics…" />}>
       <AnalyticsPageLazy />
     </Suspense>
   );
@@ -177,6 +173,4 @@ declare module '@tanstack/react-router' {
   }
 }
 
-export const Router = () => (
-  <RouterProvider router={router} />
-);
+export const Router = () => <RouterProvider router={router} />;

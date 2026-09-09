@@ -133,30 +133,42 @@ model OrganizationMember {
 }
 
 model Feedback {
-  id             String   @id @default(cuid())
-  organizationId String
-  userId         String?
-  projectKey     String   @default("default")
-  text           String   @db.Text
-  category       String
-  rating         Int      @default(3)
-  sentiment      String?  // Positive, Negative, Neutral, Mixed
-  urgency        String?  // Low, Medium, High
-  keyPoints      String[]
-  keywords       String[]
-  confidence     Float?
-  rawAnalysis    Json?
-  ipAddress      String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id               String    @id @default(cuid())
+  organizationId   String
+  userId           String?
+  projectKey       String    @default("default")
+  text             String    @db.Text
+  category         String
+  rating           Int       @default(3)
+  sentiment        String?   // Positive, Negative, Neutral, Mixed
+  urgency          String?   // Low, Medium, High
+  keyPoints        String[]
+  keywords         String[]
+  themes           String[]  // AI-extracted themes / topics
+  rootCause        String?   // AI-suggested root cause
+  suggestedAction  String?   // Concrete "what to do" for the owner
+  confidence       Float?
+  rawAnalysis      Json?
+  // Customer context (optional tags from public form)
+  contextTags      String[]
+  // Close-the-loop
+  status           String    @default("open") // open | in_progress | resolved | ignored
+  ownerReply       String?   @db.Text
+  internalNote     String?   @db.Text
+  resolvedAt       DateTime?
+  correctedByHuman Boolean   @default(false)
+  ipAddress        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user         User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([organizationId, createdAt])
   @@index([organizationId, sentiment])
   @@index([organizationId, urgency])
   @@index([organizationId, category])
+  @@index([organizationId, status])
 }
 
 model Insight {

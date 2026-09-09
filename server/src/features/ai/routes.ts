@@ -6,6 +6,7 @@ import { pipeUIMessageStreamToResponse, type UIMessage } from 'ai';
 import { chatSchema, chatStreamSchema } from './schemas.js';
 import { chatWithAI, createChatMessageStream } from './service.js';
 import { prisma } from '@/lib/prisma.js';
+import { aiRateLimiter } from '@/middleware/rate-limit.js';
 
 const router = Router();
 
@@ -32,7 +33,7 @@ async function chatContext(slug: string, userId: string) {
 }
 
 // AI Chat endpoint (protected, Pro only)
-router.post('/:slug/chat', authMiddleware, validate(chatSchema), async (req, res, next) => {
+router.post('/:slug/chat', authMiddleware, aiRateLimiter, validate(chatSchema), async (req, res, next) => {
   try {
     const slug = req.params.slug as string;
     const { message } = req.body;

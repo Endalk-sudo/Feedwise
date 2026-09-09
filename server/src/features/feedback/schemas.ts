@@ -2,8 +2,10 @@ export {
   submitFeedbackSchema,
   getFeedbacksSchema,
   feedbackParamsSchema,
+  updateFeedbackStatusSchema,
+  correctFeedbackSchema,
   type SubmitFeedbackInput,
   type GetFeedbacksInput,
+  type UpdateFeedbackStatusInput,
+  type CorrectFeedbackInput,
 } from '@aifc/contracts';
-
-// NOTE: schemas live in shared/src/features/feedback/schemas.ts (single source of truth).

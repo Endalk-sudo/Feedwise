@@ -3,7 +3,6 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
 import { toNodeHandler } from 'better-auth/node';
 
 import { auth } from './lib/auth.js';
@@ -18,6 +17,7 @@ import { paymentRoutes, handleWebhook } from './features/payments/routes.js';
 import { settingsRoutes } from './features/settings/routes.js';
 import { organizationRoutes } from './features/organization/routes.js';
 import { authRoutes } from './features/auth/routes.js';
+import { createRateLimiter } from './middleware/rate-limit.js';
 
 export const app = express();
 
@@ -35,16 +35,12 @@ app.use(
   }),
 );
 
-// Rate limiting
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  message: {
-    success: false,
-    message: 'Too many requests from this IP, please try again after 15 minutes',
-  },
+// Rate limiting (Redis-backed when REDIS_URL is set)
+const apiLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  prefix: 'rl:api:',
 });
 app.use('/api/', apiLimiter);
 
@@ -75,11 +71,19 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/organization', organizationRoutes);
 
 // Health check endpoint
-app.get('/health', (_req, res) => {
+app.get('/health', async (_req, res) => {
+  let redis = 'disabled';
+  try {
+    const { ensureRedisConnected } = await import('./lib/redis.js');
+    redis = (await ensureRedisConnected()) ? 'connected' : 'unavailable';
+  } catch {
+    redis = 'error';
+  }
   res.json({
     status: 'OK',
     message: 'Server is running!',
     timestamp: new Date().toISOString(),
+    redis,
   });
 });
 

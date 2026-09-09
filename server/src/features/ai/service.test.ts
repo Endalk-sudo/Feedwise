@@ -47,6 +47,9 @@ describe('analyzeFeedback', () => {
         rating: 2,
         keyPoints: ['slow'],
         keywords: ['slow'],
+        themes: ['Speed'],
+        rootCause: 'Understaffed',
+        suggestedAction: 'Add staff at peak hours',
         confidence: 0.8,
       },
     } as never);
@@ -69,6 +72,9 @@ describe('analyzeFeedback', () => {
       rating: 3,
       keyPoints: ['Analysis failed'],
       keywords: [],
+      themes: [],
+      rootCause: 'Unknown',
+      suggestedAction: 'Review this feedback manually',
       confidence: 0.1,
     });
   });

@@ -47,6 +47,11 @@ const envSchema = z.object({
 
   // URLs
   CLIENT_URL: z.string().url().default('http://localhost:3000'),
+
+  // Redis / Upstash (optional in local dev — enables BullMQ + Redis rate limiting)
+  // Local Docker: redis://redis:6379
+  // Upstash: rediss://default:<password>@<endpoint>.upstash.io:6379
+  REDIS_URL: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

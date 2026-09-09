@@ -4,6 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build:contracts": "npm --prefix ../shared run build",
+    "predev": "npm run build:contracts",
+    "prebuild": "npm run build:contracts",
+    "pretypecheck": "npm run build:contracts",
+    "pretest": "npm run build:contracts",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

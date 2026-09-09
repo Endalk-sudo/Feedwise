@@ -159,3 +159,35 @@ export function useAIChat(slug: string) {
     },
   });
 }
+
+
+/**
+ * Close-the-loop: mark feedback resolved / in progress / ignored, optional reply & note.
+ */
+export function useUpdateFeedbackStatus(slug: string) {
+  const queryClient = useQueryClient();
+  const { addToast } = useUIStore();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      status?: string;
+      ownerReply?: string | null;
+      internalNote?: string | null;
+    }) => unwrapData(apiClient.feedback.updateStatus(slug, id, data)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedbacks', slug] });
+      queryClient.invalidateQueries({ queryKey: ['feedback-stats', slug] });
+      addToast({ message: 'Feedback updated', type: 'success' });
+    },
+    onError: (error) => {
+      addToast({
+        message: error instanceof Error ? error.message : 'Failed to update feedback',
+        type: 'error',
+      });
+    },
+  });
+}

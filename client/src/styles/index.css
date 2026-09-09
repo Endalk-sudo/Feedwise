@@ -1,24 +1,28 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1.0000 0 0);
+  --background: oklch(1 0 0);
   --foreground: oklch(0 0 0);
-  --card: oklch(1.0000 0 0);
+  --card: oklch(1 0 0);
   --card-foreground: oklch(0 0 0);
-  --popover: oklch(1.0000 0 0);
+  --popover: oklch(1 0 0);
   --popover-foreground: oklch(0 0 0);
   --primary: oklch(0.7163 0.1706 53.4464);
-  --primary-foreground: oklch(1.0000 0 0);
+  --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.1607 0.0367 261.0427);
-  --secondary-foreground: oklch(1.0000 0 0);
+  --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.9642 0 0);
   --muted-foreground: oklch(0.5103 0 0);
   --accent: oklch(0.7163 0.1706 53.4464);
-  --accent-foreground: oklch(1.0000 0 0);
+  --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.5653 0.2133 27.5428);
-  --destructive-foreground: oklch(1.0000 0 0);
+  --destructive-foreground: oklch(1 0 0);
+  --success: oklch(0.5775 0.1604 145.0237);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.621 0.1699 75.0238);
+  --warning-foreground: oklch(1 0 0);
   --border: oklch(0.8853 0 0);
   --input: oklch(0.8853 0 0);
   --ring: oklch(0.7163 0.1706 53.4464);
@@ -30,12 +34,14 @@
   --sidebar: oklch(0.9846 0.0017 247.8389);
   --sidebar-foreground: oklch(0.2101 0.0318 264.6645);
   --sidebar-primary: oklch(0.7163 0.1706 53.4464);
-  --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.9670 0.0029 264.5419);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.967 0.0029 264.5419);
   --sidebar-accent-foreground: oklch(0.7163 0.1706 53.4464);
   --sidebar-border: oklch(0.9276 0.0058 264.5313);
   --sidebar-ring: oklch(0.7163 0.1706 53.4464);
-  --font-sans: Inter, -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans:
+    Inter, -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: 'Fira Code', 'Ubuntu Mono', 'Source Code Pro', Menlo, Monaco, Consolas, monospace;
   --radius: 0.25rem;
@@ -47,11 +53,11 @@
   --shadow-color: #000000;
   --shadow-2xs: 0px 2px 4px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0px 2px 4px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow-md: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 2px 4px -1px hsl(0 0% 0% / 0.10);
-  --shadow-lg: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 4px 6px -1px hsl(0 0% 0% / 0.10);
-  --shadow-xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.10), 0px 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-sm: 0px 2px 4px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow: 0px 2px 4px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow-md: 0px 2px 4px 0px hsl(0 0% 0% / 0.1), 0px 2px 4px -1px hsl(0 0% 0% / 0.1);
+  --shadow-lg: 0px 2px 4px 0px hsl(0 0% 0% / 0.1), 0px 4px 6px -1px hsl(0 0% 0% / 0.1);
+  --shadow-xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.1), 0px 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0px 2px 4px 0px hsl(0 0% 0% / 0.25);
   --tracking-normal: -0.01em;
   --spacing: 0.25rem;
@@ -65,32 +71,38 @@
   --popover: oklch(0.2264 0 0);
   --popover-foreground: oklch(0.9846 0.0017 247.8389);
   --primary: oklch(0.7235 0.1724 53.7949);
-  --primary-foreground: oklch(1.0000 0 0);
+  --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.3052 0 0);
-  --secondary-foreground: oklch(1.0000 0 0);
+  --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.2686 0 0);
   --muted-foreground: oklch(0.7118 0.0129 286.0665);
   --accent: oklch(0.7235 0.1724 53.7949);
-  --accent-foreground: oklch(1.0000 0 0);
+  --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1.0000 0 0);
+  --destructive-foreground: oklch(1 0 0);
+  --success: oklch(0.7227 0.1611 145.5672);
+  --success-foreground: oklch(0.1776 0 0);
+  --warning: oklch(0.7685 0.1515 75.6524);
+  --warning-foreground: oklch(0.1776 0 0);
   --border: oklch(0.2739 0.0055 286.0326);
   --input: oklch(0.2739 0.0055 286.0326);
   --ring: oklch(0.7235 0.1724 53.7949);
   --chart-1: oklch(0.7235 0.1724 53.7949);
   --chart-2: oklch(0.6474 0.1842 258.6478);
   --chart-3: oklch(0.4882 0.2172 264.3763);
-  --chart-4: oklch(0.7576 0.1590 55.9344);
-  --chart-5: oklch(0.8790 0.1534 91.6054);
+  --chart-4: oklch(0.7576 0.159 55.9344);
+  --chart-5: oklch(0.879 0.1534 91.6054);
   --sidebar: oklch(0.1776 0 0);
   --sidebar-foreground: oklch(0.9846 0.0017 247.8389);
   --sidebar-primary: oklch(0.7235 0.1724 53.7949);
-  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.2686 0 0);
   --sidebar-accent-foreground: oklch(0.7235 0.1724 53.7949);
   --sidebar-border: oklch(0.2739 0.0055 286.0326);
   --sidebar-ring: oklch(0.7235 0.1724 53.7949);
-  --font-sans: Inter, -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans:
+    Inter, -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: 'Fira Code', 'Ubuntu Mono', 'Source Code Pro', Menlo, Monaco, Consolas, monospace;
   --radius: 0.25rem;
@@ -102,11 +114,11 @@
   --shadow-color: #000000;
   --shadow-2xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.25);
   --shadow-xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.25);
-  --shadow-sm: 0px 4px 10px 0px hsl(0 0% 0% / 0.50), 0px 1px 2px -1px hsl(0 0% 0% / 0.50);
-  --shadow: 0px 4px 10px 0px hsl(0 0% 0% / 0.50), 0px 1px 2px -1px hsl(0 0% 0% / 0.50);
-  --shadow-md: 0px 4px 10px 0px hsl(0 0% 0% / 0.50), 0px 2px 4px -1px hsl(0 0% 0% / 0.50);
-  --shadow-lg: 0px 4px 10px 0px hsl(0 0% 0% / 0.50), 0px 4px 6px -1px hsl(0 0% 0% / 0.50);
-  --shadow-xl: 0px 4px 10px 0px hsl(0 0% 0% / 0.50), 0px 8px 10px -1px hsl(0 0% 0% / 0.50);
+  --shadow-sm: 0px 4px 10px 0px hsl(0 0% 0% / 0.5), 0px 1px 2px -1px hsl(0 0% 0% / 0.5);
+  --shadow: 0px 4px 10px 0px hsl(0 0% 0% / 0.5), 0px 1px 2px -1px hsl(0 0% 0% / 0.5);
+  --shadow-md: 0px 4px 10px 0px hsl(0 0% 0% / 0.5), 0px 2px 4px -1px hsl(0 0% 0% / 0.5);
+  --shadow-lg: 0px 4px 10px 0px hsl(0 0% 0% / 0.5), 0px 4px 6px -1px hsl(0 0% 0% / 0.5);
+  --shadow-xl: 0px 4px 10px 0px hsl(0 0% 0% / 0.5), 0px 8px 10px -1px hsl(0 0% 0% / 0.5);
   --shadow-2xl: 0px 4px 10px 0px hsl(0 0% 0% / 1.25);
 }
 
@@ -127,6 +139,10 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -184,40 +200,80 @@
 
 /* Animations */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(-5%); }
-  50% { transform: translateY(0); }
+  0%,
+  100% {
+    transform: translateY(-5%);
+  }
+  50% {
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @keyframes slide-in {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slide-out {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(100%); opacity: 0; }
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }
 
-.animate-bounce { animation: bounce 1s infinite; }
-.animate-spin { animation: spin 1s linear infinite; }
-.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.animate-slide-in { animation: slide-in 0.3s ease-out; }
-.animate-slide-out { animation: slide-out 0.3s ease-in; }
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+.animate-slide-out {
+  animation: slide-out 0.3s ease-in;
+}
 
 .loading-skeleton {
   background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
@@ -234,7 +290,7 @@
 
 /* Gradient text (brand gradient) */
 .gradient-text {
-  background: linear-gradient(to right, #38bdf8, #a855f7, #f472b6);
+  background: linear-gradient(to right, var(--primary), var(--accent), var(--primary));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -242,52 +298,114 @@
 
 /* Brand gradient button */
 .btn-brand {
-  @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all;
+  @apply bg-gradient-to-r from-primary to-accent text-white font-medium rounded-lg hover:brightness-110 transition-all;
 }
 
 /* Empty state */
-.empty-state { @apply flex flex-col items-center justify-center py-12 text-center; }
-.empty-state-icon { @apply w-12 h-12 text-muted-foreground/50 mb-4; }
-.empty-state-title { @apply text-lg font-medium mb-2; }
-.empty-state-description { @apply text-muted-foreground; }
+.empty-state {
+  @apply flex flex-col items-center justify-center py-12 text-center;
+}
+.empty-state-icon {
+  @apply w-12 h-12 text-muted-foreground/50 mb-4;
+}
+.empty-state-title {
+  @apply text-lg font-medium mb-2;
+}
+.empty-state-description {
+  @apply text-muted-foreground;
+}
 
 /* Spinner */
-.spinner { @apply w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin; }
+.spinner {
+  @apply w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin;
+}
 
 /* Divider */
-.divider { @apply border-t border-border; }
+.divider {
+  @apply border-t border-border;
+}
 
 /* Avatar */
-.avatar { @apply w-8 h-8 rounded-full bg-primary flex items-center justify-center font-medium text-primary-foreground; }
-.avatar-sm { @apply w-6 h-6 text-xs; }
-.avatar-lg { @apply w-10 h-10 text-base; }
-.avatar-xl { @apply w-12 h-12 text-lg; }
+.avatar {
+  @apply w-8 h-8 rounded-full bg-primary flex items-center justify-center font-medium text-primary-foreground;
+}
+.avatar-sm {
+  @apply w-6 h-6 text-xs;
+}
+.avatar-lg {
+  @apply w-10 h-10 text-base;
+}
+.avatar-xl {
+  @apply w-12 h-12 text-lg;
+}
 
 /* Dropdown */
-.dropdown { @apply absolute right-0 top-full mt-2 w-56 bg-popover border border-border rounded-xl shadow-lg py-2 z-50; }
-.dropdown-item { @apply w-full px-4 py-2.5 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-2; }
+.dropdown {
+  @apply absolute right-0 top-full mt-2 w-56 bg-popover border border-border rounded-xl shadow-lg py-2 z-50;
+}
+.dropdown-item {
+  @apply w-full px-4 py-2.5 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-2;
+}
 
 /* Tooltip */
-.tooltip { @apply absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-popover border border-border rounded-lg text-xs text-popover-foreground whitespace-nowrap opacity-0 invisible transition-all; }
-.tooltip-trigger:hover .tooltip { @apply opacity-100 visible; }
+.tooltip {
+  @apply absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-popover border border-border rounded-lg text-xs text-popover-foreground whitespace-nowrap opacity-0 invisible transition-all;
+}
+.tooltip-trigger:hover .tooltip {
+  @apply opacity-100 visible;
+}
 
 /* Table */
-.table-container { @apply overflow-x-auto; }
-.table { @apply w-full text-sm; }
-.table th { @apply text-left p-2 text-muted-foreground border-b border-border font-medium; }
-.table td { @apply p-2 border-b border-border/50; }
-.table tr:hover { @apply bg-accent; }
+.table-container {
+  @apply overflow-x-auto;
+}
+.table {
+  @apply w-full text-sm;
+}
+.table th {
+  @apply text-left p-2 text-muted-foreground border-b border-border font-medium;
+}
+.table td {
+  @apply p-2 border-b border-border/50;
+}
+.table tr:hover {
+  @apply bg-accent;
+}
 
 /* Prose */
-.prose { @apply text-foreground; }
-.prose h1 { @apply text-2xl font-bold mb-4; }
-.prose h2 { @apply text-xl font-semibold mb-3 mt-6; }
-.prose h3 { @apply text-lg font-medium mb-2 mt-4; }
-.prose p { @apply mb-4 leading-relaxed; }
-.prose ul { @apply list-disc list-inside mb-4 space-y-2; }
-.prose ol { @apply list-decimal list-inside mb-4 space-y-2; }
-.prose code { @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono; }
-.prose pre { @apply bg-muted p-4 rounded-xl overflow-x-auto mb-4; }
-.prose pre code { @apply bg-transparent p-0; }
-.prose a { @apply text-primary hover:text-primary/80 underline; }
-.prose blockquote { @apply border-l-4 border-primary pl-4 italic text-muted-foreground my-4; }
+.prose {
+  @apply text-foreground;
+}
+.prose h1 {
+  @apply text-2xl font-bold mb-4;
+}
+.prose h2 {
+  @apply text-xl font-semibold mb-3 mt-6;
+}
+.prose h3 {
+  @apply text-lg font-medium mb-2 mt-4;
+}
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+.prose ul {
+  @apply list-disc list-inside mb-4 space-y-2;
+}
+.prose ol {
+  @apply list-decimal list-inside mb-4 space-y-2;
+}
+.prose code {
+  @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+}
+.prose pre {
+  @apply bg-muted p-4 rounded-xl overflow-x-auto mb-4;
+}
+.prose pre code {
+  @apply bg-transparent p-0;
+}
+.prose a {
+  @apply text-primary hover:text-primary/80 underline;
+}
+.prose blockquote {
+  @apply border-l-4 border-primary pl-4 italic text-muted-foreground my-4;
+}

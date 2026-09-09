@@ -28,8 +28,10 @@ services:
 
   server:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      # Repo-root context so server/Dockerfile can COPY shared/
+      # (the "@aifc/contracts": "file:../shared" dependency).
+      context: .
+      dockerfile: server/Dockerfile
     ports:
       - '5000:5000'
     depends_on:
@@ -50,8 +52,10 @@ services:
 
   client:
     build:
-      context: ./client
-      dockerfile: Dockerfile
+      # Repo-root context so client/Dockerfile can COPY shared/
+      # (the "@aifc/contracts": "file:../shared" dependency).
+      context: .
+      dockerfile: client/Dockerfile
     ports:
       - '3000:80'
     depends_on:

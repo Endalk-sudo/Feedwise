@@ -1,25 +1,36 @@
 import { useAuthStore, useOrgSlug } from '@/lib/stores/auth.store';
 import { useFeedbackStats } from '@/features/feedback/hooks';
 import { useMyOrganizations } from '@/features/organization/hooks';
-import { MessageSquare, TrendingUp, Bot, AlertTriangle, CheckCircle2, Settings } from 'lucide-react';
+import {
+  MessageSquare,
+  TrendingUp,
+  Bot,
+  AlertTriangle,
+  CheckCircle2,
+  Settings,
+  Lightbulb,
+  ArrowRight,
+  Target,
+} from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { cn } from '@/lib/utils';
-
-const stats = [
-  { name: 'Total Feedback', key: 'total', icon: MessageSquare, color: 'text-primary', bg: 'bg-primary/10' },
-  { name: 'This Week', key: 'recentCount', icon: TrendingUp, color: 'text-primary', bg: 'bg-green-500/10' },
-  { name: 'Positive', key: 'positive', icon: CheckCircle2, color: 'text-primary', bg: 'bg-green-500/10' },
-  { name: 'Needs Attention', key: 'alerts', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' },
-];
+import {
+  PageHeader,
+  Card,
+  CardHeader,
+  CardTitle,
+  Badge,
+  EmptyState,
+  buttonVariants,
+} from '@/components/ui';
 
 export function DashboardHome() {
   const { user, activeOrganization, setActiveOrganization } = useAuthStore();
   const slug = useOrgSlug();
   const { data: myOrgs } = useMyOrganizations();
-  const { data: statsData } = useFeedbackStats(slug);
+  const { data: statsData, isLoading } = useFeedbackStats(slug);
 
-  // Default to the first membership until the user picks an org
   useEffect(() => {
     if (!activeOrganization && myOrgs && myOrgs.length > 0) {
       const first = myOrgs[0];
@@ -36,105 +47,219 @@ export function DashboardHome() {
 
   if (!slug) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold mb-2">No organization yet</h2>
-        <p className="text-muted-foreground mb-6">Create your organization to start collecting feedback.</p>
-        <Link
-          to="/org-setup"
-          className="px-6 py-3 btn-brand"
-        >
-          Set up organization
-        </Link>
-      </div>
+      <EmptyState
+        icon={Target}
+        title="Set up your organization"
+        description="Create an org, get a QR code, and start turning customer feedback into actions."
+        action={
+          <Link to="/org-setup" className={cn(buttonVariants({ size: 'lg' }), 'text-sm')}>
+            Get started
+          </Link>
+        }
+      />
     );
   }
 
-  const positiveCount = statsData?.bySentiment?.find((s) => s.sentiment === 'Positive')?.count || 0;
-  const alertsCount = statsData?.byUrgency?.find((u) => u.urgency === 'High')?.count || 0;
+  const positiveCount =
+    statsData?.bySentiment?.find((s: { sentiment: string }) => s.sentiment === 'Positive')?.count ||
+    0;
+  const highOpen = statsData?.highUrgencyOpen ?? 0;
+  const actedOnRate = statsData?.actedOnRate ?? 0;
+  const topActions = (statsData?.topActions ?? []) as Array<{
+    id: string;
+    text: string;
+    category: string;
+    sentiment: string | null;
+    urgency: string | null;
+    suggestedAction: string | null;
+    rootCause: string | null;
+    status: string;
+    confidence: number | null;
+  }>;
+
+  const cards = [
+    {
+      name: 'Total feedback',
+      value: statsData?.total ?? '—',
+      icon: MessageSquare,
+      color: 'text-primary',
+      bg: 'bg-primary/10',
+    },
+    {
+      name: 'This week',
+      value: statsData?.recentCount ?? '—',
+      icon: TrendingUp,
+      color: 'text-success',
+      bg: 'bg-success/10',
+    },
+    {
+      name: 'Acted on',
+      value: statsData ? `${actedOnRate}%` : '—',
+      icon: CheckCircle2,
+      color: 'text-primary',
+      bg: 'bg-primary/10',
+    },
+    {
+      name: 'High urgency open',
+      value: highOpen,
+      icon: AlertTriangle,
+      color: highOpen > 0 ? 'text-warning' : 'text-muted-foreground',
+      bg: highOpen > 0 ? 'bg-warning/10' : 'bg-secondary/50',
+    },
+  ];
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Welcome back, {user?.name?.split(' ')[0] || 'there'}! 👋</h1>
-          <p className="text-muted-foreground mt-1">Here&apos;s what&apos;s happening with your feedback today.</p>
-        </div>
-        <div className="flex gap-3">
-          <Link to="/dashboard/feedback" className="bg-secondary border border-input px-4 py-2 rounded-lg text-sm font-medium text-foreground hover:text-foreground hover:border-input transition-all">
-            View All Feedback
-          </Link>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title={`Welcome back, ${user?.name?.split(' ')[0] || 'there'}`}
+        description={
+          activeOrganization?.name
+            ? `Here’s what needs attention at ${activeOrganization.name}.`
+            : 'Your feedback overview.'
+        }
+        actions={
+          statsData && statsData.total === 0 ? (
+            <Link
+              to="/dashboard/settings"
+              className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+            >
+              Share your QR / link <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          ) : undefined
+        }
+      />
 
-      {/* Stats Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.name} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground font-medium">{stat.name}</p>
-                <p className="text-3xl font-bold mt-1">
-                  {stat.key === 'total' ? statsData?.total || 0 :
-                   stat.key === 'recentCount' ? statsData?.recentCount || 0 :
-                   stat.key === 'positive' ? positiveCount :
-                   alertsCount}
-                </p>
-              </div>
-              <div className={cn('w-12 h-12 rounded-lg flex items-center justify-center', stat.bg)}>
-                <stat.icon className={cn('w-6 h-6', stat.color)} />
+      {/* Metric cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {cards.map((card) => (
+          <Card key={card.name} padding="sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center', card.bg)}>
+                <card.icon className={cn('w-5 h-5', card.color)} />
               </div>
             </div>
-          </div>
+            <p className="text-2xl font-bold tabular-nums">{isLoading ? '…' : card.value}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{card.name}</p>
+          </Card>
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6">
-        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link to="/dashboard/feedback" className="p-4 bg-secondary/50 border border-input rounded-lg hover:border-blue-500/50 transition-all">
-            <MessageSquare className="w-6 h-6 text-primary mb-2" />
-            <p className="font-medium">View Feedback</p>
-            <p className="text-sm text-muted-foreground mt-1">Browse all customer feedback</p>
+      {/* Top actions this week — the product heart */}
+      <Card padding="none" className="overflow-hidden">
+        <CardHeader>
+          <CardTitle>
+            <Lightbulb className="w-5 h-5 text-primary" />
+            Top things to fix this week
+          </CardTitle>
+          <Link
+            to="/dashboard/feedback"
+            className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+          >
+            All feedback <ArrowRight className="w-3 h-3" />
           </Link>
-          <Link to="/dashboard/analytics" className="p-4 bg-secondary/50 border border-input rounded-lg hover:border-purple-500/50 transition-all">
-            <TrendingUp className="w-6 h-6 text-primary mb-2" />
-            <p className="font-medium">Analytics</p>
-            <p className="text-sm text-muted-foreground mt-1">View trends & insights</p>
+        </CardHeader>
+
+        {isLoading ? (
+          <div className="p-8 text-center text-muted-foreground text-sm">Loading insights…</div>
+        ) : topActions.length === 0 ? (
+          <div className="p-8 text-center">
+            <CheckCircle2 className="w-10 h-10 text-primary/40 mx-auto mb-3" />
+            <p className="font-medium text-sm">Nothing urgent right now</p>
+            <p className="text-muted-foreground text-xs mt-1 max-w-sm mx-auto">
+              {statsData?.total
+                ? 'No high-urgency or negative open items this week. Keep collecting feedback.'
+                : 'Share your public feedback link or QR code. After a few responses, AI suggestions will appear here.'}
+            </p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-border">
+            {topActions.map((item, idx) => (
+              <li key={item.id} className="px-5 py-4 hover:bg-secondary/30 transition-colors">
+                <div className="flex items-start gap-3">
+                  <span className="text-xs font-bold text-muted-foreground tabular-nums mt-0.5 w-4">
+                    {idx + 1}
+                  </span>
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <p className="text-sm text-foreground line-clamp-2">{item.text}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.urgency && (
+                        <Badge variant={item.urgency === 'High' ? 'warning' : 'neutral'}>
+                          {item.urgency}
+                        </Badge>
+                      )}
+                      {item.category && <Badge>{item.category}</Badge>}
+                      {item.sentiment && <Badge>{item.sentiment}</Badge>}
+                    </div>
+                    {item.suggestedAction && (
+                      <p className="text-xs text-primary/90 flex items-start gap-1.5 mt-1">
+                        <Lightbulb className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        <span>
+                          <span className="font-medium">Suggested: </span>
+                          {item.suggestedAction}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                  <Link
+                    to="/dashboard/feedback"
+                    className="text-xs text-muted-foreground hover:text-primary shrink-0"
+                  >
+                    Review
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      {/* Quick actions */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          {
+            to: '/dashboard/feedback',
+            icon: MessageSquare,
+            title: 'Feedback',
+            desc: 'Resolve & reply',
+          },
+          {
+            to: '/dashboard/analytics',
+            icon: TrendingUp,
+            title: 'Analytics',
+            desc: 'Trends & themes',
+          },
+          {
+            to: '/dashboard/ai',
+            icon: Bot,
+            title: 'AI assistant',
+            desc: 'Ask your data',
+          },
+          {
+            to: '/dashboard/settings',
+            icon: Settings,
+            title: 'Settings',
+            desc: 'QR, branding, plan',
+          },
+        ].map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className="p-4 bg-card border border-border rounded-xl hover:border-primary/40 transition-all group"
+          >
+            <item.icon className="w-5 h-5 text-primary mb-2 group-hover:scale-105 transition-transform" />
+            <p className="font-medium text-sm">{item.title}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
           </Link>
-          <Link to="/dashboard/ai" className="p-4 bg-secondary/50 border border-input rounded-lg hover:border-primary/50 transition-all">
-            <Bot className="w-6 h-6 text-primary mb-2" />
-            <p className="font-medium">AI Assistant</p>
-            <p className="text-sm text-muted-foreground mt-1">Ask questions about feedback</p>
-          </Link>
-          <Link to="/dashboard/settings" className="p-4 bg-secondary/50 border border-input rounded-lg hover:border-input transition-all">
-            <Settings className="w-6 h-6 text-muted-foreground mb-2" />
-            <p className="font-medium">Settings</p>
-            <p className="text-sm text-muted-foreground mt-1">Manage your organization</p>
-          </Link>
-        </div>
+        ))}
       </div>
 
-      {/* Recent Activity */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Quick Links</h2>
-        <div className="grid sm:grid-cols-3 gap-4">
-          <Link to="/dashboard/feedback" className="p-4 bg-card/80 backdrop-blur-sm border border-border rounded-lg hover:border-input transition-all">
-            <h3 className="font-medium">Recent Feedback</h3>
-            <p className="text-sm text-muted-foreground mt-1">View latest customer submissions</p>
-          </Link>
-          <Link to="/dashboard/analytics" className="p-4 bg-card/80 backdrop-blur-sm border border-border rounded-lg hover:border-input transition-all">
-            <h3 className="font-medium">Sentiment Trends</h3>
-            <p className="text-sm text-muted-foreground mt-1">Track sentiment over time</p>
-          </Link>
-          <Link to="/dashboard/ai" className="p-4 bg-card/80 backdrop-blur-sm border border-border rounded-lg hover:border-input transition-all">
-            <h3 className="font-medium">Ask AI</h3>
-            <p className="text-sm text-muted-foreground mt-1">Get insights from your data</p>
-          </Link>
-        </div>
-      </div>
+      {/* Positive summary for empty-ish states */}
+      {statsData && statsData.total > 0 && positiveCount > 0 && (
+        <p className="text-xs text-muted-foreground text-center">
+          {positiveCount} positive response{positiveCount === 1 ? '' : 's'} so far — keep the
+          momentum going.
+        </p>
+      )}
     </div>
   );
 }
-

@@ -11,34 +11,40 @@ import {
   Star,
   Users,
   Menu,
-  X,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Container, Logo, Drawer, buttonVariants } from '@/components/ui';
 
 const features = [
   {
     icon: MessageSquare,
     title: 'Collect Feedback Anywhere',
-    description: 'QR codes, links, and embeddable widgets make it easy for customers to share their thoughts.',
+    description:
+      'QR codes, links, and embeddable widgets make it easy for customers to share their thoughts.',
   },
   {
     icon: Zap,
     title: 'Instant AI Analysis',
-    description: 'Gemini AI categorizes, analyzes sentiment, detects urgency, and extracts key insights in real-time.',
+    description:
+      'Gemini AI categorizes, analyzes sentiment, detects urgency, and extracts key insights in real-time.',
   },
   {
     icon: BarChart3,
     title: 'Actionable Analytics',
-    description: 'Track sentiment trends, category breakdowns, recurring issues, and priority alerts on beautiful dashboards.',
+    description:
+      'Track sentiment trends, category breakdowns, recurring issues, and priority alerts on beautiful dashboards.',
   },
   {
     icon: Smartphone,
     title: 'AI Chat Assistant',
-    description: 'Ask questions about your feedback in natural language. Get data-driven answers instantly.',
+    description:
+      'Ask questions about your feedback in natural language. Get data-driven answers instantly.',
   },
   {
     icon: Shield,
     title: 'Enterprise Security',
-    description: 'End-to-end encryption and granular access controls keep your data safe and secure.',
+    description:
+      'End-to-end encryption and granular access controls keep your data safe and secure.',
   },
   {
     icon: Users,
@@ -85,19 +91,22 @@ const pricing = [
 
 const testimonials = [
   {
-    quote: 'FeedbackAI cut our response analysis time from hours to seconds. The AI categorization is incredibly accurate.',
+    quote:
+      'FeedbackAI cut our response analysis time from hours to seconds. The AI categorization is incredibly accurate.',
     name: 'Sarah Chen',
     role: 'Head of Product at NovaTech',
     initials: 'SC',
   },
   {
-    quote: 'We identified our top 3 customer pain points in the first week. The sentiment trends helped us prioritize our roadmap.',
+    quote:
+      'We identified our top 3 customer pain points in the first week. The sentiment trends helped us prioritize our roadmap.',
     name: 'Marcus Rodriguez',
     role: 'Customer Success Lead at BrightLocal',
     initials: 'MR',
   },
   {
-    quote: 'The QR code feedback collection is a game changer for our restaurants. Customers love the simplicity.',
+    quote:
+      'The QR code feedback collection is a game changer for our restaurants. Customers love the simplicity.',
     name: 'Emily Park',
     role: 'Operations Manager at FreshBites',
     initials: 'EP',
@@ -111,116 +120,156 @@ export function LandingPage() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Container width="xl">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-foreground" />
-              </div>
+              <Logo size="sm" />
               <span className="font-bold text-xl">FeedbackAI</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-foreground hover:text-foreground transition-colors">Features</a>
-              <a href="#pricing" className="text-foreground hover:text-foreground transition-colors">Pricing</a>
-              <a href="#testimonials" className="text-foreground hover:text-foreground transition-colors">Testimonials</a>
+              <a
+                href="#features"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="#pricing"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Pricing
+              </a>
+              <a
+                href="#testimonials"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Testimonials
+              </a>
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/auth/login" className="text-foreground hover:text-foreground transition-colors hidden sm:block">
+              <Link
+                to="/auth/login"
+                className="text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
+              >
                 Sign In
               </Link>
-              <Link
-                to="/auth/register"
-                className="btn-brand hover:from-blue-700 hover:to-purple-700 transition-all"
-              >
+              <Link to="/auth/register" className={cn(buttonVariants({ size: 'md' }))}>
                 Get Started Free
               </Link>
             </div>
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden p-2 text-foreground hover:text-foreground transition-colors"
+              className="md:hidden p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open menu"
             >
               <Menu className="w-6 h-6" />
             </button>
           </div>
-        </div>
+        </Container>
 
         {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 md:hidden">
-            <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
-            <div className="absolute right-0 top-0 bottom-0 w-72 bg-card border-l border-border p-6">
-              <div className="flex items-center justify-between mb-8">
-                <span className="font-bold text-lg">Menu</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              <nav className="space-y-4">
-                <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors">Features</a>
-                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors">Pricing</a>
-                <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors">Testimonials</a>
-                <hr className="border-border" />
-                <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors">Sign In</Link>
-                <Link to="/auth/register" onClick={() => setMobileMenuOpen(false)} className="block py-2 btn-brand text-center">Get Started Free</Link>
-              </nav>
-            </div>
-          </div>
-        )}
+        <Drawer
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          side="right"
+          className="w-72"
+        >
+          <nav className="space-y-4">
+            <a
+              href="#features"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-foreground hover:text-primary transition-colors"
+            >
+              Features
+            </a>
+            <a
+              href="#pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-foreground hover:text-primary transition-colors"
+            >
+              Pricing
+            </a>
+            <a
+              href="#testimonials"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-foreground hover:text-primary transition-colors"
+            >
+              Testimonials
+            </a>
+            <hr className="border-border" />
+            <Link
+              to="/auth/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-foreground hover:text-primary transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              to="/auth/register"
+              onClick={() => setMobileMenuOpen(false)}
+              className={cn(buttonVariants(), 'w-full text-center')}
+            >
+              Get Started Free
+            </Link>
+          </nav>
+        </Drawer>
       </nav>
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-primary text-sm font-medium mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
             New: AI Chat Assistant now available
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
             Turn Customer Feedback into{' '}
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Actionable Insights
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-foreground max-w-3xl mx-auto mb-10">
-            Collect feedback via QR codes, analyze instantly with AI, and get actionable growth recommendations.
-            No more guessing what your customers want.
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-10">
+            Collect feedback via QR codes, analyze instantly with AI, and get actionable growth
+            recommendations. No more guessing what your customers want.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Link
               to="/auth/register"
-              className="btn-brand text-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg shadow-blue-500/25"
+              className={cn(
+                buttonVariants({ size: 'lg' }),
+                'w-full sm:w-auto px-8 py-4 text-lg shadow-lg shadow-primary/25',
+              )}
             >
               Start Free Trial
-              <ArrowRight className="w-5 h-5 inline ml-2" />
+              <ArrowRight className="w-5 h-5" />
             </Link>
             <a
               href="#features"
-              className="w-full sm:w-auto border-2 border-input px-8 py-4 rounded-lg text-foreground font-semibold text-lg hover:border-primary hover:text-foreground transition-all"
+              className="w-full sm:w-auto border-2 border-input px-8 py-4 rounded-lg text-foreground font-semibold text-lg hover:border-primary transition-all text-center"
             >
               See How It Works
             </a>
           </div>
 
-          <div className="flex items-center justify-center gap-8 text-muted-foreground text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-muted-foreground text-sm">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
               <span>No credit card required</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
               <span>14-day free trial</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
               <span>Cancel anytime</span>
             </div>
           </div>
@@ -228,10 +277,12 @@ export function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-card/50">
-        <div className="max-w-7xl mx-auto">
+      <section id="features" className="py-20 bg-card/50">
+        <Container width="xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Everything you need to understand your customers</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              Everything you need to understand your customers
+            </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Powerful features designed to help you collect, analyze, and act on customer feedback.
             </p>
@@ -239,8 +290,11 @@ export function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="group p-6 rounded-xl bg-card border border-border hover:border-input transition-all">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all">
+              <div
+                key={index}
+                className="group p-6 rounded-xl bg-card border border-border hover:border-primary/40 transition-all"
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center mb-4 group-hover:from-primary/30 group-hover:to-accent/30 transition-all">
                   <feature.icon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
@@ -248,16 +302,19 @@ export function LandingPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <section id="pricing" className="py-20">
+        <Container width="xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              Simple, transparent pricing
+            </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Choose the plan that&apos;s right for your business. All plans include a 14-day free trial.
+              Choose the plan that&apos;s right for your business. All plans include a 14-day free
+              trial.
             </p>
           </div>
 
@@ -265,14 +322,15 @@ export function LandingPage() {
             {pricing.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative p-8 rounded-xl ${
+                className={cn(
+                  'relative p-8 rounded-xl bg-card border',
                   plan.popular
-                    ? 'bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-blue-500/50 shadow-lg shadow-blue-500/10'
-                    : 'bg-card border border-border'
-                }`}
+                    ? 'border-2 border-primary/50 shadow-lg shadow-primary/10'
+                    : 'border-border',
+                )}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-foreground px-4 py-1 rounded-full text-sm font-medium">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-1 rounded-full text-sm font-medium whitespace-nowrap">
                     Most Popular
                   </div>
                 )}
@@ -290,7 +348,7 @@ export function LandingPage() {
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-3 text-foreground">
-                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -298,25 +356,29 @@ export function LandingPage() {
 
                 <Link
                   to="/auth/register"
-                  className={`w-full py-3 px-4 rounded-lg text-center font-semibold transition-all ${
-                    plan.popular
-                      ? 'btn-brand'
-                      : 'bg-secondary border border-input text-foreground hover:bg-muted hover:border-input hover:text-foreground'
-                  }`}
+                  className={cn(
+                    buttonVariants({
+                      variant: plan.popular ? 'brand' : 'secondary',
+                      size: 'lg',
+                    }),
+                    'w-full',
+                  )}
                 >
                   {plan.cta}
                 </Link>
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Social Proof */}
-      <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8 bg-card/50">
-        <div className="max-w-7xl mx-auto">
+      <section id="testimonials" className="py-20 bg-card/50">
+        <Container width="xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Trusted by teams everywhere</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              Trusted by teams everywhere
+            </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               See what our customers have to say about their experience.
             </p>
@@ -330,12 +392,12 @@ export function LandingPage() {
                     <Star key={star} className="w-5 h-5 fill-warning text-warning" />
                   ))}
                 </div>
-                <p className="text-foreground mb-6 italic">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
+                <p className="text-foreground mb-6 italic">&ldquo;{t.quote}&rdquo;</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                    <span className="text-foreground font-medium text-sm">{t.initials}</span>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <span className="text-primary-foreground font-medium text-sm">
+                      {t.initials}
+                    </span>
                   </div>
                   <div>
                     <p className="font-medium">{t.name}</p>
@@ -345,13 +407,13 @@ export function LandingPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-6">
             Ready to understand your customers better?
           </h2>
           <p className="text-muted-foreground text-lg mb-8">
@@ -359,23 +421,24 @@ export function LandingPage() {
           </p>
           <Link
             to="/auth/register"
-            className="btn-brand text-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg shadow-blue-500/25"
+            className={cn(
+              buttonVariants({ size: 'lg' }),
+              'px-8 py-4 text-lg shadow-lg shadow-primary/25',
+            )}
           >
             Start Your Free Trial
-            <ArrowRight className="w-5 h-5 inline ml-2" />
+            <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-border bg-background">
-        <div className="max-w-7xl mx-auto">
+      <footer className="py-12 border-t border-border bg-background">
+        <Container width="xl">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <MessageSquare className="w-5 h-5 text-foreground" />
-                </div>
+                <Logo size="sm" />
                 <span className="font-bold text-xl">FeedbackAI</span>
               </div>
               <p className="text-muted-foreground text-sm">
@@ -385,21 +448,37 @@ export function LandingPage() {
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-muted-foreground text-sm">
-                <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
+                <li>
+                  <a href="#features" className="hover:text-foreground transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="hover:text-foreground transition-colors">
+                    Pricing
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-muted-foreground text-sm">
-                <li><a href="#testimonials" className="hover:text-foreground transition-colors">Testimonials</a></li>
+                <li>
+                  <a href="#testimonials" className="hover:text-foreground transition-colors">
+                    Testimonials
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-muted-foreground text-sm">
-                <li><span className="opacity-50">Privacy Policy</span></li>
-                <li><span className="opacity-50">Terms of Service</span></li>
+                <li>
+                  <span className="opacity-50">Privacy Policy</span>
+                </li>
+                <li>
+                  <span className="opacity-50">Terms of Service</span>
+                </li>
               </ul>
             </div>
           </div>
@@ -408,18 +487,33 @@ export function LandingPage() {
               &copy; {new Date().getFullYear()} FeedbackAI. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <a href="https://twitter.com" className="text-muted-foreground hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://twitter.com"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Twitter
               </a>
-              <a href="https://github.com" className="text-muted-foreground hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://github.com"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 GitHub
               </a>
-              <a href="https://linkedin.com" className="text-muted-foreground hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://linkedin.com"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 LinkedIn
               </a>
             </div>
           </div>
-        </div>
+        </Container>
       </footer>
     </div>
   );

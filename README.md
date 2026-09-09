@@ -28,12 +28,15 @@ The goal of this project is to simplify the feedback loop for small to medium bu
 - **Backend**: Node.js 22+, Express 5, Prisma ORM
 - **Database**: PostgreSQL 16
 - **Auth**: Better Auth (email/password, session cookies, Prisma adapter)
+- **Reliability & Background Jobs**:
+  - **BullMQ**: Durable job queue for AI insight generation, batch analysis, and other heavy work (prevents request timeouts).
+  - **Redis / Upstash**: Shared cache + queue backend and distributed rate limiting (stops AI spam). Local Redis via Docker; production uses Upstash.
 - **Integrations**: 
   - **AI**: Google Gemini 2.0 Flash via Vercel AI SDK (`ai` + `@ai-sdk/google`)
-  - **Payments**: Stripe (Checkout & Billing Portal,) webhooks + hourly subscription sync
+  - **Payments**: Stripe (Checkout & Billing Portal) + webhooks + hourly subscription sync
   - **Storage**: S3-compatible object storage (Org Logos)
   - **QR**: QRCode.js
-- **Quality**: TypeScript (strict), Zod v4 validation, Vitest, ESLint + Prettier,GitHub Actions CI,Docker Compose(dev + prod)
+- **Quality**: TypeScript (strict), Zod v4 validation, Vitest, ESLint + Prettier, GitHub Actions CI, Docker Compose (dev + prod)
 
 ---
 
@@ -46,7 +49,7 @@ For a detailed look at the architecture, database schema, and technical decision
 
 ### Prerequisites
 - Node.js (v18+)
-- PostgreSQL 16 (spins up in Docker Compose)
+- PostgreSQL 16 + Redis 7 (both spin up in Docker Compose)
 - Stripe, Gemini, and S3-compatible storage credentials
 
 ### Installation

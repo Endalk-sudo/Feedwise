@@ -10,6 +10,7 @@ interface FeedbackState {
     sentiment?: string;
     category?: string;
     urgency?: string;
+    status?: string;
   };
   isLoading: boolean;
   error: string | null;

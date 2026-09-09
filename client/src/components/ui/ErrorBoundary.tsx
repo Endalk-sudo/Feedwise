@@ -37,17 +37,18 @@ export class ErrorBoundary extends Component<Props, State> {
           <AlertTriangle className="w-16 h-16 text-destructive mb-4" />
           <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
           <p className="text-muted-foreground mb-6 max-w-md">
-            We encountered an unexpected error. Please try refreshing the page or go back to the dashboard.
+            We encountered an unexpected error. Please try refreshing the page or go back to the
+            dashboard.
           </p>
           <div className="flex gap-3">
-            <button
-              onClick={() => window.location.reload()}
-              className="btn-brand px-4 py-2"
-            >
+            <button onClick={() => window.location.reload()} className="btn-brand px-4 py-2">
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh Page
             </button>
-            <Link to="/dashboard" className="px-4 py-2 border border-border rounded-lg hover:bg-accent transition-colors flex items-center gap-2">
+            <Link
+              to="/dashboard"
+              className="px-4 py-2 border border-border rounded-lg hover:bg-accent transition-colors flex items-center gap-2"
+            >
               <Home className="w-4 h-4" />
               Go to Dashboard
             </Link>

@@ -1,31 +1,31 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
+import { CenteredLayout, buttonVariants } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 export function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <CenteredLayout width="sm">
       <div className="text-center">
         <h1 className="text-9xl font-bold text-foreground mb-4">404</h1>
         <h2 className="text-2xl font-semibold mb-4">Page not found</h2>
         <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-          Sorry, we couldn&apos;t find the page you&apos;re looking for. It might have been moved or doesn&apos;t exist.
+          Sorry, we couldn&apos;t find the page you&apos;re looking for. It might have been moved or
+          doesn&apos;t exist.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            to="/"
-            className="px-6 py-3 btn-brand hover:from-blue-700 hover:to-purple-700 transition-all"
-          >
+          <Link to="/" className={cn(buttonVariants({ size: 'lg' }))}>
             Go Home
           </Link>
           <Link
             to="/dashboard"
-            className="px-6 py-3 bg-secondary border border-input text-foreground font-medium rounded-lg hover:border-input transition-all"
+            className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }))}
           >
-            <ArrowLeft className="w-4 h-4 inline mr-2" />
+            <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Link>
         </div>
       </div>
-    </div>
+    </CenteredLayout>
   );
 }
