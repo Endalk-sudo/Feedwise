@@ -179,10 +179,7 @@ export function FeedbackPage() {
                 const isExpanded = expandedId === feedback.id;
 
                 return (
-                  <div
-                    key={feedback.id}
-                    className="p-4 sm:p-5 hover:bg-secondary/20 transition-colors"
-                  >
+                  <div key={feedback.id} className="p-4 sm:p-5 hover:bg-muted transition-colors">
                     <div className="flex flex-col gap-3">
                       <div className="flex flex-wrap items-center gap-2">
                         {feedback.sentiment && (
@@ -367,7 +364,7 @@ export function FeedbackPage() {
                     onClick={() => setPage(currentPage - 1)}
                     disabled={currentPage === 1}
                     aria-label="Previous page"
-                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 disabled:opacity-50 transition-colors"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
@@ -375,7 +372,7 @@ export function FeedbackPage() {
                     onClick={() => setPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     aria-label="Next page"
-                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 disabled:opacity-50 transition-colors"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>

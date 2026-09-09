@@ -174,7 +174,7 @@ export function DashboardHome() {
         ) : (
           <ul className="divide-y divide-border">
             {topActions.map((item, idx) => (
-              <li key={item.id} className="px-5 py-4 hover:bg-secondary/30 transition-colors">
+              <li key={item.id} className="px-5 py-4 hover:bg-muted transition-colors">
                 <div className="flex items-start gap-3">
                   <span className="text-xs font-bold text-muted-foreground tabular-nums mt-0.5 w-4">
                     {idx + 1}

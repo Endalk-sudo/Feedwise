@@ -39,7 +39,7 @@ function MessageBubble({
           'max-w-[80%] rounded-xl px-4 py-3',
           message.role === 'user'
             ? 'bg-primary text-primary-foreground rounded-tr-none'
-            : 'bg-secondary text-foreground rounded-tl-none',
+            : 'bg-muted text-foreground rounded-tl-none',
         )}
       >
         <p className="whitespace-pre-wrap">{text}</p>
@@ -60,7 +60,7 @@ function MessageBubble({
 function TypingIndicator() {
   return (
     <div className="px-4 pb-4 flex justify-start">
-      <div className="bg-secondary rounded-xl rounded-tl-none px-4 py-3 flex items-center gap-1">
+      <div className="bg-muted rounded-xl rounded-tl-none px-4 py-3 flex items-center gap-1">
         <span
           className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce"
           style={{ animationDelay: '0ms' }}
@@ -228,7 +228,7 @@ export function AIPage() {
               <button
                 key={suggestion}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="p-4 bg-secondary/50 border border-input rounded-lg text-left text-foreground hover:border-primary/50 hover:bg-secondary transition-all text-sm"
+                className="p-4 bg-muted/60 border border-input rounded-lg text-left text-foreground hover:border-primary/50 hover:bg-muted transition-all text-sm"
               >
                 {suggestion}
               </button>

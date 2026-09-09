@@ -9,7 +9,7 @@ export const badgeVariants = cva(
         warning: 'bg-warning/15 text-warning border-warning/30',
         destructive: 'bg-destructive/15 text-destructive border-destructive/30',
         info: 'bg-primary/15 text-primary border-primary/30',
-        neutral: 'bg-secondary text-muted-foreground border-transparent',
+        neutral: 'bg-muted text-muted-foreground border-transparent',
         muted: 'bg-muted text-muted-foreground border-transparent',
       },
       size: {

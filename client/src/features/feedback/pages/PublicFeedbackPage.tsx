@@ -220,7 +220,7 @@ export function PublicFeedbackPage() {
                     'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
                     active
                       ? 'bg-primary/15 border-primary/40 text-foreground'
-                      : 'bg-secondary/40 border-border text-muted-foreground hover:border-primary/30',
+                        : 'bg-muted/60 border-border text-muted-foreground hover:border-primary/30',
                   )}
                 >
                   {tag}

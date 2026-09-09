@@ -47,7 +47,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </button>
             <Link
               to="/dashboard"
-              className="px-4 py-2 border border-border rounded-lg hover:bg-accent transition-colors flex items-center gap-2"
+              className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors flex items-center gap-2"
             >
               <Home className="w-4 h-4" />
               Go to Dashboard

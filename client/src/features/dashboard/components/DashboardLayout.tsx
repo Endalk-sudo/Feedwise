@@ -34,7 +34,7 @@ function NavItem({ item, isActive }: { item: (typeof navigation)[0]; isActive: b
         'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
         isActive
           ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-foreground border border-primary/30'
-          : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50',
+          : 'text-muted-foreground hover:text-foreground hover:bg-muted',
       )}
     >
       <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -104,7 +104,7 @@ export function DashboardLayout() {
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
                 Current Organization
               </p>
-              <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
+              <div className="flex items-center gap-3 p-3 bg-muted/60 rounded-lg">
                 <Building2 className="w-5 h-5 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{currentOrg.name}</p>
@@ -118,7 +118,7 @@ export function DashboardLayout() {
           <div className="p-4 border-t border-border">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all w-full"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all w-full"
             >
               <LogOut className="w-5 h-5" />
               Sign Out
@@ -134,7 +134,7 @@ export function DashboardLayout() {
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2">
               <button
-                className="lg:hidden p-2 -ml-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                className="lg:hidden p-2 -ml-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 onClick={() => toggleSidebar()}
                 aria-label="Open menu"
               >
@@ -145,7 +145,7 @@ export function DashboardLayout() {
             <div className="flex items-center gap-2 sm:gap-4">
               {/* Notifications */}
               <button
-                className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
@@ -155,7 +155,7 @@ export function DashboardLayout() {
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-secondary/50 transition-colors"
+                  className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-muted transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-medium text-primary-foreground">
                     {user?.name?.charAt(0).toUpperCase() ||
@@ -182,14 +182,14 @@ export function DashboardLayout() {
                       <Link
                         to="/dashboard/settings"
                         onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-foreground hover:text-foreground hover:bg-muted transition-colors"
                       >
                         <Settings className="w-5 h-5" />
                         Settings
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-destructive hover:text-destructive/80 hover:bg-secondary/50 transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-destructive hover:text-destructive/80 hover:bg-muted transition-colors"
                       >
                         <LogOut className="w-5 h-5" />
                         Sign Out

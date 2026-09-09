@@ -8,9 +8,8 @@ export const buttonVariants = cva(
         brand: 'btn-brand',
         secondary:
           'bg-secondary text-secondary-foreground border border-input rounded-lg hover:bg-secondary/80',
-        outline:
-          'border border-input bg-background rounded-lg text-foreground hover:bg-secondary/50',
-        ghost: 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg',
+        outline: 'border border-input bg-background rounded-lg text-foreground hover:bg-muted',
+        ghost: 'text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg',
         destructive:
           'bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90',
         success: 'bg-success/15 text-success rounded-lg hover:bg-success/25',

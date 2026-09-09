@@ -233,7 +233,7 @@ function TopIssuesList({ issues }: { issues: TopIssue[] | undefined }) {
   return (
     <div className="space-y-4">
       {issues.slice(0, 5).map((issue, i) => (
-        <div key={i} className="p-4 bg-secondary/50 rounded-lg">
+        <div key={i} className="p-4 bg-muted/60 rounded-lg">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-foreground text-sm line-clamp-2">{issue.text}</p>
@@ -266,7 +266,7 @@ function AlertsList({ alerts }: { alerts: Alert[] | undefined }) {
       {alerts.slice(0, 10).map((alert) => (
         <div
           key={alert.id}
-          className="p-3 bg-secondary/50 rounded-lg border-l-4 border-destructive"
+          className="p-3 bg-muted/60 rounded-lg border-l-4 border-destructive"
         >
           <p className="text-foreground text-sm line-clamp-1">{alert.text}</p>
           <div className="flex gap-2 mt-2">
