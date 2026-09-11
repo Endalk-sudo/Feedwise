@@ -142,6 +142,17 @@ model Feedback {
   rating           Int       @default(3)
   sentiment        String?   // Positive, Negative, Neutral, Mixed
   urgency          String?   // Low, Medium, High
+  // Phase 0/1: structured satisfaction (distinct from sentiment tone),
+  // fixable-problem flag + concrete issue, retention-risk churn signal.
+  satisfactionEstimate Int?  // 1-5 inferred satisfaction (arXiv 2606.19698)
+  fixableProblem   Boolean?  // concrete, actionable issue exists
+  concreteIssue    String?   // one-sentence fixable problem statement
+  retentionRisk    String?   // Low, Medium, High
+  verified         Boolean   @default(false)
+  verificationSource String? // qr-pos | email-link | stripe-purchase
+  mediaUrl         String?
+  mediaType        String?   // text | voice | image
+  costEstimate     Float?
   keyPoints        String[]
   keywords         String[]
   themes           String[]  // AI-extracted themes / topics
@@ -169,6 +180,9 @@ model Feedback {
   @@index([organizationId, urgency])
   @@index([organizationId, category])
   @@index([organizationId, status])
+  @@index([organizationId, satisfactionEstimate])
+  @@index([organizationId, fixableProblem])
+  @@index([organizationId, retentionRisk])
 }
 
 model Insight {

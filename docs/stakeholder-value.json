@@ -1,0 +1,68 @@
+[
+  {
+    "stakeholder": "Business Owner / Executive",
+    "pain": "Can’t tie customer complaints to lost ARR; no revenue-at-risk number for board.",
+    "value_needed": "Money: retention savings + expansion; time saved via AI-insight automation.",
+    "features": [
+      "Revenue-linked analytics (analytics service: getTopIssues + sentiment trends mapped to account ARR — extends analytics service)",
+      "Daily AI insight generation (jobs/generateInsights.ts) — automated board-ready digest",
+      "Category-to-urgency breakdown (analytics routes) — quick risk identification"
+    ],
+    "maps_to_codebase": "server/src/features/analytics/routes.ts + service.ts; server/src/jobs/generateInsights.ts; client/src/features/analytics/pages/AnalyticsPage.tsx"
+  },
+  {
+    "stakeholder": "Manager / Team Lead",
+    "pain": "No visibility into which frontline issue is recurring; can’t coach staff without data.",
+    "value_needed": "Team performance; recognition targets; faster close-the-loop time.",
+    "features": [
+      "Heatmap by category/sentiment (analytics service.getHeatmap) — shows team-level failure patterns",
+      "Feedback routing + response tracking (feedback service/routes) — who handled what, when",
+      "AI chat for root-cause queries (ai/service.ts + AIPage.tsx) — manager asks “why complaints rose this week?”"
+    ],
+    "maps_to_codebase": "client/src/features/analytics/pages/AnalyticsPage.tsx; server/src/features/feedback/service.ts; server/src/features/ai/service.ts"
+  },
+  {
+    "stakeholder": "Staff / Frontline (Barista, Clerk, Support Rep)",
+    "pain": "Feedback feels punitive; never see positive mentions or know which fix worked.",
+    "value_needed": "Recognition (Gallup: feedback + recognition drives outcomes); clear fix targets; trust from customer seeing change.",
+    "features": [
+      "Public response / close-the-loop UI (PublicFeedbackPage + feedback service) — staff reply visible to customer",
+      "Positive sentiment tagging (AI service sentiment analysis) — surfaces praise for recognition",
+      "Category-level fix targets (analytics getCategoryBreakdown) — staff gets “reduce wait-time complaints” metric"
+    ],
+    "maps_to_codebase": "client/src/features/feedback/pages/PublicFeedbackPage.tsx; server/src/features/ai/service.ts; server/src/features/analytics/service.ts"
+  },
+  {
+    "stakeholder": "Customer / End User",
+    "pain": "Leaves feedback into a black hole; never sees change; loses trust in brand.",
+    "value_needed": "Seeing their input drive action (trust); faster resolution (time saved); feeling heard.",
+    "features": [
+      "Public QR feedback page (client/src/features/feedback/pages/PublicFeedbackPage.tsx) — instant submission + view",
+      "Sentiment-analysis reply trigger (ai/service.ts) — auto-acknowledge high-urgency negative feedback",
+      "Insight updates / change log (future client feature mapped to generateInsights job output) — “Your feedback led to X”"
+    ],
+    "maps_to_codebase": "client/src/features/feedback/pages/PublicFeedbackPage.tsx; server/src/features/ai/service.ts; server/src/jobs/generateInsights.ts"
+  },
+  {
+    "stakeholder": "Supplier / Vendor / Partner",
+    "pain": "No structured quality feedback from the business; quality issues stay hidden.",
+    "value_needed": "Compliance-quality data; trust through transparent feedback; reduced dispute cost.",
+    "features": [
+      "Category-level quality reports (analytics getCategoryBreakdown + heatmap) — exportable supplier scorecard",
+      "Feedback export / S3 file storage (server/src/config/s3.ts) — deliverable audit file",
+      "AI-categorized defect taxonomy (ai/service.ts) — consistent supplier-facing language"
+    ],
+    "maps_to_codebase": "server/src/config/s3.ts; server/src/features/analytics/service.ts; server/src/features/ai/service.ts"
+  },
+  {
+    "stakeholder": "Regulator / Compliance / Auditor",
+    "pain": "No audit trail linking customer complaint to resolution; risk of non-compliance fines.",
+    "value_needed": "Compliance; documented close-the-loop; time saved in audits.",
+    "features": [
+      "Feedback audit trail with createdAt + urgency + sentiment (prisma schema + analytics routes) — immutable log",
+      "Daily insight archive (generateInsights job + S3) — retained evidence of action",
+      "Public response timestamp (feedback service) — proves loop-closure for audit"
+    ],
+    "maps_to_codebase": "prisma/schema (feedback table); server/src/features/feedback/service.ts; server/src/jobs/generateInsights.ts; server/src/config/s3.ts"
+  }
+]

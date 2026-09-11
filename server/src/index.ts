@@ -7,8 +7,9 @@ import { env } from './lib/env.js';
 import { prisma } from './lib/prisma.js';
 import { ensureRedisConnected, closeRedis } from './lib/redis.js';
 import logger from './utils/logger.js';
-import { startInsightGenerationJob, startSubscriptionSyncJob } from './jobs/generateInsights.js';
+import { startInsightGenerationJob, startDigestJob, startSubscriptionSyncJob } from './jobs/generateInsights.js';
 import { stopInsightsWorker } from './workers/insights.worker.js';
+import { stopNotificationWorker } from './workers/notification.worker.js';
 
 // Start the server
 const startServer = async () => {
@@ -24,6 +25,7 @@ const startServer = async () => {
     }
 
     startInsightGenerationJob();
+    startDigestJob();
     startSubscriptionSyncJob();
 
     const server = app.listen(env.PORT, () => {
@@ -35,6 +37,7 @@ const startServer = async () => {
       logger.info(`${signal} received — shutting down gracefully`);
       server.close(async () => {
         await stopInsightsWorker().catch(() => {});
+        await stopNotificationWorker().catch(() => {});
         await closeRedis().catch(() => {});
         await prisma.$disconnect().catch(() => {});
         process.exit(0);

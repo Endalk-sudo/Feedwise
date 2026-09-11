@@ -1,9 +1,15 @@
 import cron from 'node-cron';
 import { prisma } from '@/lib/prisma.js';
-import { enqueueInsightGeneration, getInsightsQueue } from '@/lib/queue.js';
+import {
+  enqueueInsightGeneration,
+  enqueueDigestEmail,
+  getDefaultQueue,
+  getInsightsQueue,
+} from '@/lib/queue.js';
 import { syncSubscriptionStatus } from '@/features/payments/service.js';
 import { ensureRedisConnected } from '@/lib/redis.js';
 import { startInsightsWorker } from '@/workers/insights.worker.js';
+import { startNotificationWorker } from '@/workers/notification.worker.js';
 import logger from '@/utils/logger.js';
 
 /**
@@ -12,8 +18,9 @@ import logger from '@/utils/logger.js';
  * Falls back to node-cron in-process when Redis is unavailable.
  */
 export function startInsightGenerationJob(): void {
-  // Always try to start the worker (no-op if no Redis)
+  // Always try to start the workers (no-op if no Redis)
   startInsightsWorker();
+  startNotificationWorker();
 
   // Cron that *enqueues* jobs (or runs inline as fallback)
   cron.schedule('0 2 * * *', async () => {
@@ -86,6 +93,89 @@ export function startInsightGenerationJob(): void {
   });
 
   logger.info('✅ Insight generation schedule registered (BullMQ preferred, cron fallback)');
+}
+
+/**
+ * Daily digest emails (Phase 3, 7AM): one per org with 24h activity.
+ * Honors the org settings opt-out (settings.emailDigest === false) in the
+ * worker. Falls back to direct send when Redis is unavailable.
+ */
+export function startDigestJob(): void {
+  cron.schedule('0 7 * * *', async () => {
+    logger.info('📧 Daily digest schedule triggered');
+    try {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const activeOrgs = await prisma.organization.findMany({
+        where: { feedbacks: { some: { createdAt: { gte: since } } } },
+        select: { id: true },
+      });
+      logger.info(`Found ${activeOrgs.length} orgs with 24h activity`);
+
+      const redisOk = await ensureRedisConnected();
+      const queue = getDefaultQueue();
+      const { sendDigestEmail, dashboardUrlFor } = await import('@/lib/mail.js');
+
+      for (const org of activeOrgs) {
+        try {
+          if (redisOk && queue) {
+            await enqueueDigestEmail(org.id);
+          } else {
+            // Inline fallback (same shape as the worker path)
+            const [recent, highUrgencyOpen, satisfactionAgg, total24h] = await Promise.all([
+              prisma.feedback.findMany({
+                where: {
+                  organizationId: org.id,
+                  createdAt: { gte: since },
+                  OR: [{ urgency: 'High' }, { fixableProblem: true }, { retentionRisk: 'High' }],
+                },
+                orderBy: [{ urgency: 'desc' }, { createdAt: 'desc' }],
+                take: 10,
+              }),
+              prisma.feedback.count({
+                where: { organizationId: org.id, urgency: 'High', status: 'open' },
+              }),
+              prisma.feedback.aggregate({
+                where: {
+                  organizationId: org.id,
+                  createdAt: { gte: since },
+                  satisfactionEstimate: { not: null },
+                },
+                _avg: { satisfactionEstimate: true },
+              }),
+              prisma.feedback.count({
+                where: { organizationId: org.id, createdAt: { gte: since } },
+              }),
+            ]);
+            await sendDigestEmail(
+              org.id,
+              recent.map((f) => ({
+                id: f.id,
+                text: f.text,
+                category: f.category,
+                urgency: f.urgency,
+                satisfactionEstimate: f.satisfactionEstimate,
+                retentionRisk: f.retentionRisk,
+                status: f.status,
+                createdAt: f.createdAt,
+              })),
+              {
+                total24h,
+                highUrgencyOpen,
+                avgSatisfaction: satisfactionAgg._avg.satisfactionEstimate,
+              },
+              dashboardUrlFor(),
+            );
+          }
+        } catch (error) {
+          logger.error(`Digest failed for org ${org.id}: ${(error as Error).message}`);
+        }
+      }
+    } catch (error) {
+      logger.error(`Daily digest job failed: ${(error as Error).message}`);
+    }
+  });
+
+  logger.info('✅ Digest schedule registered (7AM, BullMQ preferred, inline fallback)');
 }
 
 /**

@@ -45,6 +45,10 @@ describe('analyzeFeedback', () => {
         sentiment: 'Negative',
         urgency: 'High',
         rating: 2,
+        satisfactionEstimate: 2,
+        fixableProblem: true,
+        concreteIssue: 'Slow service at peak hours',
+        retentionRisk: 'High',
         keyPoints: ['slow'],
         keywords: ['slow'],
         themes: ['Speed'],
@@ -58,6 +62,62 @@ describe('analyzeFeedback', () => {
 
     expect(result.category).toBe('Support');
     expect(result.sentiment).toBe('Negative');
+    expect(result.satisfactionEstimate).toBe(2);
+    expect(result.fixableProblem).toBe(true);
+    expect(result.retentionRisk).toBe('High');
+  });
+
+  it('backfills structured fields when the model omits them', async () => {
+    mockedGenerateText.mockResolvedValue({
+      output: {
+        category: 'Support',
+        sentiment: 'Negative',
+        urgency: 'Medium',
+        rating: 2,
+        keyPoints: ['slow'],
+        keywords: ['slow'],
+        themes: ['Speed'],
+        rootCause: 'Understaffed',
+        suggestedAction: 'Add staff at peak hours',
+        confidence: 0.8,
+      },
+    } as never);
+
+    const result = await analyzeFeedback('too slow', ['Support']);
+
+    expect(result.satisfactionEstimate).toBe(2);
+    expect(result.fixableProblem).toBe(false);
+    expect(result.concreteIssue).toBe('None');
+    // satisfaction 2 (from rating 2) => High risk even at Medium urgency.
+    expect(result.retentionRisk).toBe('High');
+  });
+
+  it('preserves tolerated friction: positive tone with a fixable problem', async () => {
+    mockedGenerateText.mockResolvedValue({
+      output: {
+        category: 'Service',
+        sentiment: 'Positive',
+        urgency: 'Low',
+        rating: 4,
+        satisfactionEstimate: 4,
+        fixableProblem: true,
+        concreteIssue: 'Napkins missing on tables',
+        retentionRisk: 'Low',
+        keyPoints: ['loved coffee', 'no napkins'],
+        keywords: ['coffee', 'napkins'],
+        themes: ['Hospitality'],
+        rootCause: 'Restocking gap',
+        suggestedAction: 'Add napkin checks to closing duties',
+        confidence: 0.9,
+      },
+    } as never);
+
+    const result = await analyzeFeedback('Love this place but no napkins!', ['Service']);
+
+    // Satisfaction/fixable must not be collapsed into sentiment.
+    expect(result.sentiment).toBe('Positive');
+    expect(result.fixableProblem).toBe(true);
+    expect(result.concreteIssue).toContain('Napkins');
   });
 
   it('returns the safe fallback when the model call fails', async () => {
@@ -70,6 +130,10 @@ describe('analyzeFeedback', () => {
       sentiment: 'Neutral',
       urgency: 'Low',
       rating: 3,
+      satisfactionEstimate: 3,
+      fixableProblem: false,
+      concreteIssue: 'Unknown',
+      retentionRisk: 'Low',
       keyPoints: ['Analysis failed'],
       keywords: [],
       themes: [],
@@ -120,6 +184,24 @@ describe('buildChatPrompt / streamChat', () => {
 
     expect(prompt).toContain('top issues?');
     expect(prompt).toContain('too expensive');
+  });
+
+  it('includes satisfaction and fixable-problem annotations when present', () => {
+    const prompt = buildChatPrompt('why churn risk?', [
+      {
+        category: 'Service',
+        text: 'waited 40 minutes',
+        sentiment: 'Positive',
+        urgency: 'Medium',
+        satisfactionEstimate: 2,
+        fixableProblem: true,
+        retentionRisk: 'High',
+      },
+    ]);
+
+    expect(prompt).toContain('Satisfaction: 2/5');
+    expect(prompt).toContain('Fixable: yes');
+    expect(prompt).toContain('Risk: High');
   });
 
   it('yields the fallback message when the stream is empty', async () => {

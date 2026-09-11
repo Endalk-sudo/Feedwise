@@ -10,6 +10,12 @@ export interface Feedback {
   rating: number;
   sentiment: 'Positive' | 'Negative' | 'Neutral' | 'Mixed' | null;
   urgency: 'Low' | 'Medium' | 'High' | null;
+  // Phase 1: structured satisfaction (distinct from sentiment tone).
+  satisfactionEstimate?: number | null;
+  fixableProblem?: boolean | null;
+  concreteIssue?: string | null;
+  retentionRisk?: 'Low' | 'Medium' | 'High' | null;
+  verified?: boolean;
   keyPoints: string[];
   keywords: string[];
   themes?: string[];
@@ -52,6 +58,9 @@ export interface FeedbackStats {
     category: string;
     sentiment: string | null;
     urgency: string | null;
+    satisfactionEstimate?: number | null;
+    fixableProblem?: boolean | null;
+    retentionRisk?: string | null;
     suggestedAction: string | null;
     rootCause: string | null;
     status: string;

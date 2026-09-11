@@ -70,6 +70,8 @@ export const apiClient = {
       api.post(`/organization/${slug}/members`, data),
     removeMember: (slug: string, userId: string) =>
       api.delete(`/organization/${slug}/members/${userId}`),
+    updateMemberRole: (slug: string, userId: string, data: { role: string }) =>
+      api.put(`/organization/${slug}/members/${userId}`, data),
   },
 
   // Feedback

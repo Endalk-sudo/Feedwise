@@ -23,6 +23,15 @@ const feedbackAnalysisSchema = z.object({
   sentiment: z.enum(['Positive', 'Negative', 'Neutral', 'Mixed']),
   urgency: z.enum(['Low', 'Medium', 'High']),
   rating: z.number().min(1).max(5),
+  // Structured satisfaction (arXiv 2606.19698): satisfaction 1-5 is the
+  // customer's inferred outcome, distinct from sentiment tone. fixableProblem
+  // flags concrete, actionable issues ("tolerated friction" included).
+  satisfactionEstimate: z.number().int().min(1).max(5).describe(
+    'Inferred customer satisfaction 1-5, distinct from sentiment tone',
+  ),
+  fixableProblem: z.boolean().describe('Whether a concrete fixable problem exists'),
+  concreteIssue: z.string().describe('One-sentence fixable problem, or "None"'),
+  retentionRisk: z.enum(['Low', 'Medium', 'High']).describe('Churn/revenue-at-risk signal'),
   keyPoints: z.array(z.string()).describe('Main points the customer is making'),
   keywords: z.array(z.string()),
   themes: z.array(z.string()).describe('Short theme labels, e.g. Wait time, Staff attitude'),
@@ -36,6 +45,10 @@ export interface FeedbackAnalysis {
   sentiment: 'Positive' | 'Negative' | 'Neutral' | 'Mixed';
   urgency: 'Low' | 'Medium' | 'High';
   rating: number;
+  satisfactionEstimate: number;
+  fixableProblem: boolean;
+  concreteIssue: string;
+  retentionRisk: 'Low' | 'Medium' | 'High';
   keyPoints: string[];
   keywords: string[];
   themes: string[];
@@ -70,9 +83,17 @@ Available categories: ${categoriesList}
 
 Rules:
 - category: must match one of the available categories
-- sentiment: Positive, Negative, Neutral, or Mixed
+- sentiment: Positive, Negative, Neutral, or Mixed (tone of the words)
 - urgency: High only for safety, refunds, repeated severe complaints, or clear churn risk; otherwise Medium/Low
 - rating: 1-5 inferred overall rating
+- satisfactionEstimate: 1-5 inferred outcome satisfaction, DISTINCT from sentiment tone.
+  Polite/positive wording with an unresolved problem is still low satisfaction (2-3).
+  Harsh wording about a trivially fixed issue can still be satisfaction 4.
+- fixableProblem: true when a concrete, actionable issue exists (including
+  "tolerated friction": satisfied overall but reporting something to fix)
+- concreteIssue: one short sentence naming the fixable problem, or "None"
+- retentionRisk: High when urgency is High or satisfactionEstimate <= 2;
+  Medium when sentiment is Negative/Mixed or satisfactionEstimate == 3; else Low
 - keyPoints: 2-5 short factual points
 - keywords: important terms
 - themes: 1-4 short labels (e.g. "Wait time", "Food quality")
@@ -97,6 +118,26 @@ Rules:
     if (!analysis.themes) analysis.themes = [];
     if (!analysis.rootCause) analysis.rootCause = 'Unknown';
     if (!analysis.suggestedAction) analysis.suggestedAction = 'Review this feedback with your team';
+    // Backfill for models/caches predating structured satisfaction fields.
+    if (
+      typeof analysis.satisfactionEstimate !== 'number' ||
+      analysis.satisfactionEstimate < 1 ||
+      analysis.satisfactionEstimate > 5
+    ) {
+      analysis.satisfactionEstimate = Math.min(5, Math.max(1, Math.round(analysis.rating ?? 3)));
+    }
+    if (typeof analysis.fixableProblem !== 'boolean') analysis.fixableProblem = false;
+    if (!analysis.concreteIssue) analysis.concreteIssue = 'None';
+    if (!['Low', 'Medium', 'High'].includes(analysis.retentionRisk as string)) {
+      analysis.retentionRisk =
+        analysis.urgency === 'High' || analysis.satisfactionEstimate <= 2
+          ? 'High'
+          : analysis.sentiment === 'Negative' ||
+              analysis.sentiment === 'Mixed' ||
+              analysis.satisfactionEstimate === 3
+            ? 'Medium'
+            : 'Low';
+    }
 
     return analysis;
   } catch (error) {
@@ -106,6 +147,10 @@ Rules:
       sentiment: 'Neutral' as const,
       urgency: 'Low' as const,
       rating: 3,
+      satisfactionEstimate: 3,
+      fixableProblem: false,
+      concreteIssue: 'Unknown',
+      retentionRisk: 'Low' as const,
       keyPoints: ['Analysis failed'],
       keywords: [],
       themes: [],
@@ -157,6 +202,24 @@ export interface FeedbackContextItem {
   text: string;
   sentiment?: string | null;
   urgency?: string | null;
+  satisfactionEstimate?: number | null;
+  fixableProblem?: boolean | null;
+  retentionRisk?: string | null;
+}
+
+function formatContextLine(f: FeedbackContextItem, maxLen: number): string {
+  const extras = [
+    f.satisfactionEstimate != null ? `Satisfaction: ${f.satisfactionEstimate}/5` : null,
+    f.fixableProblem != null ? `Fixable: ${f.fixableProblem ? 'yes' : 'no'}` : null,
+    f.retentionRisk ? `Risk: ${f.retentionRisk}` : null,
+  ]
+    .filter(Boolean)
+    .join(', ');
+  return (
+    `Category: ${f.category}, Sentiment: ${f.sentiment}, Urgency: ${f.urgency}` +
+    (extras ? `, ${extras}` : '') +
+    `, Text: ${f.text.substring(0, maxLen)}`
+  );
 }
 
 export async function generateInsights(
@@ -166,7 +229,7 @@ export async function generateInsights(
 
   const feedbackText = feedbacks
     .slice(0, 50)
-    .map((f) => `${f.category}: ${f.text.substring(0, 200)}`)
+    .map((f) => formatContextLine(f, 200))
     .join('\n---\n');
 
   const prompt = `Analyze this customer feedback data and provide 3-5 actionable growth recommendations.
@@ -216,13 +279,7 @@ export async function chatWithAI(
 }
 
 export function buildChatPrompt(message: string, feedbackContext: FeedbackContextItem[]): string {
-  const context = feedbackContext
-    .slice(0, 15)
-    .map(
-      (f) =>
-        `Category: ${f.category}, Sentiment: ${f.sentiment}, Urgency: ${f.urgency}, Text: ${f.text.substring(0, 300)}`,
-    )
-    .join('\n');
+  const context = feedbackContext.slice(0, 15).map((f) => formatContextLine(f, 300)).join('\n');
 
   return `You are an AI assistant helping a business owner understand their customer feedback.
 
@@ -269,13 +326,7 @@ export async function* streamChat(
  * server-side; the client only ever sends conversation messages.
  */
 export function buildChatSystemPrompt(feedbackContext: FeedbackContextItem[]): string {
-  const context = feedbackContext
-    .slice(0, 15)
-    .map(
-      (f) =>
-        `Category: ${f.category}, Sentiment: ${f.sentiment}, Urgency: ${f.urgency}, Text: ${f.text.substring(0, 300)}`,
-    )
-    .join('\n');
+  const context = feedbackContext.slice(0, 15).map((f) => formatContextLine(f, 300)).join('\n');
 
   return `You are an AI assistant helping a business owner understand their customer feedback.
 

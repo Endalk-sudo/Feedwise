@@ -19,6 +19,7 @@ import { LandingPage } from '@/features/landing/pages/LandingPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { OrgSetupPage } from '@/features/organization/pages/OrgSetupPage';
+import { MembersPage } from '@/features/organization/pages/MembersPage';
 import { DashboardLayout } from '@/features/dashboard/components/DashboardLayout';
 import { DashboardHome } from '@/features/dashboard/pages/DashboardHome';
 import { FeedbackPage } from '@/features/feedback/pages/FeedbackPage';
@@ -128,6 +129,12 @@ const aiRoute = createRoute({
   component: () => <AIPage />,
 });
 
+const teamRoute = createRoute({
+  getParentRoute: () => dashboardRoute,
+  path: 'team',
+  component: () => <MembersPage />,
+});
+
 const settingsRoute = createRoute({
   getParentRoute: () => dashboardRoute,
   path: 'settings',
@@ -151,6 +158,7 @@ const routeTree = rootRoute.addChildren([
     feedbackRoute,
     analyticsRoute,
     aiRoute,
+    teamRoute,
     settingsRoute,
   ]),
   publicFeedbackRoute,

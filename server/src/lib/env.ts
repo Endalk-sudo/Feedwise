@@ -52,6 +52,19 @@ const envSchema = z.object({
   // Local Docker: redis://redis:6379
   // Upstash: rediss://default:<password>@<endpoint>.upstash.io:6379
   REDIS_URL: z.string().url().optional(),
+
+  // Email (SMTP via nodemailer — Phase 3 urgency alerts + digest).
+  // Leave SMTP_HOST empty to disable sending (jobs log + skip).
+  // Local dev catcher: Mailpit/Mailhog on localhost:1025.
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  EMAIL_FROM: z.string().default('Feedwise <noreply@feedwise.app>'),
 });
 
 export type Env = z.infer<typeof envSchema>;

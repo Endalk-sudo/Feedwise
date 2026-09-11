@@ -6,6 +6,7 @@ import {
   MessageSquare,
   BarChart3,
   Bot,
+  Users,
   Settings,
   LogOut,
   ChevronDown,
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Feedback', href: '/dashboard/feedback', icon: MessageSquare },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { name: 'AI Assistant', href: '/dashboard/ai', icon: Bot },
+  { name: 'Team', href: '/dashboard/team', icon: Users },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 

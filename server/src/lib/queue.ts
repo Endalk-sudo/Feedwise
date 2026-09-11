@@ -10,6 +10,7 @@ export const JOB_NAMES = {
   ANALYZE_FEEDBACK_BATCH: 'analyze-feedback-batch',
   SYNC_SUBSCRIPTION: 'sync-subscription',
   SEND_DIGEST_EMAIL: 'send-digest-email',
+  HIGH_URGENCY_ALERT: 'high-urgency-alert',
 } as const;
 
 export type JobName = (typeof JOB_NAMES)[keyof typeof JOB_NAMES];
@@ -109,6 +110,44 @@ export async function enqueueSubscriptionSync(userId: string): Promise<string | 
   const queue = getDefaultQueue();
   if (!queue) return null;
   const job = await queue.add(JOB_NAMES.SYNC_SUBSCRIPTION, { userId });
+  return job.id ?? null;
+}
+
+/**
+ * Enqueue an immediate high-urgency alert email (Phase 3).
+ * Null-safe when Redis is unavailable — callers must not fail on null.
+ */
+export async function enqueueHighUrgencyAlert(
+  organizationId: string,
+  feedbackId: string,
+): Promise<string | null> {
+  const queue = getDefaultQueue();
+  if (!queue) {
+    logger.warn('Default queue unavailable — skipping urgency alert enqueue');
+    return null;
+  }
+  const job = await queue.add(
+    JOB_NAMES.HIGH_URGENCY_ALERT,
+    { organizationId, feedbackId },
+    { jobId: `urgency-${feedbackId}` },
+  );
+  return job.id ?? null;
+}
+
+/**
+ * Enqueue a daily digest email for one organization (Phase 3).
+ */
+export async function enqueueDigestEmail(organizationId: string): Promise<string | null> {
+  const queue = getDefaultQueue();
+  if (!queue) {
+    logger.warn('Default queue unavailable — skipping digest enqueue');
+    return null;
+  }
+  const job = await queue.add(
+    JOB_NAMES.SEND_DIGEST_EMAIL,
+    { organizationId },
+    { jobId: `digest-${organizationId}-${new Date().toISOString().slice(0, 10)}` },
+  );
   return job.id ?? null;
 }
 

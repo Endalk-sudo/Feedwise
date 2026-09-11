@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma.js';
 import { analyzeFeedback } from '@/features/ai/service.js';
+import { enqueueHighUrgencyAlert } from '@/lib/queue.js';
+import logger from '@/utils/logger.js';
 
 export type FeedbackStatus = 'open' | 'in_progress' | 'resolved' | 'ignored';
 
@@ -19,7 +21,7 @@ export const feedbackService = {
     const contextTags = options.contextTags ?? [];
     const analysis = await analyzeFeedback(text, org.categories as string[], contextTags);
 
-    return prisma.feedback.create({
+    const created = await prisma.feedback.create({
       data: {
         organizationId: org.id,
         text,
@@ -27,6 +29,10 @@ export const feedbackService = {
         rating: options.rating ?? analysis.rating,
         sentiment: analysis.sentiment,
         urgency: analysis.urgency,
+        satisfactionEstimate: analysis.satisfactionEstimate,
+        fixableProblem: analysis.fixableProblem,
+        concreteIssue: analysis.concreteIssue,
+        retentionRisk: analysis.retentionRisk,
         keyPoints: analysis.keyPoints,
         keywords: analysis.keywords,
         themes: analysis.themes ?? [],
@@ -39,6 +45,16 @@ export const feedbackService = {
         status: 'open',
       },
     });
+
+    // Phase 3: push urgency alerts off the request path. Fire-and-forget —
+    // a queue failure must never fail the public submission.
+    if (analysis.urgency === 'High' || analysis.satisfactionEstimate <= 2) {
+      enqueueHighUrgencyAlert(org.id, created.id).catch((error: unknown) => {
+        logger.warn(`Urgency alert enqueue failed: ${(error as Error).message}`);
+      });
+    }
+
+    return created;
   },
 
   async getFeedbacks(
@@ -50,6 +66,10 @@ export const feedbackService = {
       category?: string;
       urgency?: string;
       status?: string;
+      satisfactionEstimate?: number | string;
+      fixableProblem?: boolean | string;
+      retentionRisk?: string;
+      verified?: boolean | string;
     },
   ) {
     const where: Record<string, unknown> = { organizationId };
@@ -57,6 +77,14 @@ export const feedbackService = {
     if (params.category) where.category = params.category;
     if (params.urgency) where.urgency = params.urgency;
     if (params.status) where.status = params.status;
+    if (params.satisfactionEstimate != null)
+      where.satisfactionEstimate = Number(params.satisfactionEstimate);
+    if (params.fixableProblem != null)
+      where.fixableProblem =
+        params.fixableProblem === true || params.fixableProblem === 'true';
+    if (params.retentionRisk) where.retentionRisk = params.retentionRisk;
+    if (params.verified != null)
+      where.verified = params.verified === true || params.verified === 'true';
 
     const [feedbacks, total] = await Promise.all([
       prisma.feedback.findMany({
@@ -129,6 +157,10 @@ export const feedbackService = {
       urgency?: string;
       suggestedAction?: string;
       rootCause?: string;
+      satisfactionEstimate?: number;
+      fixableProblem?: boolean;
+      concreteIssue?: string;
+      retentionRisk?: string;
     },
   ) {
     const existing = await prisma.feedback.findFirst({ where: { id, organizationId } });
@@ -204,6 +236,9 @@ export const feedbackService = {
           category: true,
           sentiment: true,
           urgency: true,
+          satisfactionEstimate: true,
+          fixableProblem: true,
+          retentionRisk: true,
           suggestedAction: true,
           rootCause: true,
           status: true,

@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+// Phase 0: shared enums for structured satisfaction (arXiv 2606.19698).
+// Satisfaction (1-5) is distinct from sentiment tone; fixableProblem turns
+// feedback into a work list; retentionRisk aggregates urgency + satisfaction.
+export const satisfactionEstimateSchema = z.coerce.number().int().min(1).max(5);
+export const retentionRiskSchema = z.enum(['Low', 'Medium', 'High']);
+export const feedbackMediaTypeSchema = z.enum(['text', 'voice', 'image']);
+
 export const submitFeedbackSchema = z.object({
   body: z.object({
     text: z.string().min(5, 'Please share a bit more detail').max(5000),
@@ -19,6 +26,10 @@ export const getFeedbacksSchema = z.object({
     category: z.string().optional(),
     urgency: z.enum(['Low', 'Medium', 'High']).optional(),
     status: z.enum(['open', 'in_progress', 'resolved', 'ignored']).optional(),
+    satisfactionEstimate: satisfactionEstimateSchema.optional(),
+    fixableProblem: z.coerce.boolean().optional(),
+    retentionRisk: retentionRiskSchema.optional(),
+    verified: z.coerce.boolean().optional(),
   }),
   params: z.object({
     slug: z.string().min(1),
@@ -51,6 +62,10 @@ export const correctFeedbackSchema = z.object({
     urgency: z.enum(['Low', 'Medium', 'High']).optional(),
     suggestedAction: z.string().max(500).optional(),
     rootCause: z.string().max(500).optional(),
+    satisfactionEstimate: satisfactionEstimateSchema.optional(),
+    fixableProblem: z.boolean().optional(),
+    concreteIssue: z.string().max(500).optional(),
+    retentionRisk: retentionRiskSchema.optional(),
   }),
   params: z.object({
     slug: z.string().min(1),

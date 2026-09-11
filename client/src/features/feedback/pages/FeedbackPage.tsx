@@ -14,6 +14,7 @@ import {
   Clock,
   XCircle,
   Circle,
+  Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -205,6 +206,35 @@ export function FeedbackPage() {
                           </Badge>
                         )}
                         <Badge>{feedback.category}</Badge>
+                        {typeof feedback.satisfactionEstimate === 'number' && (
+                          <Badge
+                            variant={
+                              feedback.satisfactionEstimate <= 2
+                                ? 'destructive'
+                                : feedback.satisfactionEstimate === 3
+                                  ? 'warning'
+                                  : 'success'
+                            }
+                          >
+                            Satisfaction {feedback.satisfactionEstimate}/5
+                          </Badge>
+                        )}
+                        {feedback.fixableProblem && (
+                          <Badge variant="warning">
+                            <Wrench className="w-3 h-3" />
+                            Fixable
+                          </Badge>
+                        )}
+                        {feedback.retentionRisk && feedback.retentionRisk !== 'Low' && (
+                          <Badge
+                            variant={feedback.retentionRisk === 'High' ? 'destructive' : 'warning'}
+                          >
+                            {feedback.retentionRisk === 'High' && (
+                              <AlertTriangle className="w-3 h-3" />
+                            )}
+                            {feedback.retentionRisk} risk
+                          </Badge>
+                        )}
                         <span
                           className={cn(
                             'px-2 py-0.5 text-[10px] font-medium rounded-full inline-flex items-center gap-1',
@@ -253,8 +283,16 @@ export function FeedbackPage() {
                         </div>
                       )}
 
-                      {feedback.rootCause && feedback.rootCause !== 'Unknown' && (
-                        <p className="text-xs text-muted-foreground">
+                      {feedback.fixableProblem &&
+                        feedback.concreteIssue &&
+                        feedback.concreteIssue !== 'None' && (
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-medium text-foreground">Fixable issue: </span>
+                            {feedback.concreteIssue}
+                          </p>
+                        )}
+
+                      {feedback.rootCause && feedback.rootCause !== 'Unknown' && (                        <p className="text-xs text-muted-foreground">
                           <span className="font-medium text-foreground">Root cause: </span>
                           {feedback.rootCause}
                         </p>

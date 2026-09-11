@@ -88,7 +88,9 @@ export function useUploadLogo(slug: string) {
 }
 
 /**
- * Hook to add member to organization
+ * Hook to add member to organization.
+ * Note: the server only adds already-registered users by email
+ * (404 when the email has no account yet).
  */
 export function useAddMember(slug: string) {
   const queryClient = useQueryClient();
@@ -101,7 +103,12 @@ export function useAddMember(slug: string) {
       addToast({ message: 'Member added successfully!', type: 'success' });
     },
     onError: (error) => {
-      addToast({ message: error instanceof Error ? error.message : 'Failed to add member', type: 'error' });
+      const serverMessage = (error as { response?: { data?: { message?: string } } })?.response
+        ?.data?.message;
+      addToast({
+        message: serverMessage || (error instanceof Error ? error.message : 'Failed to add member'),
+        type: 'error',
+      });
     },
   });
 }
@@ -121,6 +128,32 @@ export function useRemoveMember(slug: string) {
     },
     onError: (error) => {
       addToast({ message: error instanceof Error ? error.message : 'Failed to remove member', type: 'error' });
+    },
+  });
+}
+
+/**
+ * Hook to change a member's role (owner only, server-enforced).
+ */
+export function useUpdateMemberRole(slug: string) {
+  const queryClient = useQueryClient();
+  const { addToast } = useUIStore();
+
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: string }) =>
+      unwrapData(apiClient.organizations.updateMemberRole(slug, userId, { role })),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['organization', slug] });
+      addToast({ message: 'Member role updated!', type: 'success' });
+    },
+    onError: (error) => {
+      const serverMessage = (error as { response?: { data?: { message?: string } } })?.response
+        ?.data?.message;
+      addToast({
+        message:
+          serverMessage || (error instanceof Error ? error.message : 'Failed to update role'),
+        type: 'error',
+      });
     },
   });
 }
