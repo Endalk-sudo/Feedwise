@@ -37,7 +37,7 @@ graph TD
     - *Link*: Can belong to many Organizations via memberships.
 2.  **Organization**: Contains business details, custom AI categories, and a unique slug for the QR landing page.
     - *Link*: Belongs to many Users. Contains many Feedbacks.
-3.  **Feedback**: Stores the raw message and AI-enriched analysis (sentiment, urgency, rating, category, keywords, themes, root cause, suggested action, confidence), plus close-the-loop state (`open` | `in_progress` | `resolved` | `ignored`), internal notes, owner reply, and human corrections.
+3.  **Feedback**: Stores the raw message and AI-enriched analysis (sentiment, urgency, rating, category, keywords, themes, root cause, suggested action, confidence — plus `satisfactionEstimate` 1–5, `fixableProblem`, `concreteIssue`, `retentionRisk`, `verified`, media and `costEstimate` fields), plus close-the-loop state (`open` | `in_progress` | `resolved` | `ignored`), internal notes, owner reply, and human corrections.
      - *Link*: Belongs to an Organization.
 4.  **Subscription**: Persisted Stripe subscription state (plan, status, period end,, linked to an Organization).
     - *Link*: Belongs to an Organization.
@@ -49,7 +49,7 @@ The core "magic" happens in the `analyzeFeedback` pipeline:
 1.  **Input**: Raw text from a customer.
 2.  **Context**: The organization categories (used as the AI context)..
 3.  **Processing**: A structured prompt is sent to `gemini-2.0-flash` with a strict JSON schema.
-4.  **Enrichment**: The AI returns sentiment (Positive/Negative/Neutral), an inferred 1-5 rating, key themes, and an urgency score.
+4.  **Enrichment**: The AI returns sentiment (Positive/Negative/Neutral/Mixed), an inferred 1-5 rating, key themes, an urgency score — plus `satisfactionEstimate` (1–5 outcome satisfaction, distinct from tone), `fixableProblem` + `concreteIssue`, and `retentionRisk` (Low/Medium/High). Missing structured fields are backfilled deterministically so old rows stay queryable.
 5.  **Storage**: The enriched data is saved, enabling real-time dashboard analytics.
 
 ---
@@ -92,19 +92,22 @@ Conventions (enforced in review, not by tooling):
 
 ## Reliability & Background Jobs (BullMQ + Redis / Upstash)
 
-Heavy AI work (daily insight generation, future batch analysis) is offloaded from the HTTP request path via **BullMQ**.
+Heavy AI work (daily insight generation, future batch analysis) plus notification emails are offloaded from the HTTP request path via **BullMQ**.
 
 | Piece | Role |
 |-------|------|
 | **Redis** (`REDIS_URL`) | Shared store for queues and distributed rate limiting. Local: `redis:7-alpine` in `docker-compose.yml`. Production: **Upstash** Redis (`rediss://…`). |
-| **BullMQ** | Durable job queue. Queues: `aifc-insights`, `aifc-default`. Workers run in the same Node process (or can be split later). |
-| **Fallback** | If `REDIS_URL` is unset or Redis is down, the app still boots: rate limits fall back to in-memory, and the daily insight cron runs jobs **in-process**. |
+| **BullMQ** | Durable job queue. Queues: `aifc-insights`, `aifc-default`. Workers run in the same Node process (or can be split later). `aifc-default` carries `high-urgency-alert` + `send-digest-email` jobs. |
+| **Email** (`SMTP_*`, `EMAIL_FROM`) | Nodemailer SMTP transport (`lib/mail.ts`). Immediate alerts fire on High urgency or satisfaction ≤ 2; a 7AM cron sends per-org digests (opt-out via org `settings.emailDigest`). Empty `SMTP_HOST` = sends skipped safely (logged). |
+| **Fallback** | If `REDIS_URL` is unset or Redis is down, the app still boots: rate limits fall back to in-memory, the daily insight cron runs jobs **in-process**, and digests send inline. |
 
 ### Key files
 - `server/src/lib/redis.ts` — shared ioredis client
 - `server/src/lib/queue.ts` — queue helpers + job names
+- `server/src/lib/mail.ts` — SMTP mail service (alerts + digests, no-op without `SMTP_HOST`)
 - `server/src/workers/insights.worker.ts` — BullMQ worker for insight generation
-- `server/src/jobs/generateInsights.ts` — cron that enqueues (or falls back)
+- `server/src/workers/notification.worker.ts` — BullMQ worker for urgency alerts + digests
+- `server/src/jobs/generateInsights.ts` — crons that enqueue (or fall back): 2AM insights, 7AM digest
 - `server/src/middleware/rate-limit.ts` — Redis-backed `express-rate-limit` store when available
 
 ### Local setup
@@ -112,6 +115,10 @@ Heavy AI work (daily insight generation, future batch analysis) is offloaded fro
 docker compose up -d redis   # or full stack
 # server/.env
 REDIS_URL=redis://localhost:6379
+# Email (optional): local catcher on :1025, or leave SMTP_HOST empty to skip
+SMTP_HOST=localhost
+SMTP_PORT=1025
+EMAIL_FROM=Feedwise <noreply@feedwise.app>
 ```
 
 ### Production (Upstash)
@@ -132,16 +139,20 @@ REDIS_URL=redis://localhost:6379
 Structured analysis now includes:
 - sentiment, urgency, category, rating, keyPoints, keywords
 - **themes**, **rootCause**, **suggestedAction**, confidence
+- **satisfactionEstimate** (1–5, distinct from tone), **fixableProblem** + **concreteIssue**, **retentionRisk**
+- Dashboard badges for satisfaction / fixable / risk; list filters for the same
 - Human correction endpoint: `PATCH /api/feedback/:slug/:id/correct`
 
 ### Action (close the loop)
 - Status: `open` | `in_progress` | `resolved` | `ignored`
 - Internal notes + optional owner reply
+- Team page (`/dashboard/team`): invite staff by email, owner/admin/member roles
+- Email push: high-urgency / low-satisfaction alerts + 7AM digest (SMTP, opt-out via org settings)
 - Dashboard **“Top things to fix this week”** + **% acted on**
 - Stats: `highUrgencyOpen`, `actedOnRate`, `topActions`
 
 ### Migration
-Run after pull:
+Run after pull (compose runs `migrate deploy` on server start automatically):
 ```bash
 cd server && npx prisma migrate deploy
 # or for local dev:

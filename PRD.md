@@ -4,7 +4,7 @@
 **Version:** 2.0
 **Date:** September 2026
 **Author:** Endalk
-**Status:** Superseded by `stack-upgrade` implementation — see `UPGRADE_STRATEGY.md`, `DOCUMENTATION.md`, and `deployment.md` for the current stack (PostgreSQL + Prisma, Better-Auth session cookies, Vercel AI SDK, Docker Compose). Sections below referencing MongoDB/Mongoose, custom JWT, Render/Vercel deploys, and the old project layout are historical.
+**Status:** Superseded by `stack-upgrade` implementation — see `docs/UPGRADE_PLAN.md`, `DOCUMENTATION.md`, and `deployment.md` for the current stack (PostgreSQL + Prisma, Better-Auth session cookies, Vercel AI SDK, Docker Compose). Sections below referencing MongoDB/Mongoose, custom JWT, Render/Vercel deploys, and the old project layout are historical.
 
 ---
 
@@ -72,6 +72,8 @@ Small businesses lose customers because they don't understand feedback. Manual a
 - ✅ Basic and Pro analytics dashboards
 - ✅ AI chat assistant (InsightBot)
 - ✅ Daily insight generation cron job
+- ✅ Team collaboration client UI (`/dashboard/team`: invite by email, roles)
+- ✅ High-urgency + daily digest email alerts (SMTP via nodemailer)
 
 ### What Needs Improvement
 > Status 2026-09: all rows below are **done** (TypeScript strict, Vitest, GitHub Actions CI, Docker Compose dev+prod, Tailwind v4 + custom UI kit, Zustand + TanStack Query, Zod validation, Winston logging, express-rate-limit). Remaining gaps live in §7.2 / §9 Phase 5.
@@ -231,7 +233,7 @@ internal-only postgres; `prisma migrate deploy` on server start.
 |---------|-------------|----------|
 | User Auth | Registration, login, logout, session (Better-Auth cookies) | P0 |
 | Organization Setup | Create org, custom categories, QR generation | P0 |
-| Feedback Submission | Public page, text input, AI analysis | P0 |
+| Feedback Submission | Public page, text input, AI analysis (sentiment + satisfaction 1–5, fixable-problem flag, retention risk) | P0 |
 | Dashboard | Overview, feedback list, pagination | P0 |
 | Basic Analytics | Sentiment chart, category count | P0 |
 | Pro Analytics | Trends, heatmap, alerts, recommendations | P1 |
@@ -243,9 +245,9 @@ internal-only postgres; `prisma migrate deploy` on server start.
 
 | Feature | Description | Priority | Status |
 |---------|-------------|----------|--------|
-| Team Collaboration | Invite team members, role-based access | P1 | Partial — server member endpoints exist (`POST/DELETE /api/organization/:slug/members[/:userId]`, `PUT …/members/:userId` role); no client UI yet |
+| Team Collaboration | Invite team members, role-based access | P1 | Done — client `MembersPage` (`/dashboard/team`): add/remove + role change over existing member endpoints (existing-users-only) |
 | Multi-language Support | i18n for feedback page | P2 | Deferred |
-| Email Notifications | Alert on high-urgency feedback | P1 | Deferred (no mail provider wired) |
+| Email Notifications | Alert on high-urgency feedback | P1 | Done — SMTP via nodemailer (`server/src/lib/mail.ts`): immediate alerts on High urgency or satisfaction ≤ 2 + 7AM daily digest (`workers/notification.worker.ts`); safe no-op when `SMTP_HOST` is empty |
 | Export Data | CSV/PDF export of feedback and analytics | P2 | Deferred |
 | Custom Branding | White-label feedback page | P2 | Partial — org logo upload + public-page branding exist; no full white-label |
 | API Access | REST API for integrations | P2 | Partial — internal REST API exists, no public tokens/docs |
@@ -304,14 +306,15 @@ AI-Feedback-collector-app/
 ├── server/                    # Node.js backend
 │   ├── src/
 │   │   ├── features/<domain>/# routes + service + schemas per slice
-│   │   ├── lib/              # env, auth, prisma, redis, queue
+│   │   ├── lib/              # env, auth, prisma, redis, queue, mail
 │   │   ├── middleware/       # validation, rate-limit, …
-│   │   ├── jobs/             # node-cron (insight generation, subscription sync)
+│   │   ├── jobs/             # node-cron (insight generation, digest, subscription sync)
 │   │   └── workers/          # BullMQ workers
 │   ├── prisma/               # schema, migrations, seed
 │   ├── Dockerfile(.dev)      # repo-root build context (resolves shared/)
 │   └── package.json
 ├── shared/                    # @aifc/contracts — Zod v4 schemas (built to dist/)
+├── docs/                      # research notes + UPGRADE_PLAN.md (upgrade phases)
 ├── docker-compose.yml         # dev: vite:5173 + tsx:5000 + postgres:5434 + redis:6379
 ├── docker-compose.prod.yml    # prod: nginx:3000 + node:5000 + internal postgres
 ├── .github/workflows/ci.yml   # lint → typecheck → test → build
@@ -323,7 +326,7 @@ AI-Feedback-collector-app/
 
 - **User/Account/Session/Verification** - Better-Auth tables (Prisma)
 - **Organization** - Name, slug, QR, categories
-- **Feedback** - Text, AI analysis (sentiment, urgency, rating, keywords)
+- **Feedback** - Text, AI analysis (sentiment, urgency, rating, keywords, plus satisfaction 1–5, fixable-problem flag, concrete issue, retention risk, verified/media/cost fields)
 - **Subscription** - Stripe mirror
 - **Insight** - Cached AI recommendations
 
@@ -366,8 +369,8 @@ AI-Feedback-collector-app/
 - [ ] Full WCAG audit (deferred)
 
 ### Phase 5: New Features (Week 9-10) — open, see §7.2
-- [ ] Email notifications (high-urgency feedback)
-- [ ] Team collaboration client UI (server endpoints exist)
+- [x] Email notifications (high-urgency feedback + daily digest via SMTP)
+- [x] Team collaboration client UI (`/dashboard/team`, existing-users-only)
 - [ ] Data export (CSV/PDF)
 - [x] Loading states (Spinner/LoadingState/Skeleton primitives)
 - [x] Error boundaries (ErrorBoundary component)
@@ -429,9 +432,9 @@ AI-Feedback-collector-app/
 
 ## 12. Open Questions
 
-1. **Should we add team collaboration now or later?** (Recommended: Later, focus on core)
+1. **Should we add team collaboration now or later?** (Decided: now — built in upgrade Phases 0–3, `/dashboard/team`)
 2. **Do we want to support self-hosting or just SaaS?** (Recommended: Both)
-3. **Should we migrate to a different database?** (Decided: PostgreSQL 16 + Prisma — MongoDB migration explicitly rejected per `UPGRADE_STRATEGY.md`)
+3. **Should we migrate to a different database?** (Decided: PostgreSQL 16 + Prisma — MongoDB migration explicitly rejected per `docs/UPGRADE_PLAN.md`)
 4. **Do we want to add authentication providers (Google, GitHub)?** (Recommended: Later)
 5. **Should we add rate limiting to AI features?** (Decided: Yes — `aiRateLimiter` on chat endpoints + Redis-backed `express-rate-limit` with `ipKeyGenerator` IPv6 handling)
 
@@ -497,6 +500,7 @@ AI-Feedback-collector-app/
 - `STRIPE_BASIC_PRICE_ID`, `STRIPE_PRO_PRICE_ID`
 - `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`, (+ `S3_FORCE_PATH_STYLE`, `S3_PUBLIC_URL`, `S3_OBJECT_ACL`)
 - `REDIS_URL` (local Redis or Upstash; empty = in-memory fallbacks)
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE`, `EMAIL_FROM` (empty `SMTP_HOST` = emails skipped safely; local catcher e.g. Mailpit on `:1025`)
 - `CLIENT_URL`
 
 **Frontend (`client/.env`):**

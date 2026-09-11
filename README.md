@@ -13,11 +13,13 @@
 The goal of this project is to simplify the feedback loop for small to medium businesses. Customers scan a QR code, leave their thoughts, and the AI handles the rest—categorizing the input, detecting sentiment, and alerting owners to urgent issues.
 
 ### 💡 Key Features
-- **🤖 Smart AI Analysis**: Powered by Gemini 2.0, providing sentiment detection, priority scoring, and keyword extraction.
+- **🤖 Smart AI Analysis**: Powered by Gemini 2.0, providing sentiment detection, satisfaction scoring (1–5, distinct from tone), fixable-problem flags, retention-risk signals, priority scoring, and keyword extraction.
 - **💳 SaaS-Ready**: Integrated Stripe payments for Basic and Pro subscription tiers.
 - **📊 Interactive Dashboard**: Professional analytics using modern charting for sentiment trends and category breakthroughs.
 - **📱 QR Collection**: Unique, organization-specific landing pages and QR codes for easy physical-to-digital feedback.
 - **💬 Admin AI Chat**: An intelligent assistant to help admins query their own feedback data using natural language.
+- **👥 Team Collaboration**: Invite staff by email with owner/admin/member roles (`/dashboard/team`).
+- **📧 Email Alerts**: Immediate high-urgency / low-satisfaction alerts plus a daily digest (SMTP, safe no-op when unconfigured).
 - **🔐 Secure Auth**: Better Auth session-based authentication with the Prisma adapter.
 
 ---
@@ -30,11 +32,12 @@ The goal of this project is to simplify the feedback loop for small to medium bu
 - **Database**: PostgreSQL 16
 - **Auth**: Better Auth (email/password, session cookies, Prisma adapter)
 - **Reliability & Background Jobs**:
-  - **BullMQ**: Durable job queue for AI insight generation, batch analysis, and other heavy work (prevents request timeouts).
+  - **BullMQ**: Durable job queue for AI insight generation, batch analysis, urgency-alert emails, and daily digests (prevents request timeouts).
   - **Redis / Upstash**: Shared cache + queue backend and distributed rate limiting (stops AI spam). Local Redis via Docker; production uses Upstash.
 - **Integrations**: 
   - **AI**: Google Gemini 2.0 Flash via Vercel AI SDK (`ai` + `@ai-sdk/google`)
   - **Payments**: Stripe (Checkout & Billing Portal) + webhooks + hourly subscription sync
+  - **Email**: SMTP via nodemailer — high-urgency alerts + 7AM digest (`server/src/lib/mail.ts`, `workers/notification.worker.ts`)
   - **Storage**: S3-compatible object storage (Org Logos)
   - **QR**: QRCode.js
 - **Quality**: TypeScript (strict), Zod v4 validation, Vitest, ESLint + Prettier, GitHub Actions CI, Docker Compose (dev + prod)
@@ -52,12 +55,13 @@ For a detailed look at the architecture, database schema, and technical decision
 - Node.js (v22+ — required by the Vercel AI SDK v7)
 - PostgreSQL 16 + Redis 7 (both spin up in Docker Compose)
 - Stripe, Gemini, and S3-compatible storage credentials
+- Optional: SMTP credentials for email alerts (or local Mailpit on `localhost:1025`; empty `SMTP_HOST` disables sending safely)
 
 ### Installation
 
 > Three packages: `client/`, `server/`, `shared/` (`@aifc/contracts`).
 > Always install with `npm ci --legacy-peer-deps` (npm arborist crash on
-> this graph — see `UPGRADE_STRATEGY.md`). Install + build `shared/` first;
+> this graph). Install + build `shared/` first;
 > `client`/`server` consume it via `file:../shared` (client `predev`/`prebuild`
 > hooks rebuild contracts automatically).
 
@@ -104,13 +108,13 @@ cp server/example.env server/.env   # once; fill secrets (BETTER_AUTH_SECRET etc
 docker compose up --build            # client :5173, server :5000, postgres :5434, redis :6379
 ```
 If the client container was created before the Dockerfiles moved to repo-root
-context, drop the stale volume first: `docker volume rm project_client-node-modules`
+context, drop the stale volume first: `docker volume rm feedwise_client-node-modules`
 (never `docker compose down -v` — that deletes the database).
 
 ---
 
 ## 🌍 Deployment
-This app is deployed via **Docker Compose**. Two compose files ship: `docker-compose.yml` (local dev, hot reload) and `docker-compose.prod.yml` (nginx + node + postgres prod stack; Prisma migrate auto-runs on start). See the [Deployment Guide](./deployment.md) and [`UPGRADE_STRATEGY.md`](./UPGRADE_STRATEGY.md) for details.
+This app is deployed via **Docker Compose**. Two compose files ship: `docker-compose.yml` (local dev, hot reload) and `docker-compose.prod.yml` (nginx + node + postgres prod stack; Prisma migrate auto-runs on start). See the [Deployment Guide](./deployment.md) and [`docs/UPGRADE_PLAN.md`](./docs/UPGRADE_PLAN.md) for details.
 
 ---
 

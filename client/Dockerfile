@@ -18,7 +18,7 @@ RUN npm config set fetch-retries 5 \
     && npm config set fetch-timeout 900000 \
     && npm ci --legacy-peer-deps
 
-# Install client dependencies (legacy-peer-deps: see UPGRADE_STRATEGY.md quirks)
+# Install client dependencies (legacy-peer-deps: see AGENTS.md CI notes)
 WORKDIR /app/client
 RUN npm config set fetch-retries 5 \
     && npm config set fetch-retry-mintimeout 20000 \

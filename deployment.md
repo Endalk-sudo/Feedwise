@@ -3,12 +3,13 @@
 > Supersedes the old Render (backend) + Vercel (frontend) + MongoDB Atlas guide.
 > Current strategy: Docker Compose for both local dev and production, PostgreSQL 16,
 > Prisma `migrate deploy` on server start. See `DOCUMENTATION.md` (Deployment Strategy),
-> `docker-compose.yml` (dev), `docker-compose.prod.yml` (prod), and `UPGRADE_STRATEGY.md`.
+> `docker-compose.yml` (dev), `docker-compose.prod.yml` (prod), and `docs/UPGRADE_PLAN.md`.
 
 ## Prerequisites
 
 - Docker + Docker Compose
 - API keys for: Stripe (Test/Live Mode), Gemini AI, and S3-compatible storage
+- Optional: SMTP credentials for email alerts (or local Mailpit on `localhost:1025`; empty `SMTP_HOST` disables sending safely)
 - Production secrets in `server/.env` (copy from `server/example.env`)
 
 ## 1. Local dev (hot reload)
@@ -23,6 +24,9 @@ docker compose up --build
 - postgres 16: host port 5434
 - redis 7: host port 6379 (powers BullMQ queues + distributed rate limiting;
   the app still boots with in-memory fallbacks if Redis is down)
+- Email alerts + 7AM digest run inside the server process (BullMQ worker, no
+  extra service). Set `SMTP_HOST` etc. in `server/.env` to enable; without it
+  sends are logged + skipped.
 - First DB setup: `docker compose up -d postgres`, then in `server/` run
   `npx prisma migrate dev --name <x>` and `npm run prisma:seed`.
 
@@ -63,7 +67,7 @@ docker compose -f docker-compose.prod.yml up --build -d
   cleanly: `docker compose build --no-cache client && docker compose up --build`.
 - **Stale `node_modules` after Dockerfile changes**: named volumes persist
   across rebuilds. If a service's install layout changed, drop just that
-  volume, e.g. `docker volume rm project_client-node-modules`
+  volume, e.g. `docker volume rm feedwise_client-node-modules`
   (never `docker compose down -v` — that deletes the `pgdata` database).
 - **npm `ETIMEDOUT`/`ECONNRESET` during image builds**: transient registry
   flakiness; Dockerfiles carry retry config (`fetch-retries 5`), just rerun
