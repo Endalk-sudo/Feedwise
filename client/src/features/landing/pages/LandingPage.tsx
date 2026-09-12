@@ -11,9 +11,11 @@ import {
   Star,
   Users,
   Menu,
+  LayoutDashboard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Container, Logo, Drawer, buttonVariants } from '@/components/ui';
+import { Container, Logo, Drawer, Dialog, buttonVariants } from '@/components/ui';
+import { authClient } from '@/lib/auth-client';
 
 const features = [
   {
@@ -56,6 +58,7 @@ const features = [
 const pricing = [
   {
     name: 'Basic',
+    plan: 'basic',
     price: 29,
     description: 'Perfect for small businesses getting started',
     features: [
@@ -71,6 +74,7 @@ const pricing = [
   },
   {
     name: 'Pro',
+    plan: 'pro',
     price: 79,
     description: 'For growing teams needing deeper insights',
     features: [
@@ -115,6 +119,9 @@ const testimonials = [
 
 export function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [legalDoc, setLegalDoc] = useState<'privacy' | 'terms' | null>(null);
+  const { data: session } = authClient.useSession();
+  const isLoggedIn = Boolean(session);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -124,7 +131,7 @@ export function LandingPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
               <Logo size="sm" />
-              <span className="font-bold text-xl">FeedbackAI</span>
+              <span className="font-bold text-xl">Feedwise</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
               <a
@@ -146,16 +153,25 @@ export function LandingPage() {
                 Testimonials
               </a>
             </div>
-            <div className="flex items-center gap-4">
-              <Link
-                to="/auth/login"
-                className="text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
-              >
-                Sign In
-              </Link>
-              <Link to="/auth/register" className={cn(buttonVariants({ size: 'md' }))}>
-                Get Started Free
-              </Link>
+            <div className="hidden sm:flex items-center gap-4">
+              {isLoggedIn ? (
+                <Link to="/dashboard" className={cn(buttonVariants({ size: 'md' }))}>
+                  <LayoutDashboard className="w-4 h-4" />
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/auth/login"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link to="/auth/register" className={cn(buttonVariants({ size: 'md' }))}>
+                    Get Started Free
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -199,20 +215,32 @@ export function LandingPage() {
               Testimonials
             </a>
             <hr className="border-border" />
-            <Link
-              to="/auth/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-foreground hover:text-primary transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/auth/register"
-              onClick={() => setMobileMenuOpen(false)}
-              className={cn(buttonVariants(), 'w-full text-center')}
-            >
-              Get Started Free
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(buttonVariants(), 'w-full text-center')}
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/auth/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-foreground hover:text-primary transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/auth/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(buttonVariants(), 'w-full text-center')}
+                >
+                  Get Started Free
+                </Link>
+              </>
+            )}
           </nav>
         </Drawer>
       </nav>
@@ -220,13 +248,16 @@ export function LandingPage() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8">
+          <a
+            href="#features"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8 hover:bg-primary/15 transition-colors"
+          >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
             New: AI Chat Assistant now available
-          </div>
+          </a>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
             Turn Customer Feedback into{' '}
@@ -356,6 +387,7 @@ export function LandingPage() {
 
                 <Link
                   to="/auth/register"
+                  search={{ plan: plan.plan }}
                   className={cn(
                     buttonVariants({
                       variant: plan.popular ? 'brand' : 'secondary',
@@ -417,7 +449,7 @@ export function LandingPage() {
             Ready to understand your customers better?
           </h2>
           <p className="text-muted-foreground text-lg mb-8">
-            Join thousands of businesses using FeedbackAI to turn feedback into growth.
+            Join thousands of businesses using Feedwise to turn feedback into growth.
           </p>
           <Link
             to="/auth/register"
@@ -439,7 +471,7 @@ export function LandingPage() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Logo size="sm" />
-                <span className="font-bold text-xl">FeedbackAI</span>
+                <span className="font-bold text-xl">Feedwise</span>
               </div>
               <p className="text-muted-foreground text-sm">
                 Turn customer feedback into actionable insights with AI.
@@ -474,29 +506,33 @@ export function LandingPage() {
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-muted-foreground text-sm">
                 <li>
-                  <span className="opacity-50">Privacy Policy</span>
+                  <button
+                    type="button"
+                    onClick={() => setLegalDoc('privacy')}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Privacy Policy
+                  </button>
                 </li>
                 <li>
-                  <span className="opacity-50">Terms of Service</span>
+                  <button
+                    type="button"
+                    onClick={() => setLegalDoc('terms')}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Terms of Service
+                  </button>
                 </li>
               </ul>
             </div>
           </div>
           <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-muted-foreground text-sm">
-              &copy; {new Date().getFullYear()} FeedbackAI. All rights reserved.
+              &copy; {new Date().getFullYear()} Feedwise. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
-                href="https://twitter.com"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Twitter
-              </a>
-              <a
-                href="https://github.com"
+                href="https://github.com/Endalk-sudo/AI-Feedback-collector-app"
                 className="text-muted-foreground hover:text-foreground transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -504,17 +540,55 @@ export function LandingPage() {
                 GitHub
               </a>
               <a
-                href="https://linkedin.com"
+                href="mailto:hello@feedwise.app"
                 className="text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
               >
-                LinkedIn
+                Contact
               </a>
             </div>
           </div>
         </Container>
       </footer>
+
+      <Dialog
+        open={legalDoc !== null}
+        onOpenChange={(open) => {
+          if (!open) setLegalDoc(null);
+        }}
+        title={legalDoc === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}
+      >
+        {legalDoc === 'privacy' ? (
+          <div className="text-sm text-muted-foreground space-y-3">
+            <p>
+              Feedwise collects your account details (name, email) and the customer
+              feedback you gather through your organization pages. Customer feedback
+              is anonymous by default.
+            </p>
+            <p>
+              We use your data to operate the service — AI analysis, analytics, and
+              email alerts you opt into. We never sell personal data. You can request
+              export or deletion of your data at any time via{' '}
+              <a href="mailto:hello@feedwise.app" className="text-primary hover:underline">
+                hello@feedwise.app
+              </a>
+              .
+            </p>
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground space-y-3">
+            <p>
+              Feedwise provides feedback collection and AI analysis on a 14-day free
+              trial; paid plans (Basic, Pro) bill monthly and can be cancelled anytime
+              from the billing portal.
+            </p>
+            <p>
+              You are responsible for the content you collect and publish. Abusive use
+              (spam, fake reviews, unlawful content) may lead to suspension. The AI
+              analysis is advisory — verify urgent matters yourself.
+            </p>
+          </div>
+        )}
+      </Dialog>
     </div>
   );
 }

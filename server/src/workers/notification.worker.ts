@@ -5,13 +5,27 @@ import { prisma } from '@/lib/prisma.js';
 import {
   sendHighUrgencyAlert,
   sendDigestEmail,
+  sendActionRoutedEmail,
   dashboardUrlFor,
 } from '@/lib/mail.js';
+import { draftOwnerReply } from '@/features/ai/service.js';
+import { pushWebhookEvent } from '@/features/webhooks/service.js';
 import logger from '@/utils/logger.js';
 
 interface UrgencyAlertData {
   organizationId: string;
   feedbackId: string;
+}
+
+interface ActionLoopData {
+  organizationId: string;
+  feedbackId: string;
+}
+
+interface WebhookPushData {
+  organizationId: string;
+  event: string;
+  payload: Record<string, unknown>;
 }
 
 interface DigestData {
@@ -44,6 +58,65 @@ async function processUrgencyAlert(job: Job<UrgencyAlertData>): Promise<{ sent: 
     dashboardUrlFor(),
   );
   return { sent: result.sent };
+}
+
+/**
+ * Phase 4 (D1): agent action loop. For High urgency / High retention risk /
+ * tolerated friction rows: Gemini-draft the owner reply, stash it as an
+ * internal note, flip open -> in_progress, and notify the team so staff can
+ * Accept / Resolve / Escalate with one tap. Idempotent: skips rows that
+ * already left `open` (e.g. staff acted first) or already carry a draft.
+ */
+async function processActionLoop(job: Job<ActionLoopData>): Promise<{ acted: boolean }> {
+  const { organizationId, feedbackId } = job.data;
+  const feedback = await prisma.feedback.findFirst({
+    where: { id: feedbackId, organizationId },
+    include: { organization: { select: { name: true } } },
+  });
+  if (!feedback) {
+    logger.warn(`Action loop: feedback ${feedbackId} not found, skipping`);
+    return { acted: false };
+  }
+  const eligible =
+    feedback.urgency === 'High' ||
+    feedback.retentionRisk === 'High' ||
+    feedback.fixableProblem === true;
+  if (!eligible || feedback.status !== 'open' || feedback.internalNote) {
+    return { acted: false };
+  }
+
+  const draft = await draftOwnerReply({
+    text: feedback.text,
+    category: feedback.category,
+    sentiment: feedback.sentiment,
+    urgency: feedback.urgency,
+    concreteIssue: feedback.concreteIssue,
+    suggestedAction: feedback.suggestedAction,
+    businessName: feedback.organization.name,
+  });
+
+  await prisma.feedback.update({
+    where: { id: feedback.id },
+    data: { status: 'in_progress', internalNote: `AI draft reply:\n${draft}` },
+  });
+
+  // Fire-and-forget team notification reusing the mail transport.
+  sendActionRoutedEmail(
+    organizationId,
+    {
+      id: feedback.id,
+      text: feedback.text,
+      category: feedback.category,
+      urgency: feedback.urgency,
+      concreteIssue: feedback.concreteIssue,
+      draftReply: draft,
+      createdAt: feedback.createdAt,
+    },
+    dashboardUrlFor(),
+  ).catch((error: unknown) => {
+    logger.warn(`Action-routed email failed: ${(error as Error).message}`);
+  });
+  return { acted: true };
 }
 
 async function processDigest(job: Job<DigestData>): Promise<{ sent: boolean }> {
@@ -107,6 +180,13 @@ export function startNotificationWorker(): Worker | null {
     async (job) => {
       if (job.name === JOB_NAMES.HIGH_URGENCY_ALERT) {
         return processUrgencyAlert(job as Job<UrgencyAlertData>);
+      }
+      if (job.name === JOB_NAMES.ACTION_LOOP) {
+        return processActionLoop(job as Job<ActionLoopData>);
+      }
+      if (job.name === JOB_NAMES.WEBHOOK_PUSH) {
+        const { organizationId, event, payload } = (job as Job<WebhookPushData>).data;
+        return pushWebhookEvent(organizationId, event, payload);
       }
       if (job.name === JOB_NAMES.SEND_DIGEST_EMAIL) {
         return processDigest(job as Job<DigestData>);

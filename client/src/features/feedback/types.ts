@@ -110,8 +110,41 @@ export interface Recommendation {
   reason: string;
   action: string;
   priority: number;
+  feedbackIds?: string[];
+  assigneeId?: string | null;
+  draftReply?: string | null;
+}
+
+export interface RetentionRisk {
+  counts: { Low: number; Medium: number; High: number };
+  highRiskOpen: Array<{
+    id: string;
+    text: string;
+    category: string;
+    urgency: string | null;
+    sentiment: string | null;
+    satisfactionEstimate?: number | null;
+    fixableProblem?: boolean | null;
+    concreteIssue?: string | null;
+    retentionRisk?: string | null;
+    status: string;
+    createdAt: string;
+  }>;
+  avgSatisfaction: number | null;
+  total: number;
+  fixableCount: number;
 }
 
 export interface AIChatResponse {
   reply: string;
+}
+
+/** E1 natural-language analytics query (POST /api/ai/:slug/nlq). */
+export interface NlqResponse {
+  cards: Array<{
+    kind: 'sentiment' | 'categories' | 'heatmap' | 'issues' | 'alerts' | 'retention';
+    title: string;
+    rows: Array<Record<string, unknown>>;
+  }>;
+  summary: string;
 }

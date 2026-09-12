@@ -17,6 +17,7 @@ import { paymentRoutes, handleWebhook } from './features/payments/routes.js';
 import { settingsRoutes } from './features/settings/routes.js';
 import { organizationRoutes } from './features/organization/routes.js';
 import { authRoutes } from './features/auth/routes.js';
+import { webhooksRoutes } from './features/webhooks/routes.js';
 import { createRateLimiter } from './middleware/rate-limit.js';
 
 export const app = express();
@@ -69,6 +70,22 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/organization', organizationRoutes);
+app.use('/api/webhooks', webhooksRoutes);
+
+// Phase 6 (D4): minimal public API docs (token issuance + token endpoints).
+app.get('/api/docs', (_req, res) => {
+  res.json({
+    success: true,
+    data: {
+      auth: 'Cookie session for dashboard; `Authorization: Bearer fw_...` (scoped ApiToken) for integrations.',
+      issueToken: 'POST /api/webhooks/:slug/tokens { name?, scopes?, expiresInDays? } (owner/admin, cookie session)',
+      tokenAnalytics: 'GET /api/analytics/:slug/token/sentiment?days=30 (scope analytics:read)',
+      webhooks: 'POST /api/feedback/:slug/webhooks { url, events, secret? } — signed with X-Feedwise-Signature (HMAC-SHA256)',
+      webhookLogs: 'GET /api/webhooks/:slug/webhooks/logs',
+      exportCsv: 'GET /api/analytics/:slug/export?format=csv&days=90 (cookie session)',
+    },
+  });
+});
 
 // Health check endpoint
 app.get('/health', async (_req, res) => {

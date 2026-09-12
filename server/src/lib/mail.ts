@@ -175,6 +175,72 @@ export async function sendDigestEmail(
   return sendMail({ to: emails, subject, html });
 }
 
+export interface ActionRoutedItem {
+  id: string;
+  text: string;
+  category: string;
+  urgency: string | null;
+  concreteIssue: string | null;
+  draftReply: string;
+  createdAt: Date;
+}
+
+/** Phase 4 (D1): team routing email with the AI draft reply for one-tap action. */
+export async function sendActionRoutedEmail(
+  organizationId: string,
+  item: ActionRoutedItem,
+  dashboardUrl: string,
+): Promise<MailResult> {
+  const { emails, orgName } = await getOrgRecipientEmails(organizationId);
+  if (emails.length === 0) return { sent: false, skipped: 'no-recipients' };
+
+  const subject = `⚡ Action needed: ${item.category} feedback for ${orgName}`;
+  const html = `
+    <h2>Feedback routed for action — ${escapeHtml(orgName)}</h2>
+    <p><strong>Category:</strong> ${escapeHtml(item.category)}
+    <strong>Urgency:</strong> ${escapeHtml(item.urgency ?? 'n/a')}</p>
+    ${item.concreteIssue ? `<p><strong>Fixable issue:</strong> ${escapeHtml(item.concreteIssue)}</p>` : ''}
+    <blockquote>${escapeHtml(item.text.slice(0, 500))}</blockquote>
+    <p><strong>Suggested reply (edit before sending):</strong></p>
+    <blockquote>${escapeHtml(item.draftReply)}</blockquote>
+    <p><a href="${escapeHtml(dashboardUrl)}">Accept / Resolve / Escalate →</a></p>
+  `;
+  return sendMail({ to: emails, subject, html });
+}
+
+export interface ReferralCandidate {
+  id: string;
+  text: string;
+  category: string;
+  createdAt: Date;
+}
+
+/** Phase 7 (F3): promoter follow-up — turn Positive + high-satisfaction rows into referrals. */
+export async function sendReferralRequestEmail(
+  organizationId: string,
+  items: ReferralCandidate[],
+  dashboardUrl: string,
+): Promise<MailResult> {
+  const { emails, orgName } = await getOrgRecipientEmails(organizationId, {
+    respectDigestOptOut: true,
+  });
+  if (emails.length === 0 || items.length === 0) {
+    return { sent: false, skipped: 'no-recipients' };
+  }
+  const rows = items
+    .slice(0, 5)
+    .map((i) => `<li>${escapeHtml(i.category)} — ${escapeHtml(i.text.slice(0, 160))}</li>`)
+    .join('');
+  const subject = `⭐ ${items.length} happy customer${items.length === 1 ? '' : 's'} — ask for a referral`;
+  const html = `
+    <h2>Promoters this week — ${escapeHtml(orgName)}</h2>
+    <p>These customers left positive, high-satisfaction feedback. A short thank-you + review/referral ask converts them into revenue.</p>
+    <ul>${rows}</ul>
+    <p><a href="${escapeHtml(dashboardUrl)}">Open dashboard →</a></p>
+  `;
+  return sendMail({ to: emails, subject, html });
+}
+
 export function dashboardUrlFor(): string {
   return `${env.CLIENT_URL}/dashboard/feedback`;
 }

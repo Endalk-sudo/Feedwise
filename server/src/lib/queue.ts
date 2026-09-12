@@ -11,6 +11,10 @@ export const JOB_NAMES = {
   SYNC_SUBSCRIPTION: 'sync-subscription',
   SEND_DIGEST_EMAIL: 'send-digest-email',
   HIGH_URGENCY_ALERT: 'high-urgency-alert',
+  // Phase 4 (D1): agent action loop — draft reply + route High+fixable rows.
+  ACTION_LOOP: 'action-loop',
+  // Phase 6 (V3/F7): signed outbound webhook push.
+  WEBHOOK_PUSH: 'webhook-push',
 } as const;
 
 export type JobName = (typeof JOB_NAMES)[keyof typeof JOB_NAMES];
@@ -148,6 +152,46 @@ export async function enqueueDigestEmail(organizationId: string): Promise<string
     { organizationId },
     { jobId: `digest-${organizationId}-${new Date().toISOString().slice(0, 10)}` },
   );
+  return job.id ?? null;
+}
+
+/**
+ * Enqueue the Phase 4 (D1) action loop for one feedback row.
+ * Fired for High urgency or High retention risk or tolerated friction
+ * (satisfied tone + fixable problem); the worker decides whether to act.
+ * Null-safe when Redis is unavailable — callers must not fail on null.
+ */
+export async function enqueueActionLoop(
+  organizationId: string,
+  feedbackId: string,
+): Promise<string | null> {
+  const queue = getDefaultQueue();
+  if (!queue) {
+    logger.warn('Default queue unavailable — skipping action-loop enqueue');
+    return null;
+  }
+  const job = await queue.add(
+    JOB_NAMES.ACTION_LOOP,
+    { organizationId, feedbackId },
+    { jobId: `action-${feedbackId}` },
+  );
+  return job.id ?? null;
+}
+
+/**
+ * Enqueue a signed outbound webhook push (Phase 6 V3/F7).
+ */
+export async function enqueueWebhookPush(
+  organizationId: string,
+  event: string,
+  payload: Record<string, unknown>,
+): Promise<string | null> {
+  const queue = getDefaultQueue();
+  if (!queue) {
+    logger.warn('Default queue unavailable — skipping webhook enqueue');
+    return null;
+  }
+  const job = await queue.add(JOB_NAMES.WEBHOOK_PUSH, { organizationId, event, payload });
   return job.id ?? null;
 }
 

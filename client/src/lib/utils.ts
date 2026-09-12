@@ -29,6 +29,9 @@ export function formatTimeAgo(dateString: string): string {
   return date.toLocaleDateString();
 }
 
+/** Alias for semantic clarity in feedback lists. */
+export const formatRelativeTime = formatTimeAgo;
+
 /**
  * Format number with commas
  */

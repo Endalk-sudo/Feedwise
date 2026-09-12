@@ -20,6 +20,7 @@ export const {
   getSession,
   updateUser,
   changePassword,
+  requestPasswordReset,
   resetPassword,
   verifyEmail,
   deleteUser,

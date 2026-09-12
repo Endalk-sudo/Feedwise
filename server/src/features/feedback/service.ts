@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma.js';
-import { analyzeFeedback } from '@/features/ai/service.js';
-import { enqueueHighUrgencyAlert } from '@/lib/queue.js';
+import { analyzeFeedback, draftOwnerReply } from '@/features/ai/service.js';
+import { enqueueActionLoop, enqueueHighUrgencyAlert, enqueueWebhookPush } from '@/lib/queue.js';
 import logger from '@/utils/logger.js';
 
 export type FeedbackStatus = 'open' | 'in_progress' | 'resolved' | 'ignored';
@@ -51,6 +51,33 @@ export const feedbackService = {
     if (analysis.urgency === 'High' || analysis.satisfactionEstimate <= 2) {
       enqueueHighUrgencyAlert(org.id, created.id).catch((error: unknown) => {
         logger.warn(`Urgency alert enqueue failed: ${(error as Error).message}`);
+      });
+    }
+
+    // Phase 4 (D1): agent action loop — High urgency, High retention risk,
+    // or tolerated friction (satisfied tone + fixable problem). The worker
+    // drafts the owner reply and routes to the team. Fire-and-forget.
+    if (
+      analysis.urgency === 'High' ||
+      analysis.retentionRisk === 'High' ||
+      analysis.fixableProblem === true
+    ) {
+      enqueueActionLoop(org.id, created.id).catch((error: unknown) => {
+        logger.warn(`Action-loop enqueue failed: ${(error as Error).message}`);
+      });
+    }
+
+    // Phase 6 (V3/F7): signed webhook push for High-urgency rows.
+    if (analysis.urgency === 'High') {
+      enqueueWebhookPush(org.id, 'feedback.high_urgency', {
+        feedbackId: created.id,
+        category: created.category,
+        urgency: created.urgency,
+        retentionRisk: created.retentionRisk,
+        satisfactionEstimate: created.satisfactionEstimate,
+        createdAt: created.createdAt.toISOString(),
+      }).catch((error: unknown) => {
+        logger.warn(`Webhook enqueue failed: ${(error as Error).message}`);
       });
     }
 
@@ -108,6 +135,48 @@ export const feedbackService = {
   async getFeedbackById(id: string, organizationId: string) {
     return prisma.feedback.findFirst({
       where: { id, organizationId },
+    });
+  },
+
+  /**
+   * Phase 4 (D1/F6): Gemini owner-reply draft preview for the Accept/Resolve
+   * flow. Read-only — never writes to the row.
+   */
+  async draftReply(id: string, organizationId: string): Promise<string | null> {
+    const feedback = await prisma.feedback.findFirst({
+      where: { id, organizationId },
+      include: { organization: { select: { name: true } } },
+    });
+    if (!feedback) return null;
+    return draftOwnerReply({
+      text: feedback.text,
+      category: feedback.category,
+      sentiment: feedback.sentiment,
+      urgency: feedback.urgency,
+      concreteIssue: feedback.concreteIssue,
+      suggestedAction: feedback.suggestedAction,
+      businessName: feedback.organization.name,
+    });
+  },
+
+  /**
+   * Phase 6 (D3): manual verification toggle (trust badge source of truth).
+   */
+  async verify(
+    id: string,
+    organizationId: string,
+    data: { verified: boolean; verificationSource?: string },
+  ) {
+    const existing = await prisma.feedback.findFirst({ where: { id, organizationId } });
+    if (!existing) return null;
+    return prisma.feedback.update({
+      where: { id },
+      data: {
+        verified: data.verified,
+        verificationSource: data.verified
+          ? (data.verificationSource ?? existing.verificationSource ?? 'manual')
+          : null,
+      },
     });
   },
 

@@ -1,11 +1,12 @@
-import { useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { orgSetupFormSchema, type OrgSetupForm } from '@aifc/contracts';
-import { Building2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Building2, CheckCircle2, AlertCircle, LogOut } from 'lucide-react';
 import { useCreateOrganization } from '@/features/organization/hooks';
 import { apiClient } from '@/lib/api';
+import { authClient } from '@/lib/auth-client';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useUIStore } from '@/lib/stores/ui.store';
 import {
@@ -21,44 +22,34 @@ import {
   Spinner,
 } from '@/components/ui';
 
-const BUSINESS_TYPES = [
-  'SaaS',
-  'E-commerce',
-  'Restaurant',
-  'Healthcare',
-  'Education',
-  'Finance',
-  'Real Estate',
-  'Retail',
-  'Manufacturing',
-  'Logistics',
-  'Media',
-  'Entertainment',
-  'Travel',
-  'Automotive',
-  'Legal',
-  'Marketing',
-  'Consulting',
-  'Non-profit',
-  'Government',
-  'Agriculture',
-  'Energy',
-  'Telecommunications',
-  'Construction',
-  'Food & Beverage',
-  'Fashion',
-  'Sports',
-  'Other',
+const BUSINESS_TYPE_GROUPS: { label: string; options: string[] }[] = [
+  { label: 'Food & Hospitality', options: ['Restaurant', 'Food & Beverage', 'Travel', 'Entertainment', 'Sports'] },
+  { label: 'Retail & Commerce', options: ['Retail', 'E-commerce', 'Fashion', 'Automotive'] },
+  {
+    label: 'Services',
+    options: ['Healthcare', 'Education', 'Finance', 'Legal', 'Marketing', 'Consulting', 'Real Estate', 'Logistics', 'Media'],
+  },
+  {
+    label: 'Industry & Tech',
+    options: ['SaaS', 'Manufacturing', 'Telecommunications', 'Construction', 'Energy', 'Agriculture'],
+  },
+  { label: 'Other', options: ['Non-profit', 'Government', 'Other'] },
 ];
+
+const DESCRIPTION_MAX = 500;
 
 export function OrgSetupPage() {
   const navigate = useNavigate();
   const { addToast } = useUIStore();
   const setActiveOrganization = useAuthStore((state) => state.setActiveOrganization);
+  const logout = useAuthStore((state) => state.logout);
   const createOrg = useCreateOrganization();
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const [slugError, setSlugError] = useState<string | null>(null);
+  // Once the user edits the slug by hand, stop auto-generating it from the name.
+  const slugTouched = useRef(false);
+  const checkSeq = useRef(0);
 
   const {
     register,
@@ -76,11 +67,12 @@ export function OrgSetupPage() {
     },
   });
 
-  // Auto-generate slug from name
+  // Auto-generate slug from name — until the user edits the slug manually
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setValue('name', value, { shouldValidate: true });
 
+    if (slugTouched.current) return;
     // Generate slug
     const slug = value
       .toLowerCase()
@@ -91,35 +83,53 @@ export function OrgSetupPage() {
     setSlugError(null);
   };
 
-  // Check slug availability against the real API (200 = taken, 404 = free)
-  const handleSlugBlur = async () => {
-    const slug = watch('slug');
-    if (!slug || slug.length < 2) return;
-
-    setIsCheckingSlug(true);
+  const handleSlugChange = (e: ChangeEvent<HTMLInputElement>) => {
+    slugTouched.current = true;
+    setValue('slug', e.target.value, { shouldValidate: true });
+    // Manual edits invalidate any previous availability verdict
     setSlugAvailable(null);
     setSlugError(null);
-
-    try {
-      await apiClient.organizations.getBySlug(slug);
-      setSlugAvailable(false);
-      setSlugError('This slug is already taken');
-    } catch (error) {
-      if (
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        (error as { response?: { status?: number } }).response?.status === 404
-      ) {
-        setSlugAvailable(true);
-      } else {
-        // Unknown error: don't block, server validates on submit
-        setSlugAvailable(null);
-      }
-    } finally {
-      setIsCheckingSlug(false);
-    }
   };
+
+  const slugValue = watch('slug');
+
+  // Debounced availability check — races resolved via sequence numbers
+  useEffect(() => {
+    if (!slugValue || slugValue.length < 2) {
+      setSlugAvailable(null);
+      setSlugError(null);
+      setIsCheckingSlug(false);
+      return;
+    }
+    const seq = ++checkSeq.current;
+    setIsCheckingSlug(true);
+    const timer = setTimeout(async () => {
+      try {
+        await apiClient.organizations.getBySlug(slugValue);
+        if (checkSeq.current !== seq) return;
+        setSlugAvailable(false);
+        setSlugError('This slug is already taken');
+      } catch (error) {
+        if (checkSeq.current !== seq) return;
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'response' in error &&
+          (error as { response?: { status?: number } }).response?.status === 404
+        ) {
+          setSlugAvailable(true);
+          setSlugError(null);
+        } else {
+          // Unknown error: don't block, server validates on submit
+          setSlugAvailable(null);
+          setSlugError(null);
+        }
+      } finally {
+        if (checkSeq.current === seq) setIsCheckingSlug(false);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [slugValue]);
 
   const onSubmit = async (data: OrgSetupForm) => {
     try {
@@ -137,6 +147,15 @@ export function OrgSetupPage() {
     }
   };
 
+  const handleSignOut = async () => {
+    await authClient.signOut();
+    logout();
+    navigate({ to: '/' });
+  };
+
+  const descriptionValue = watch('businessDescription') ?? '';
+  const slugBlocked = slugAvailable === false || isCheckingSlug;
+
   return (
     <CenteredLayout width="md">
       <Card padding="lg">
@@ -146,7 +165,8 @@ export function OrgSetupPage() {
           </div>
           <h1 className="text-3xl font-bold mb-2">Set up your organization</h1>
           <p className="text-muted-foreground">
-            Tell us about your business so we can customize your feedback experience
+            Step 2 of 2 — tell us about your business so we can customize your feedback
+            experience
           </p>
         </div>
 
@@ -179,7 +199,7 @@ export function OrgSetupPage() {
                 {...register('slug')}
                 id="slug"
                 type="text"
-                onBlur={handleSlugBlur}
+                onChange={handleSlugChange}
                 className={`pr-10 ${
                   errors.slug
                     ? 'border-destructive'
@@ -222,10 +242,14 @@ export function OrgSetupPage() {
               disabled={createOrg.isPending}
             >
               <option value="">Select your business type</option>
-              {BUSINESS_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
+              {BUSINESS_TYPE_GROUPS.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.options.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </Select>
           </Field>
@@ -240,17 +264,31 @@ export function OrgSetupPage() {
               {...register('businessDescription')}
               id="businessDescription"
               rows={4}
+              maxLength={DESCRIPTION_MAX}
               className={`resize-none ${errors.businessDescription ? 'border-destructive' : ''}`}
               placeholder="Describe your business, products, and target audience. This helps our AI generate relevant feedback categories."
               disabled={createOrg.isPending}
             />
-            <p className="mt-1 text-xs text-muted-foreground">
-              This helps our AI generate relevant feedback categories for your business.
-            </p>
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">
+                This helps our AI generate relevant feedback categories for your business.
+              </p>
+              <p
+                className="text-xs text-muted-foreground tabular-nums shrink-0"
+                aria-live="polite"
+              >
+                {descriptionValue.length}/{DESCRIPTION_MAX}
+              </p>
+            </div>
           </Field>
 
           {/* Submit Button */}
-          <Button type="submit" size="lg" disabled={createOrg.isPending} className="w-full">
+          <Button
+            type="submit"
+            size="lg"
+            disabled={createOrg.isPending || slugBlocked}
+            className="w-full"
+          >
             {createOrg.isPending ? (
               <>
                 <Spinner size="md" className="text-primary-foreground" />
@@ -260,7 +298,37 @@ export function OrgSetupPage() {
               'Create Organization'
             )}
           </Button>
+          {slugError && (
+            <p className="text-xs text-center text-muted-foreground -mt-3">
+              Pick a different slug to continue.
+            </p>
+          )}
         </form>
+
+        <div className="mt-6 pt-6 border-t border-border text-center space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Joining a team? Ask your workspace owner to invite your account email first —
+            then you&apos;ll land in their workspace after sign in.
+          </p>
+          <div className="flex items-center justify-center gap-4 text-sm">
+            <button
+              type="button"
+              onClick={() => navigate({ to: '/dashboard' })}
+              className="text-primary hover:text-primary/80 font-medium"
+            >
+              Skip for now
+            </button>
+            <span className="text-border">|</span>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign out
+            </button>
+          </div>
+        </div>
       </Card>
     </CenteredLayout>
   );

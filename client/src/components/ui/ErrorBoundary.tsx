@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Home, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Button } from './Button';
 
 interface Props {
   children: ReactNode;
@@ -41,10 +42,10 @@ export class ErrorBoundary extends Component<Props, State> {
             dashboard.
           </p>
           <div className="flex gap-3">
-            <button onClick={() => window.location.reload()} className="btn-brand px-4 py-2">
-              <RefreshCw className="w-4 h-4 mr-2" />
+            <Button type="button" onClick={() => window.location.reload()}>
+              <RefreshCw className="w-4 h-4" />
               Refresh Page
-            </button>
+            </Button>
             <Link
               to="/dashboard"
               className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors flex items-center gap-2"

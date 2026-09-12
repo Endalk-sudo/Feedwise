@@ -12,6 +12,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 import logger from '@/utils/logger.js';
 import { env } from '@/lib/env.js';
+import { analyticsService } from '@/features/analytics/service.js';
 
 // Vercel AI SDK + Google provider. GEMINI_API_KEY is mapped explicitly
 // because the provider defaults to GOOGLE_GENERATIVE_AI_API_KEY.
@@ -55,6 +56,57 @@ export interface FeedbackAnalysis {
   rootCause: string;
   suggestedAction: string;
   confidence: number;
+}
+
+export interface ReplyDraftInput {
+  text: string;
+  category: string;
+  sentiment?: string | null;
+  urgency?: string | null;
+  concreteIssue?: string | null;
+  suggestedAction?: string | null;
+  businessName?: string;
+}
+
+/**
+ * Phase 4 (D1/F6): Gemini owner-reply draft for one feedback row.
+ * Falls back to a template built from suggestedAction so the UI
+ * Accept/Resolve flow never blocks on model failure.
+ */
+export async function draftOwnerReply(input: ReplyDraftInput): Promise<string> {
+  const business = input.businessName?.trim() || 'our team';
+  const fallback =
+    `Thanks for sharing this with ${business} — ` +
+    (input.suggestedAction?.trim() ||
+      `we're looking into the ${input.category} issue you raised`) +
+    `. We'll follow up once it's resolved.`;
+  const prompt = `You are writing a short public reply from a small business owner to a customer's feedback review.
+
+Business: "${business}"
+Category: ${input.category}
+Sentiment: ${input.sentiment ?? 'Unknown'} | Urgency: ${input.urgency ?? 'Unknown'}
+Customer said: "${input.text.slice(0, 800)}"
+Concrete issue: ${input.concreteIssue ?? 'None'}
+Suggested internal action: ${input.suggestedAction ?? 'Review with the team'}
+
+Rules:
+- 2-4 sentences, warm and specific (reference their words, not generic PR).
+- Acknowledge the issue, state one concrete next step, invite them back.
+- No placeholders like [name]; no promises you can't keep; no discounts unless asked.`;
+
+  try {
+    const { text } = await generateText({
+      model: google(modelName),
+      prompt,
+      temperature: 0.5,
+      maxRetries: 2,
+    });
+    const trimmed = text.trim();
+    return trimmed.length > 0 ? trimmed.slice(0, 1000) : fallback;
+  } catch (error) {
+    logger.error(`Reply draft failed: ${(error as Error).message}`);
+    return fallback;
+  }
 }
 
 const insightSchema = z.object({
@@ -255,6 +307,70 @@ Return JSON array of recommendations with: title, reason, action, priority (1-10
     logger.error(`Insights generation failed: ${(error as Error).message}`);
     return [];
   }
+}
+
+/**
+ * Phase 7 (E1): natural-language analytics query over the org's feedback.
+ * Keyword intent router (no new AI package): aggregate questions hit the
+ * existing analytics service; everything else falls back to Gemini chat
+ * with the same feedback context. Returns structured cards the client
+ * renders above the streamed text reply.
+ */
+export interface NlqCard {
+  kind: 'sentiment' | 'categories' | 'heatmap' | 'issues' | 'alerts' | 'retention';
+  title: string;
+  rows: Array<Record<string, unknown>>;
+}
+
+export async function answerAnalyticsQuery(
+  message: string,
+  organizationId: string,
+  feedbackContext: FeedbackContextItem[],
+): Promise<{ cards: NlqCard[]; summary: string }> {
+  const q = message.toLowerCase();
+  const cards: NlqCard[] = [];
+  const wants = (...words: string[]) => words.some((w) => q.includes(w));
+
+  if (wants('churn', 'retention', 'at risk', 'at-risk', 'leave', 'leaving')) {
+    const risk = await analyticsService.getRetentionRisk(organizationId, 30);
+    cards.push({
+      kind: 'retention',
+      title: `Retention risk — ${risk.counts.High} high / ${risk.counts.Medium} medium / ${risk.counts.Low} low (30d)`,
+      rows: (risk.highRiskOpen as unknown as Array<Record<string, unknown>>).slice(0, 5),
+    });
+  }
+  if (wants('trend', 'over time', 'last month', 'this week', 'sentiment')) {
+    const trends = await analyticsService.getSentimentTrends(organizationId, 30);
+    cards.push({ kind: 'sentiment', title: 'Sentiment trend (30 days)', rows: trends.slice(-14) as unknown as Array<Record<string, unknown>> });
+  }
+  if (wants('categor', 'breakdown', 'which area', 'pricing', 'service', 'staff')) {
+    const cats = await analyticsService.getCategoryBreakdown(organizationId);
+    cards.push({ kind: 'categories', title: 'Feedback by category', rows: cats.slice(0, 8) as unknown as Array<Record<string, unknown>> });
+  }
+  if (wants('heatmap', 'by category', 'compare')) {
+    const heat = await analyticsService.getHeatmap(organizationId);
+    cards.push({ kind: 'heatmap', title: 'Sentiment by category', rows: (heat as unknown as Array<Record<string, unknown>>).slice(0, 12) });
+  }
+  if (wants('issue', 'problem', 'top', 'recurring', 'complaint')) {
+    const issues = await analyticsService.getTopIssues(organizationId, 5);
+    cards.push({ kind: 'issues', title: 'Top recurring issues', rows: issues as unknown as Array<Record<string, unknown>> });
+  }
+  if (wants('alert', 'urgent', 'priority', 'critical', 'attention')) {
+    const alerts = await analyticsService.getAlerts(organizationId, 15);
+    cards.push({ kind: 'alerts', title: 'Priority alerts', rows: (alerts as unknown as Array<Record<string, unknown>>).slice(0, 5) });
+  }
+  if (cards.length === 0) {
+    const issues = await analyticsService.getTopIssues(organizationId, 5);
+    cards.push({ kind: 'issues', title: 'Top recurring issues', rows: issues as unknown as Array<Record<string, unknown>> });
+  }
+
+  const summary = await chatWithAI(
+    `Using these analytics cards, answer in 3-6 sentences with specific numbers and one concrete next step:\n` +
+      cards.map((c) => `${c.title}: ${JSON.stringify(c.rows).slice(0, 1200)}`).join('\n') +
+      `\nUser question: ${message}`,
+    feedbackContext,
+  );
+  return { cards, summary };
 }
 
 export async function chatWithAI(

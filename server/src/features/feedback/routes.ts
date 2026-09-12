@@ -9,7 +9,15 @@ import {
   feedbackParamsSchema,
   updateFeedbackStatusSchema,
   correctFeedbackSchema,
+  draftReplyParamsSchema,
+  verifyFeedbackSchema,
 } from './schemas.js';
+import {
+  listWebhooks,
+  createWebhook,
+  deleteWebhook,
+} from '@/features/webhooks/service.js';
+import { createWebhookSchema, webhookParamsSchema } from './schemas.js';
 import { prisma } from '@/lib/prisma.js';
 
 const router = Router();
@@ -141,6 +149,113 @@ router.patch(
         return res.status(404).json({ success: false, message: 'Feedback not found' });
       }
       res.json({ success: true, data: updated });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// Phase 4 (D1/F6): read-only Gemini owner-reply draft preview (member-only).
+router.get(
+  '/:slug/:id/draft-reply',
+  authMiddleware,
+  validate(draftReplyParamsSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const id = req.params.id as string;
+      const userId = (req as any).user.id;
+      const result = await requireMember(slug, userId);
+      if (!result.ok) {
+        return res.status(result.status).json({ success: false, message: result.message });
+      }
+      const draft = await feedbackService.draftReply(id, result.organization.id);
+      if (draft == null) {
+        return res.status(404).json({ success: false, message: 'Feedback not found' });
+      }
+      res.json({ success: true, data: { draft } });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// Phase 6 (D3): manual verification toggle — trust badge source of truth.
+router.patch(
+  '/:slug/:id/verify',
+  authMiddleware,
+  validate(verifyFeedbackSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const id = req.params.id as string;
+      const userId = (req as any).user.id;
+      const result = await requireMember(slug, userId);
+      if (!result.ok) {
+        return res.status(result.status).json({ success: false, message: result.message });
+      }
+      const updated = await feedbackService.verify(id, result.organization.id, req.body);
+      if (!updated) {
+        return res.status(404).json({ success: false, message: 'Feedback not found' });
+      }
+      res.json({ success: true, data: updated });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// Phase 6 (V3/F7): outbound webhook subscriptions (owner/admin via service).
+router.get('/:slug/webhooks', authMiddleware, validate(feedbackParamsSchema), async (req, res, next) => {
+  try {
+    const slug = req.params.slug as string;
+    const userId = (req as any).user.id;
+    const result = await requireMember(slug, userId);
+    if (!result.ok) {
+      return res.status(result.status).json({ success: false, message: result.message });
+    }
+    const data = await listWebhooks(result.organization.id);
+    res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post(
+  '/:slug/webhooks',
+  authMiddleware,
+  validate(createWebhookSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const userId = (req as any).user.id;
+      const result = await requireMember(slug, userId);
+      if (!result.ok) {
+        return res.status(result.status).json({ success: false, message: result.message });
+      }
+      const data = await createWebhook(result.organization.id, userId, req.body);
+      res.status(201).json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+router.delete(
+  '/:slug/webhooks/:id',
+  authMiddleware,
+  validate(webhookParamsSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const id = req.params.id as string;
+      const userId = (req as any).user.id;
+      const result = await requireMember(slug, userId);
+      if (!result.ok) {
+        return res.status(result.status).json({ success: false, message: result.message });
+      }
+      await deleteWebhook(result.organization.id, id);
+      res.json({ success: true, message: 'Webhook removed' });
     } catch (error) {
       next(error);
     }

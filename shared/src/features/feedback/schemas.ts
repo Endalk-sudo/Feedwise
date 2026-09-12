@@ -73,8 +73,52 @@ export const correctFeedbackSchema = z.object({
   }),
 });
 
+// Phase 4 (D1/F6): params for auto-reply draft preview (member-only).
+export const draftReplyParamsSchema = z.object({
+  params: z.object({
+    slug: z.string().min(1),
+    id: z.string().cuid(),
+  }),
+});
+
+export type DraftReplyParams = z.infer<typeof draftReplyParamsSchema>;
+
+// Phase 6 (D3): manual verification (trust badge source of truth).
+export const verifyFeedbackSchema = z.object({
+  body: z.object({
+    verified: z.boolean(),
+    verificationSource: z.enum(['qr-pos', 'email-link', 'stripe-purchase', 'manual']).optional(),
+  }),
+  params: z.object({
+    slug: z.string().min(1),
+    id: z.string().cuid(),
+  }),
+});
+
+export type VerifyFeedbackInput = z.infer<typeof verifyFeedbackSchema>;
+
+// Phase 6 (V3/F7): outbound webhook subscription (signed push for High-urgency).
+export const createWebhookSchema = z.object({
+  body: z.object({
+    url: z.string().url('Valid webhook URL is required').max(500),
+    events: z.array(z.string().max(60)).min(1).max(20),
+    secret: z.string().min(8).max(200).optional(),
+  }),
+  params: z.object({
+    slug: z.string().min(1),
+  }),
+});
+
+export const webhookParamsSchema = z.object({
+  params: z.object({
+    slug: z.string().min(1),
+    id: z.string().cuid().optional(),
+  }),
+});
+
 export type SubmitFeedbackInput = z.infer<typeof submitFeedbackSchema>;
 export type GetFeedbacksInput = z.infer<typeof getFeedbacksSchema>;
+export type CreateWebhookInput = z.infer<typeof createWebhookSchema>;
 export type UpdateFeedbackStatusInput = z.infer<typeof updateFeedbackStatusSchema>;
 export type CorrectFeedbackInput = z.infer<typeof correctFeedbackSchema>;
 

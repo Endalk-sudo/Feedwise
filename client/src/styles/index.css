@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -15,7 +16,7 @@
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.9642 0 0);
   --muted-foreground: oklch(0.5103 0 0);
-  --accent: oklch(0.7163 0.1706 53.4464);
+  --accent: oklch(0.6 0.15 175);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.5653 0.2133 27.5428);
   --destructive-foreground: oklch(1 0 0);
@@ -76,8 +77,8 @@
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.2686 0 0);
   --muted-foreground: oklch(0.7118 0.0129 286.0665);
-  --accent: oklch(0.7235 0.1724 53.7949);
-  --accent-foreground: oklch(1 0 0);
+  --accent: oklch(0.7 0.14 175);
+  --accent-foreground: oklch(0.1776 0 0);
   --destructive: oklch(0.6368 0.2078 25.3313);
   --destructive-foreground: oklch(1 0 0);
   --success: oklch(0.7227 0.1611 145.5672);
@@ -281,11 +282,11 @@
   animation: loading 1.5s infinite;
 }
 
-/* Glass morphism */
+/* Glass morphism (theme-aware) */
 .glass {
-  background: rgba(15, 23, 42, 0.8);
+  background: color-mix(in oklab, var(--card) 80%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--border);
 }
 
 /* Gradient text (brand gradient) */
@@ -296,28 +297,9 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* Brand gradient button */
+/* Brand gradient button (single source for Button variant `brand`) */
 .btn-brand {
   @apply bg-gradient-to-r from-primary to-accent text-white font-medium rounded-lg hover:brightness-110 transition-all;
-}
-
-/* Empty state */
-.empty-state {
-  @apply flex flex-col items-center justify-center py-12 text-center;
-}
-.empty-state-icon {
-  @apply w-12 h-12 text-muted-foreground/50 mb-4;
-}
-.empty-state-title {
-  @apply text-lg font-medium mb-2;
-}
-.empty-state-description {
-  @apply text-muted-foreground;
-}
-
-/* Spinner */
-.spinner {
-  @apply w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin;
 }
 
 /* Divider */
@@ -369,7 +351,7 @@
   @apply p-2 border-b border-border/50;
 }
 .table tr:hover {
-  @apply bg-accent;
+  @apply bg-muted;
 }
 
 /* Prose */

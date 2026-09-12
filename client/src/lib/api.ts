@@ -113,6 +113,9 @@ export const apiClient = {
         rootCause?: string;
       },
     ) => api.patch(`/feedback/${slug}/${id}/correct`, data),
+    draftReply: (slug: string, id: string) => api.get(`/feedback/${slug}/${id}/draft-reply`),
+    verify: (slug: string, id: string, data: { verified: boolean; verificationSource?: string }) =>
+      api.patch(`/feedback/${slug}/${id}/verify`, data),
   },
 
   // Analytics
@@ -123,11 +126,15 @@ export const apiClient = {
     getIssues: (slug: string) => api.get(`/analytics/${slug}/issues`),
     getAlerts: (slug: string, days?: number) => api.get(`/analytics/${slug}/alerts`, { params: { days } }),
     getRecommendations: (slug: string) => api.get(`/analytics/${slug}/recommendations`),
+    getRetentionRisk: (slug: string, days?: number) =>
+      api.get(`/analytics/${slug}/retention-risk`, { params: { days } }),
+    getStaffPerformance: (slug: string) => api.get(`/analytics/${slug}/staff-performance`),
   },
 
   // AI
   ai: {
     chat: (slug: string, message: string) => api.post(`/ai/${slug}/chat`, { message }),
+    nlq: (slug: string, message: string) => api.post(`/ai/${slug}/nlq`, { message }),
   },
 
   // Payments

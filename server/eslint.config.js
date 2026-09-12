@@ -21,6 +21,8 @@ export default defineConfig([
         URL: true,
         Buffer: true,
         ReadableStream: true,
+        fetch: true,
+        AbortSignal: true,
         __dirname: true,
         __filename: true,
       },

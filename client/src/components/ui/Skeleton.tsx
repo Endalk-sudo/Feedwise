@@ -44,7 +44,11 @@ export function SkeletonTableRow({
   ...props
 }: HTMLAttributes<HTMLDivElement> & { columns?: number }) {
   return (
-    <div className={cn('grid gap-4', `grid-cols-${columns}`, className)} {...props}>
+    <div
+      className={cn('grid gap-4', className)}
+      style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+      {...props}
+    >
       {Array.from({ length: columns }).map((_, i) => (
         <Skeleton key={i} className="h-8 w-full" />
       ))}

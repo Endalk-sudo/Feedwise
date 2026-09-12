@@ -15,3 +15,13 @@ export { Logo } from './Logo';
 export { Spinner, LoadingState } from './Spinner';
 export { EmptyState } from './EmptyState';
 export { Drawer } from './Drawer';
+export { Dialog, type DialogProps } from './Dialog';
+export {
+  Skeleton,
+  SkeletonText,
+  SkeletonCard,
+  SkeletonStatCard,
+  SkeletonTableRow,
+  SkeletonChart,
+} from './Skeleton';
+export { ErrorBoundary } from './ErrorBoundary';

@@ -1,5 +1,16 @@
 import { create } from 'zustand';
 
+let toastSeq = 0;
+/** crypto.randomUUID with a fallback for non-secure contexts. */
+function nextToastId(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    toastSeq += 1;
+    return `toast-${Date.now()}-${toastSeq}`;
+  }
+}
+
 interface Toast {
   id: string;
   message: string;
@@ -38,7 +49,7 @@ export const useUIStore = create<UIState>((set) => ({
   // Toasts
   toasts: [],
   addToast: (toast) => set((state) => ({
-    toasts: [...state.toasts, { ...toast, id: crypto.randomUUID() }],
+    toasts: [...state.toasts, { ...toast, id: nextToastId() }],
   })),
   removeToast: (id) => set((state) => ({
     toasts: state.toasts.filter((t) => t.id !== id),

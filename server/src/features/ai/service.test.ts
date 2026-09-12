@@ -17,7 +17,19 @@ vi.mock('@/utils/logger.js', () => ({
   default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
+vi.mock('@/features/analytics/service.js', () => ({
+  analyticsService: {
+    getRetentionRisk: vi.fn(),
+    getSentimentTrends: vi.fn(),
+    getCategoryBreakdown: vi.fn(),
+    getHeatmap: vi.fn(),
+    getTopIssues: vi.fn(),
+    getAlerts: vi.fn(),
+  },
+}));
+
 import { generateText, streamText, convertToModelMessages, toUIMessageStream } from 'ai';
+import { analyticsService } from '@/features/analytics/service.js';
 import {
   analyzeFeedback,
   generateCategoriesForBusiness,
@@ -26,6 +38,8 @@ import {
   buildChatPrompt,
   buildChatSystemPrompt,
   createChatMessageStream,
+  draftOwnerReply,
+  answerAnalyticsQuery,
 } from './service.js';
 
 const mockedGenerateText = vi.mocked(generateText);
@@ -260,5 +274,52 @@ describe('buildChatSystemPrompt / createChatMessageStream', () => {
       expect.objectContaining({ messages: modelMessages }),
     );
     expect(mockedToUIMessageStream).toHaveBeenCalledWith({ stream: 'model-stream' });
+  });
+});
+
+describe('draftOwnerReply (Phase 4 D1/F6)', () => {
+  it('returns the model draft trimmed to 1000 chars', async () => {
+    mockedGenerateText.mockResolvedValue({ text: '  Thanks — fixing it this week.  ' } as never);
+    const draft = await draftOwnerReply({ text: 'cold food', category: 'Food' });
+    expect(draft).toBe('Thanks — fixing it this week.');
+  });
+
+  it('falls back to a suggestedAction template on model failure', async () => {
+    mockedGenerateText.mockRejectedValue(new Error('boom'));
+    const draft = await draftOwnerReply({
+      text: 'cold food',
+      category: 'Food',
+      suggestedAction: 'Reheat protocol retraining',
+      businessName: 'Demo Cafe',
+    });
+    expect(draft).toContain('Demo Cafe');
+    expect(draft).toContain('Reheat protocol retraining');
+  });
+});
+
+describe('answerAnalyticsQuery (Phase 7 E1)', () => {
+  it('routes retention questions to getRetentionRisk and summarizes', async () => {
+    vi.mocked(analyticsService.getRetentionRisk).mockResolvedValue({
+      counts: { Low: 1, Medium: 2, High: 3 },
+      highRiskOpen: [{ id: 'f1' }],
+      avgSatisfaction: 2.5,
+      total: 6,
+      fixableCount: 2,
+    } as never);
+    mockedGenerateText.mockResolvedValue({ text: 'Churn is concentrated...' } as never);
+
+    const result = await answerAnalyticsQuery('who is at risk of churn?', 'org-1', []);
+    expect(analyticsService.getRetentionRisk).toHaveBeenCalledWith('org-1', 30);
+    expect(result.cards[0]?.kind).toBe('retention');
+    expect(result.summary).toContain('Churn');
+  });
+
+  it('defaults to top issues when no keyword matches', async () => {
+    vi.mocked(analyticsService.getTopIssues).mockResolvedValue([{ text: 'slow' }] as never);
+    mockedGenerateText.mockResolvedValue({ text: 'Top issue is speed.' } as never);
+
+    const result = await answerAnalyticsQuery('hello there', 'org-1', []);
+    expect(analyticsService.getTopIssues).toHaveBeenCalled();
+    expect(result.cards[0]?.kind).toBe('issues');
   });
 });

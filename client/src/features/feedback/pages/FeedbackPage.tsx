@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { useOrgSlug } from '@/lib/stores/auth.store';
-import { useFeedbacks, useUpdateFeedbackStatus } from '@/features/feedback/hooks';
+import { useFeedbacks, useUpdateFeedbackStatus, useDraftReply, useVerifyFeedback } from '@/features/feedback/hooks';
 import { useFeedbackStore } from '@/lib/stores/feedback.store';
+import { useUIStore } from '@/lib/stores/ui.store';
 import {
   Search,
   ChevronLeft,
@@ -15,8 +16,9 @@ import {
   XCircle,
   Circle,
   Wrench,
+  Calendar,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatRelativeTime } from '@/lib/utils';
 import {
   PageHeader,
   Card,
@@ -25,23 +27,15 @@ import {
   Select,
   Textarea,
   EmptyState,
-  LoadingState,
-  type BadgeProps,
+  SkeletonStatCard,
 } from '@/components/ui';
 import type { Feedback, FeedbackStatus } from '@/features/feedback/types';
-
-const sentimentVariant: Record<string, BadgeProps['variant']> = {
-  Positive: 'success',
-  Negative: 'destructive',
-  Neutral: 'neutral',
-  Mixed: 'warning',
-};
-
-const urgencyVariant: Record<string, BadgeProps['variant']> = {
-  High: 'destructive',
-  Medium: 'warning',
-  Low: 'success',
-};
+import {
+  sentimentVariant,
+  urgencyVariant,
+  retentionRiskVariant,
+  satisfactionVariant,
+} from '@/lib/status-variants';
 
 const statusConfig: Record<
   FeedbackStatus,
@@ -53,48 +47,123 @@ const statusConfig: Record<
   ignored: { label: 'Ignored', icon: XCircle, className: 'text-muted-foreground' },
 };
 
+type SortField = 'createdAt' | 'urgency' | 'sentiment' | 'satisfactionEstimate';
+type SortDir = 'asc' | 'desc';
+
 export function FeedbackPage() {
   const slug = useOrgSlug();
   const { currentPage, setPage, filters, setFilters } = useFeedbackStore();
-  const { data, isLoading, isError } = useFeedbacks(slug);
+  const { data, isLoading, isError, refetch } = useFeedbacks(slug);
   const updateStatus = useUpdateFeedbackStatus(slug || '');
+  const { addToast } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [noteDraft, setNoteDraft] = useState('');
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   const allFeedbacks: Feedback[] = data?.feedbacks ?? [];
   const totalPages = data?.totalPages ?? 0;
   const total = data?.total ?? 0;
 
+  // Reset page when filters/search change
   const handleFilterChange = (key: string, value: string) => {
     setFilters({ ...filters, [key]: value || undefined });
+    setPage(1);
   };
-
-  const query = searchQuery.trim().toLowerCase();
-  const feedbacks =
-    query.length === 0
-      ? allFeedbacks
-      : allFeedbacks.filter(
-          (f) =>
-            f.text.toLowerCase().includes(query) ||
-            f.category.toLowerCase().includes(query) ||
-            f.keywords.some((k) => k.toLowerCase().includes(query)) ||
-            (f.suggestedAction || '').toLowerCase().includes(query),
-        );
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
+    setFilters({ ...filters });
+    setPage(1);
   };
 
-  const setStatus = (id: string, status: FeedbackStatus) => {
+  const query = searchQuery.trim().toLowerCase();
+  let feedbacks = query.length === 0
+    ? allFeedbacks
+    : allFeedbacks.filter(
+        (f) =>
+          f.text.toLowerCase().includes(query) ||
+          f.category.toLowerCase().includes(query) ||
+          f.keywords.some((k) => k.toLowerCase().includes(query)) ||
+          (f.suggestedAction || '').toLowerCase().includes(query),
+      );
+
+  // Client-side sort
+  feedbacks = [...feedbacks].sort((a, b) => {
+    let av: unknown = a[sortField];
+    let bv: unknown = b[sortField];
+    if (av === undefined || av === null) av = '';
+    if (bv === undefined || bv === null) bv = '';
+    let cmp = 0;
+    if (typeof av === 'string' && typeof bv === 'string') {
+      const aLower = av.toLowerCase();
+      const bLower = bv.toLowerCase();
+      cmp = aLower < bLower ? -1 : aLower > bLower ? 1 : 0;
+    } else if (typeof av === 'number' && typeof bv === 'number') {
+      cmp = av - bv;
+    } else {
+      cmp = String(av).localeCompare(String(bv));
+    }
+    return sortDir === 'asc' ? cmp : -cmp;
+  });
+
+  const setStatus = (id: string, status: FeedbackStatus, note?: string) => {
     if (!slug) return;
-    updateStatus.mutate({
-      id,
-      status,
-      internalNote: noteDraft.trim() || undefined,
-    });
-    setNoteDraft('');
+    updateStatus.mutate(
+      { id, status, internalNote: note?.trim() },
+      {
+        onSuccess: () => {
+          if (status === 'ignored') {
+            addToast({
+              message: 'Feedback ignored — click to undo.',
+              type: 'info',
+              duration: 5000,
+            });
+          } else if (status === 'resolved') {
+            addToast({ message: 'Marked as resolved', type: 'success' });
+          }
+        },
+      }
+    );
     setExpandedId(null);
+    // Clear note draft for this item
+    setNoteDrafts((prev: Record<string, string>) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  };
+
+  const handleSaveNote = (id: string) => {
+    if (!slug) return;
+    const note = noteDrafts[id]?.trim();
+    if (note) {
+      updateStatus.mutate(
+        { id, internalNote: note },
+        { onSuccess: () => addToast({ message: 'Note saved', type: 'success' }) }
+      );
+    }
+    setExpandedId(null);
+    setNoteDrafts((prev: Record<string, string>) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  };
+
+  const handleToggleExpand = (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null);
+    } else {
+      setExpandedId(id);
+      // Initialize note draft from existing internalNote if not already set
+      const fb = allFeedbacks.find((f) => f.id === id);
+      const note = fb?.internalNote;
+      if (fb && !noteDrafts[id] && note) {
+        setNoteDrafts((prev: Record<string, string>) => ({ ...prev, [id]: note }));
+      }
+    }
   };
 
   if (!slug) {
@@ -107,9 +176,36 @@ export function FeedbackPage() {
     );
   }
 
+  const trulyEmpty = total === 0;
+  const filteredEmpty = feedbacks.length === 0 && allFeedbacks.length > 0;
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Feedback" description="Review, act, and close the loop with customers" />
+      <PageHeader
+        title="Feedback"
+        description="Review, act, and close the loop with customers"
+        actions={
+          <Select
+            value={`${sortField}:${sortDir}`}
+            onChange={(e) => {
+              const [f, d] = e.target.value.split(':');
+              setSortField(f as SortField);
+              setSortDir(d as SortDir);
+            }}
+            className="w-48"
+            aria-label="Sort feedback"
+          >
+            <option value="createdAt:desc">Newest first</option>
+            <option value="createdAt:asc">Oldest first</option>
+            <option value="urgency:desc">Urgency: High → Low</option>
+            <option value="urgency:asc">Urgency: Low → High</option>
+            <option value="sentiment:desc">Sentiment: Z → A</option>
+            <option value="sentiment:asc">Sentiment: A → Z</option>
+            <option value="satisfactionEstimate:desc">Satisfaction: High → Low</option>
+            <option value="satisfactionEstimate:asc">Satisfaction: Low → High</option>
+          </Select>
+        }
+      />
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -161,15 +257,44 @@ export function FeedbackPage() {
 
       <Card padding="none" className="overflow-hidden">
         {isLoading ? (
-          <LoadingState message="Loading feedback…" />
+          <div className="p-8 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <SkeletonStatCard key={i} />
+            ))}
+          </div>
         ) : isError ? (
-          <div className="p-12 text-center text-destructive text-sm">Failed to load feedback</div>
-        ) : feedbacks.length === 0 ? (
+          <Card padding="lg" className="border-destructive/30 bg-destructive/5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+                <div>
+                  <p className="font-medium">Failed to load feedback</p>
+                  <p className="text-sm text-muted-foreground">Please try again.</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Retry
+              </Button>
+            </div>
+          </Card>
+        ) : trulyEmpty ? (
           <EmptyState
             compact
             icon={MessageSquare}
             title="No feedback yet"
-            description="Share your public link or QR code. Once customers respond, you’ll see AI actions here."
+            description="Share your public link or QR code. Once customers respond, you'll see AI actions here."
+          />
+        ) : filteredEmpty ? (
+          <EmptyState
+            compact
+            icon={MessageSquare}
+            title="No matching feedback"
+            description="Try adjusting your filters or search terms."
+            action={
+              <Button variant="ghost" size="sm" onClick={() => setFilters({})}>
+                Clear all filters
+              </Button>
+            }
           />
         ) : (
           <>
@@ -178,6 +303,8 @@ export function FeedbackPage() {
                 const status = (feedback.status || 'open') as FeedbackStatus;
                 const StatusIcon = statusConfig[status].icon;
                 const isExpanded = expandedId === feedback.id;
+                const noteDraft = noteDrafts[feedback.id] || '';
+                const isPending = updateStatus.variables?.id === feedback.id && updateStatus.isPending;
 
                 return (
                   <div key={feedback.id} className="p-4 sm:p-5 hover:bg-muted transition-colors">
@@ -197,8 +324,9 @@ export function FeedbackPage() {
                         {feedback.urgency && (
                           <Badge
                             variant={
-                              urgencyVariant[feedback.urgency as keyof typeof urgencyVariant] ??
-                              'neutral'
+                              urgencyVariant[
+                                feedback.urgency as keyof typeof urgencyVariant
+                              ] ?? 'neutral'
                             }
                           >
                             {feedback.urgency === 'High' && <AlertTriangle className="w-3 h-3" />}
@@ -207,16 +335,8 @@ export function FeedbackPage() {
                         )}
                         <Badge>{feedback.category}</Badge>
                         {typeof feedback.satisfactionEstimate === 'number' && (
-                          <Badge
-                            variant={
-                              feedback.satisfactionEstimate <= 2
-                                ? 'destructive'
-                                : feedback.satisfactionEstimate === 3
-                                  ? 'warning'
-                                  : 'success'
-                            }
-                          >
-                            Satisfaction {feedback.satisfactionEstimate}/5
+                          <Badge variant={satisfactionVariant(feedback.satisfactionEstimate)}>
+                            {feedback.satisfactionEstimate}/5
                           </Badge>
                         )}
                         {feedback.fixableProblem && (
@@ -226,12 +346,8 @@ export function FeedbackPage() {
                           </Badge>
                         )}
                         {feedback.retentionRisk && feedback.retentionRisk !== 'Low' && (
-                          <Badge
-                            variant={feedback.retentionRisk === 'High' ? 'destructive' : 'warning'}
-                          >
-                            {feedback.retentionRisk === 'High' && (
-                              <AlertTriangle className="w-3 h-3" />
-                            )}
+                          <Badge variant={retentionRiskVariant[feedback.retentionRisk] ?? 'warning'}>
+                            {feedback.retentionRisk === 'High' && <AlertTriangle className="w-3 h-3" />}
                             {feedback.retentionRisk} risk
                           </Badge>
                         )}
@@ -245,7 +361,8 @@ export function FeedbackPage() {
                           {statusConfig[status].label}
                         </span>
                         <span className="text-[10px] text-muted-foreground ml-auto">
-                          {new Date(feedback.createdAt).toLocaleDateString()}
+                          <Calendar className="w-3 h-3 inline" />
+                          {formatRelativeTime(feedback.createdAt)}
                         </span>
                       </div>
 
@@ -276,9 +393,7 @@ export function FeedbackPage() {
                           <Lightbulb className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                           <span>
                             <span className="font-medium text-foreground">Suggested action: </span>
-                            <span className="text-muted-foreground">
-                              {feedback.suggestedAction}
-                            </span>
+                            <span className="text-muted-foreground">{feedback.suggestedAction}</span>
                           </span>
                         </div>
                       )}
@@ -292,7 +407,8 @@ export function FeedbackPage() {
                           </p>
                         )}
 
-                      {feedback.rootCause && feedback.rootCause !== 'Unknown' && (                        <p className="text-xs text-muted-foreground">
+                      {feedback.rootCause && feedback.rootCause !== 'Unknown' && (
+                        <p className="text-xs text-muted-foreground">
                           <span className="font-medium text-foreground">Root cause: </span>
                           {feedback.rootCause}
                         </p>
@@ -305,9 +421,9 @@ export function FeedbackPage() {
                             size="xs"
                             variant="success"
                             onClick={() => setStatus(feedback.id, 'resolved')}
-                            disabled={updateStatus.isPending}
+                            disabled={isPending}
                           >
-                            Mark resolved
+                            Resolved
                           </Button>
                         )}
                         {status !== 'in_progress' && status !== 'resolved' && (
@@ -315,7 +431,7 @@ export function FeedbackPage() {
                             size="xs"
                             variant="warning"
                             onClick={() => setStatus(feedback.id, 'in_progress')}
-                            disabled={updateStatus.isPending}
+                            disabled={isPending}
                           >
                             In progress
                           </Button>
@@ -326,7 +442,7 @@ export function FeedbackPage() {
                             variant="secondary"
                             className="text-muted-foreground"
                             onClick={() => setStatus(feedback.id, 'ignored')}
-                            disabled={updateStatus.isPending}
+                            disabled={isPending}
                           >
                             Ignore
                           </Button>
@@ -337,7 +453,7 @@ export function FeedbackPage() {
                             variant="outline"
                             className="text-muted-foreground"
                             onClick={() => setStatus(feedback.id, 'open')}
-                            disabled={updateStatus.isPending}
+                            disabled={isPending}
                           >
                             Reopen
                           </Button>
@@ -346,37 +462,46 @@ export function FeedbackPage() {
                           size="xs"
                           variant="outline"
                           className="text-muted-foreground ml-auto"
-                          onClick={() => {
-                            setExpandedId(isExpanded ? null : feedback.id);
-                            setNoteDraft(feedback.internalNote || '');
-                          }}
+                          onClick={() => handleToggleExpand(feedback.id)}
+                          disabled={isPending}
                         >
                           {isExpanded ? 'Hide note' : 'Internal note'}
                         </Button>
+                        <DraftReplyButton slug={slug || ''} feedbackId={feedback.id} onUse={(draft) =>
+                          updateStatus.mutate(
+                            { id: feedback.id, ownerReply: draft, status: 'resolved' },
+                            { onSuccess: () => addToast({ message: 'Reply sent & resolved', type: 'success' }) },
+                          )
+                        } />
                       </div>
 
                       {isExpanded && (
-                        <div className="space-y-2 pt-1">
+                        <div className="space-y-2 pt-1 border-t border-border">
                           <Textarea
                             value={noteDraft}
-                            onChange={(e) => setNoteDraft(e.target.value)}
+                            onChange={(e) =>
+                              setNoteDrafts((prev) => ({ ...prev, [feedback.id]: e.target.value }))
+                            }
                             rows={2}
                             placeholder="Internal note (not visible to customers)"
                             className="bg-background text-sm resize-none"
                           />
-                          <Button
-                            size="xs"
-                            onClick={() => {
-                              updateStatus.mutate({
-                                id: feedback.id,
-                                internalNote: noteDraft,
-                              });
-                              setExpandedId(null);
-                            }}
-                            disabled={updateStatus.isPending}
-                          >
-                            Save note
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              size="xs"
+                              onClick={() => handleSaveNote(feedback.id)}
+                              disabled={isPending}
+                            >
+                              Save note
+                            </Button>
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              onClick={() => setExpandedId(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
                       )}
 
@@ -385,6 +510,11 @@ export function FeedbackPage() {
                           <span className="font-medium text-foreground">Reply: </span>
                           {feedback.ownerReply}
                         </p>
+                      )}
+                      {feedback.verified ? (
+                        <Badge size="sm" variant="success">✓ Verified</Badge>
+                      ) : (
+                        <VerifyButton slug={slug || ''} feedbackId={feedback.id} />
                       )}
                     </div>
                   </div>
@@ -421,5 +551,65 @@ export function FeedbackPage() {
         )}
       </Card>
     </div>
+  );
+}
+
+/** Phase 4 (D1/F6): AI draft-reply preview → Accept (resolve) or copy. */
+function DraftReplyButton({
+  slug,
+  feedbackId,
+  onUse,
+}: {
+  slug: string;
+  feedbackId: string;
+  onUse: (draft: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const { data, isLoading, isError, refetch } = useDraftReply(slug, open ? feedbackId : null);
+  return (
+    <>
+      <Button size="xs" variant="outline" onClick={() => (open ? setOpen(false) : (setOpen(true), refetch()))}>
+        <MessageSquare className="w-3 h-3" />
+        AI draft
+      </Button>
+      {open && (
+        <div className="w-full text-xs bg-muted/60 border border-border rounded-lg px-3 py-2 space-y-2">
+          {isLoading ? (
+            <p className="text-muted-foreground">Drafting reply…</p>
+          ) : isError || !data?.draft ? (
+            <p className="text-destructive">Couldn&apos;t draft a reply. Try again.</p>
+          ) : (
+            <>
+              <p className="text-foreground leading-relaxed">{data.draft}</p>
+              <div className="flex gap-2">
+                <Button size="xs" variant="success" onClick={() => { onUse(data.draft); setOpen(false); }}>
+                  <CheckCircle2 className="w-3 h-3" />
+                  Use & resolve
+                </Button>
+                <Button size="xs" variant="ghost" onClick={() => navigator.clipboard?.writeText(data.draft)}>
+                  Copy
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+/** Phase 6 (D3): manual verification toggle (trust badge). */
+function VerifyButton({ slug, feedbackId }: { slug: string; feedbackId: string }) {
+  const verify = useVerifyFeedback(slug);
+  return (
+    <Button
+      size="xs"
+      variant="ghost"
+      className="text-muted-foreground"
+      disabled={verify.isPending}
+      onClick={() => verify.mutate({ id: feedbackId, verified: true })}
+    >
+      Mark verified
+    </Button>
   );
 }

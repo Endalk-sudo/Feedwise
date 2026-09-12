@@ -112,6 +112,9 @@ model Organization {
   feedbacks          Feedback[]
   insights           Insight[]
   subscription       Subscription?
+  apiTokens          ApiToken[]
+  webhooks           Webhook[]
+  webhookLogs        WebhookLog[]
 
   @@index([slug])
   @@index([stripeCustomerId])
@@ -217,4 +220,55 @@ model Subscription {
 
   @@index([stripeCustomerId])
   @@index([stripeSubscriptionId])
+}
+
+// Phase 6 (D4): scoped public API tokens (hash-stored, never plaintext).
+// Reuses Better-Auth cookie sessions for issuance; requests authenticate
+// via `Authorization: Bearer <token>` + scope check.
+model ApiToken {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String    @default("integration")
+  tokenHash      String    @unique
+  tokenPrefix    String
+  scopes         String[]  @default(["feedback:read", "analytics:read"])
+  expiresAt      DateTime?
+  lastUsedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+// Phase 6 (V3/F7): outbound webhook subscriptions (signed push).
+model Webhook {
+  id             String   @id @default(cuid())
+  organizationId String
+  url            String
+  secret         String
+  events         String[] @default(["feedback.high_urgency"])
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  logs         WebhookLog[]
+
+  @@index([organizationId])
+}
+
+model WebhookLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  webhookId      String?
+  event          String
+  status         Int      @default(0)
+  attempts       Int      @default(1)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  webhook      Webhook?     @relation(fields: [webhookId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
 }

@@ -195,3 +195,71 @@ export function startSubscriptionSyncJob(): void {
   });
   logger.info('✅ Subscription sync schedule registered');
 }
+
+/**
+ * Phase 5 (D2): predictive churn cron (runs after the 2AM insight job).
+ * For each Pro org: rolling 7-day satisfaction delta + High-urgency trend;
+ * a drop > 0.3 pts/week with rising High urgency (or High-risk open pile-up)
+ * writes a `Churn risk rising` Insight surfaced in Priority Alerts.
+ * Phase 7 (F3): promoter follow-up — Positive + satisfaction >= 4 rows in
+ * the last 7 days trigger a referral-request email (digest opt-out honored).
+ */
+export function startRetentionForecastJob(): void {
+  cron.schedule('30 2 * * *', async () => {
+    logger.info('📉 Retention forecast schedule triggered');
+    try {
+      const { analyticsService } = await import('@/features/analytics/service.js');
+      const { sendReferralRequestEmail, dashboardUrlFor } = await import('@/lib/mail.js');
+      const proOrgs = await prisma.organization.findMany({
+        where: { currentPlan: 'pro' },
+        select: { id: true },
+      });
+      for (const org of proOrgs) {
+        try {
+          const forecast = await analyticsService.getSatisfactionForecast(org.id);
+          const risk = await analyticsService.getRetentionRisk(org.id, 7);
+          const highRiskOpen = (risk.highRiskOpen as unknown[]).length;
+          if (
+            (forecast.satisfactionDelta <= -0.3 && forecast.urgencyRising) ||
+            (forecast.trend === 'falling' && highRiskOpen >= 3)
+          ) {
+            await prisma.insight.create({
+              data: {
+                organizationId: org.id,
+                title: 'Churn risk rising — satisfaction falling',
+                reason:
+                  `Satisfaction moved ${forecast.satisfactionDelta.toFixed(2)} pts/week ` +
+                  `(${forecast.urgencyRising ? 'High-urgency volume rising' : 'High-risk pile-up'}; ` +
+                  `${highRiskOpen} high-risk open).`,
+                action: 'Work the High retention-risk queue this week: Accept/Resolve the top rows first.',
+                priority: 9,
+                periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                periodEnd: new Date(),
+              },
+            });
+            logger.info(`Predictive churn insight written for org ${org.id}`);
+          }
+          const promoters = await prisma.feedback.findMany({
+            where: {
+              organizationId: org.id,
+              sentiment: 'Positive',
+              satisfactionEstimate: { gte: 4 },
+              createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            select: { id: true, text: true, category: true, createdAt: true },
+          });
+          if (promoters.length > 0) {
+            await sendReferralRequestEmail(org.id, promoters, dashboardUrlFor());
+          }
+        } catch (error) {
+          logger.error(`Forecast failed for org ${org.id}: ${(error as Error).message}`);
+        }
+      }
+    } catch (error) {
+      logger.error(`Retention forecast job failed: ${(error as Error).message}`);
+    }
+  });
+  logger.info('✅ Retention forecast schedule registered (2:30AM, predictive churn + promoters)');
+}

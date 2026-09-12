@@ -4,7 +4,7 @@ import { authMiddleware } from '@/middleware/auth.js';
 import { resolveOrganizationMember } from '@/middleware/organization.js';
 import { pipeUIMessageStreamToResponse, type UIMessage } from 'ai';
 import { chatSchema, chatStreamSchema } from './schemas.js';
-import { chatWithAI, createChatMessageStream } from './service.js';
+import { chatWithAI, createChatMessageStream, answerAnalyticsQuery } from './service.js';
 import { prisma } from '@/lib/prisma.js';
 import { aiRateLimiter } from '@/middleware/rate-limit.js';
 
@@ -46,6 +46,26 @@ router.post('/:slug/chat', authMiddleware, aiRateLimiter, validate(chatSchema), 
 
     const reply = await chatWithAI(message, ctx.feedbacks);
     res.json({ success: true, data: { reply } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Phase 7 (E1): NLQ — keyword-routed structured cards + Gemini summary.
+// Same Pro gate + feedback context as the stream endpoint.
+router.post('/:slug/nlq', authMiddleware, aiRateLimiter, validate(chatSchema), async (req, res, next) => {
+  try {
+    const slug = req.params.slug as string;
+    const { message } = req.body;
+    const userId = (req as any).user.id;
+
+    const ctx = await chatContext(slug, userId);
+    if (!ctx.ok) {
+      return res.status(ctx.status).json({ success: false, message: ctx.message });
+    }
+    const { organization } = await resolveOrganizationMember(slug, userId);
+    const data = await answerAnalyticsQuery(message, organization!.id, ctx.feedbacks);
+    res.json({ success: true, data });
   } catch (error) {
     next(error);
   }

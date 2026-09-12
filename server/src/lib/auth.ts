@@ -1,6 +1,8 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './prisma.js';
+import { env } from './env.js';
+import { sendMail } from './mail.js';
 
 /**
  * Better Auth instance.
@@ -15,6 +17,21 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
+    // Password-reset emails go through the same SMTP service as
+    // urgency alerts (no-op + logged when SMTP_HOST is empty).
+    sendResetPassword: async ({ user, token }) => {
+      const url = `${env.CLIENT_URL}/auth/reset-password?token=${token}`;
+      await sendMail({
+        to: user.email,
+        subject: 'Reset your Feedwise password',
+        html: `
+          <h2>Reset your password</h2>
+          <p>Hi ${user.name || 'there'}, click the link below to choose a new password. It expires in 1 hour.</p>
+          <p><a href="${url}">Reset password →</a></p>
+          <p>If you didn't request this, you can safely ignore this email.</p>
+        `,
+      });
+    },
   },
   user: {
     additionalFields: {

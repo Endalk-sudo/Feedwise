@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { useFeedbackStore } from '@/lib/stores/feedback.store';
 import { useUIStore } from '@/lib/stores/ui.store';
-import type { Feedback, FeedbackListResponse, FeedbackStats, SentimentTrend, CategoryBreakdown, HeatmapData, TopIssue, Alert, Recommendation, AIChatResponse } from './types';
+import type { Feedback, FeedbackListResponse, FeedbackStats, SentimentTrend, CategoryBreakdown, HeatmapData, TopIssue, Alert, Recommendation, RetentionRisk, AIChatResponse, NlqResponse } from './types';
 
 /**
  * Unwrap the standard server envelope: { success: true, data: T }.
@@ -92,6 +92,18 @@ export function useSentimentTrends(slug: string, days: number = 30) {
 }
 
 /**
+ * E1: ask a natural-language analytics question ("Show negative staff feedback
+ * this week") — keyword router + Gemini summary. Mutation because the query
+ * runs on demand, not on mount.
+ */
+export function useNlqQuery(slug: string) {
+  return useMutation<NlqResponse, Error, string>({
+    mutationFn: (message: string) =>
+      unwrapData<NlqResponse>(apiClient.ai.nlq(slug, message)),
+  });
+}
+
+/**
  * Hook to fetch category breakdown
  */
 export function useCategoryBreakdown(slug: string) {
@@ -147,6 +159,47 @@ export function useRecommendations(slug: string) {
 }
 
 /**
+ * Phase 5 (F1): retention-risk aggregate (Pro only).
+ */
+export function useRetentionRisk(slug: string, days: number = 30) {
+  return useQuery<RetentionRisk>({
+    queryKey: ['retention-risk', slug, days],
+    queryFn: () => unwrapData<RetentionRisk>(apiClient.analytics.getRetentionRisk(slug, days)),
+    enabled: !!slug,
+  });
+}
+
+/**
+ * Phase 7 (F4): staff performance from existing audit fields.
+ */
+export function useStaffPerformance(slug: string) {
+  return useQuery<{
+    members: Array<{ userId: string; name: string | null; email: string; role: string }>;
+    orgTotals: { resolved: number; open: number; avgSatisfaction: number | null; avgResolutionHours: number | null };
+  }>({
+    queryKey: ['staff-performance', slug],
+    queryFn: () =>
+      unwrapData<{
+        members: Array<{ userId: string; name: string | null; email: string; role: string }>;
+        orgTotals: { resolved: number; open: number; avgSatisfaction: number | null; avgResolutionHours: number | null };
+      }>(apiClient.analytics.getStaffPerformance(slug)),
+    enabled: !!slug,
+  });
+}
+
+/**
+ * Phase 4 (D1/F6): read-only Gemini owner-reply draft preview.
+ */
+export function useDraftReply(slug: string, id: string | null) {
+  return useQuery<{ draft: string }>({
+    queryKey: ['draft-reply', slug, id],
+    queryFn: () => unwrapData<{ draft: string }>(apiClient.feedback.draftReply(slug, id as string)),
+    enabled: !!slug && !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
  * Hook for AI chat
  */
 export function useAIChat(slug: string) {
@@ -186,6 +239,32 @@ export function useUpdateFeedbackStatus(slug: string) {
     onError: (error) => {
       addToast({
         message: error instanceof Error ? error.message : 'Failed to update feedback',
+        type: 'error',
+      });
+    },
+  });
+}
+
+/**
+ * Phase 6 (D3): manual verification toggle (trust badge).
+ */
+export function useVerifyFeedback(slug: string) {
+  const queryClient = useQueryClient();
+  const { addToast } = useUIStore();
+
+  return useMutation({
+    mutationFn: ({ id, verified }: { id: string; verified: boolean }) =>
+      unwrapData(apiClient.feedback.verify(slug, id, { verified, verificationSource: 'manual' })),
+    onSuccess: (_data, { verified }) => {
+      queryClient.invalidateQueries({ queryKey: ['feedbacks', slug] });
+      addToast({
+        message: verified ? 'Feedback marked verified' : 'Verification removed',
+        type: 'success',
+      });
+    },
+    onError: (error) => {
+      addToast({
+        message: error instanceof Error ? error.message : 'Failed to verify feedback',
         type: 'error',
       });
     },
