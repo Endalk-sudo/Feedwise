@@ -16,6 +16,8 @@ export const updateOrgSchema = z.object({
   body: z.object({
     name: z.string().min(2).optional(),
     logo: z.string().url().optional().or(z.literal('')),
+    // Org-level email opt-out consumed by digest/referral sends (mail.ts)
+    emailDigest: z.boolean().optional(),
   }),
   params: z.object({
     slug: z.string().min(1),

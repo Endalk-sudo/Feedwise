@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Router } from 'express';
 import { validate } from '@/middleware/validation.js';
 import { authMiddleware } from '@/middleware/auth.js';
@@ -41,9 +42,14 @@ router.post('/:slug', feedbackRateLimiter, validate(submitFeedbackSchema), async
   try {
     const slug = req.params.slug as string;
     const { text, rating, contextTags } = req.body;
-    const ip = (req.ip || req.headers['x-forwarded-for']) as string | undefined;
+    // `trust proxy` (app.ts) makes req.ip the real client IP behind nginx.
+    // Do NOT fall back to x-forwarded-for directly: without the proxy setting
+    // it is client-spoofable. Hash before persisting — raw IPs are PII with no
+    // retention policy; a salted hash still supports dedupe/abuse analysis.
+    const ip = req.ip;
+    const ipHash = ip ? createHash('sha256').update(`fw-ip:${ip}`).digest('hex') : undefined;
     const feedback = await feedbackService.submit(slug, text, {
-      ipAddress: typeof ip === 'string' ? ip : undefined,
+      ipAddress: ipHash,
       rating,
       contextTags,
     });

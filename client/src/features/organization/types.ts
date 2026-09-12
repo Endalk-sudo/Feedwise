@@ -42,6 +42,8 @@ export interface CreateOrgData {
 export interface UpdateOrgData {
   name?: string;
   logo?: string;
+  /** Org-level email opt-out (digest/referral sends check settings.emailDigest). */
+  emailDigest?: boolean;
 }
 
 export interface AddMemberData {

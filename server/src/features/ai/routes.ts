@@ -76,6 +76,7 @@ router.post('/:slug/nlq', authMiddleware, aiRateLimiter, validate(chatSchema), a
 router.post(
   '/:slug/chat/stream',
   authMiddleware,
+  aiRateLimiter,
   validate(chatStreamSchema),
   async (req, res, next) => {
     try {

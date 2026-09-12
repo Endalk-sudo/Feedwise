@@ -116,6 +116,78 @@ async function memberOrganization(userId: string) {
   return member.organization;
 }
 
+/** Stripe subscription statuses where the customer is still being billed. */
+const BILLING_ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due', 'unpaid']);
+
+/**
+ * Guard for new checkouts: resolve the organization's existing subscription.
+ * Returns the subscription view when it is still billing in Stripe (caller must
+ * block and route to the billing portal). When the stored id is stale — the
+ * subscription was canceled or deleted in Stripe — the pointer is cleared and
+ * null is returned so a legitimate re-subscribe can proceed.
+ */
+async function activeSubscriptionOn(organization: { id: string; stripeSubscriptionId: string | null }) {
+  if (!organization.stripeSubscriptionId) return null;
+
+  try {
+    const subscription = await stripe.subscriptions.retrieve(organization.stripeSubscriptionId);
+    const view = toSubscriptionView(subscription);
+    if (BILLING_ACTIVE_STATUSES.has(view.status)) return view;
+
+    logger.warn(
+      `Org ${organization.id} pointed at non-billing subscription ${view.id} (status: ${view.status}); clearing stale pointer.`,
+    );
+    await prisma.organization.update({
+      where: { id: organization.id },
+      data: { stripeSubscriptionId: null },
+    });
+    return null;
+  } catch (error) {
+    // Subscription no longer retrievable (deleted in Stripe) — stale pointer.
+    logger.warn(
+      `Could not retrieve subscription ${organization.stripeSubscriptionId} for org ${organization.id}; clearing stale pointer: ${(error as Error).message}`,
+    );
+    await prisma.organization.update({
+      where: { id: organization.id },
+      data: { stripeSubscriptionId: null },
+    });
+    return null;
+  }
+}
+
+/**
+ * Heal a legacy double-subscription: when applying a new subscription to an org
+ * that still points at a different, still-billing subscription, cancel the old
+ * one so the customer is not charged for an orphaned plan. Never throws —
+ * checkout state must still be applied.
+ */
+async function cancelPreviousSubscription(
+  organizationId: string,
+  newSubscriptionId: string,
+): Promise<void> {
+  const organization = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { stripeSubscriptionId: true },
+  });
+  const previousId = organization?.stripeSubscriptionId ?? null;
+  if (!previousId || previousId === newSubscriptionId) return;
+
+  try {
+    const previous = toSubscriptionView(await stripe.subscriptions.retrieve(previousId));
+    if (!BILLING_ACTIVE_STATUSES.has(previous.status)) return;
+    // Cancel immediately without invoicing again: the new subscription takes
+    // over billing from now on.
+    await stripe.subscriptions.cancel(previousId, { invoice_now: false, prorate: false });
+    logger.warn(
+      `Cancelled orphaned subscription ${previousId} for org ${organizationId} (replaced by ${newSubscriptionId}).`,
+    );
+  } catch (error) {
+    logger.warn(
+      `Could not cancel previous subscription ${previousId} for org ${organizationId}: ${(error as Error).message}`,
+    );
+  }
+}
+
 /** Create a Checkout session for the user's first organization. */
 export async function createCheckoutSession(
   userId: string,
@@ -123,6 +195,17 @@ export async function createCheckoutSession(
   plan: 'basic' | 'pro',
 ): Promise<{ sessionId: string; url: string | null }> {
   const organization = await memberOrganization(userId);
+
+  // Never start a second subscription while one is still billing — the old sub
+  // would keep charging invisibly after applySubscriptionState overwrites the id.
+  const existing = await activeSubscriptionOn(organization);
+  if (existing) {
+    throw new PaymentError(
+      409,
+      'This organization already has an active subscription. Use the billing portal to change or cancel your plan.',
+    );
+  }
+
   const customerId = await getOrCreateCustomerId(organization, email);
   const priceId = plan === 'pro' ? env.STRIPE_PRO_PRICE_ID : env.STRIPE_BASIC_PRICE_ID;
 
@@ -181,6 +264,7 @@ export async function verifyAndApplySession(sessionId: string, userId: string): 
       typeof session.subscription === 'string'
         ? toSubscriptionView(await stripe.subscriptions.retrieve(session.subscription))
         : toSubscriptionView(session.subscription);
+    await cancelPreviousSubscription(organizationId, view.id);
     await applySubscriptionState(
       organizationId,
       view,
@@ -212,6 +296,9 @@ export async function handleStripeEvent(
       if (organizationId && session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
         const view = toSubscriptionView(subscription);
+        // Heal pre-guard double-subscriptions: cancel any still-billing sub the
+        // org was previously pointed at before overwriting the pointer.
+        await cancelPreviousSubscription(organizationId, view.id);
         await applySubscriptionState(
           organizationId,
           view,

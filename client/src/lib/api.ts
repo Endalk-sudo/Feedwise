@@ -58,7 +58,7 @@ export const apiClient = {
       api.post('/organization', data),
     getBySlug: (slug: string) => api.get(`/organization/${slug}`),
     getMyOrgs: () => api.get('/organization/my-orgs'),
-    update: (slug: string, data: { name?: string; logo?: string }) => api.put(`/organization/${slug}`, data),
+    update: (slug: string, data: { name?: string; logo?: string; emailDigest?: boolean }) => api.put(`/organization/${slug}`, data),
     uploadLogo: (slug: string, file: File) => {
       const formData = new FormData();
       formData.append('logo', file);

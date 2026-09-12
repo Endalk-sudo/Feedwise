@@ -76,10 +76,24 @@ export const organizationService = {
     });
   },
 
-  async update(id: string, data: { name?: string; logo?: string }) {
+  async update(
+    id: string,
+    data: { name?: string; logo?: string; emailDigest?: boolean },
+  ) {
+    const { emailDigest, ...fields } = data;
+    // emailDigest is not a column: merge it into the settings JSON opt-out
+    // consumed by getOrgRecipientEmails (mail.ts).
+    if (emailDigest !== undefined) {
+      const current = await prisma.organization.findUnique({
+        where: { id },
+        select: { settings: true },
+      });
+      const settings = { ...((current?.settings ?? {}) as Record<string, unknown>), emailDigest };
+      return prisma.organization.update({ where: { id }, data: { ...fields, settings } });
+    }
     return prisma.organization.update({
       where: { id },
-      data,
+      data: fields,
     });
   },
 

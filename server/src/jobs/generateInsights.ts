@@ -7,10 +7,19 @@ import {
   getInsightsQueue,
 } from '@/lib/queue.js';
 import { syncSubscriptionStatus } from '@/features/payments/service.js';
-import { ensureRedisConnected } from '@/lib/redis.js';
+import { ensureRedisConnected, withCronLock } from '@/lib/redis.js';
 import { startInsightsWorker } from '@/workers/insights.worker.js';
 import { startNotificationWorker } from '@/workers/notification.worker.js';
 import logger from '@/utils/logger.js';
+
+/** Start of the current ISO week (Monday 00:00 local) — stable upsert bucket. */
+function startOfIsoWeek(): Date {
+  const d = new Date();
+  const day = d.getDay(); // 0=Sun..6=Sat
+  d.setDate(d.getDate() - ((day + 6) % 7)); // back to Monday
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
 /**
  * Schedule daily insight generation.
@@ -24,6 +33,8 @@ export function startInsightGenerationJob(): void {
 
   // Cron that *enqueues* jobs (or runs inline as fallback)
   cron.schedule('0 2 * * *', async () => {
+    // Distributed lock: only one replica runs the daily job (Slice 7 fix).
+    await withCronLock('insight-generation', 60 * 60, async () => {
     logger.info('🔄 Daily insight generation schedule triggered');
 
     const redisOk = await ensureRedisConnected();
@@ -90,9 +101,10 @@ export function startInsightGenerationJob(): void {
     } catch (error) {
       logger.error(`Daily insight job failed: ${(error as Error).message}`);
     }
+    });
   });
 
-  logger.info('✅ Insight generation schedule registered (BullMQ preferred, cron fallback)');
+  logger.info('✅ Insight generation schedule registered (BullMQ preferred, cron fallback, distributed lock)');
 }
 
 /**
@@ -102,11 +114,14 @@ export function startInsightGenerationJob(): void {
  */
 export function startDigestJob(): void {
   cron.schedule('0 7 * * *', async () => {
+    await withCronLock('digest', 30 * 60, async () => {
     logger.info('📧 Daily digest schedule triggered');
     try {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      // Digests are a paid feature — align with the 2AM insight cron's Pro gate
+      // so free-tier orgs don't receive daily commercial email.
       const activeOrgs = await prisma.organization.findMany({
-        where: { feedbacks: { some: { createdAt: { gte: since } } } },
+        where: { currentPlan: 'pro', feedbacks: { some: { createdAt: { gte: since } } } },
         select: { id: true },
       });
       logger.info(`Found ${activeOrgs.length} orgs with 24h activity`);
@@ -173,9 +188,10 @@ export function startDigestJob(): void {
     } catch (error) {
       logger.error(`Daily digest job failed: ${(error as Error).message}`);
     }
+    });
   });
 
-  logger.info('✅ Digest schedule registered (7AM, BullMQ preferred, inline fallback)');
+  logger.info('✅ Digest schedule registered (7AM, BullMQ preferred, inline fallback, distributed lock)');
 }
 
 /**
@@ -185,6 +201,7 @@ export function startDigestJob(): void {
  */
 export function startSubscriptionSyncJob(): void {
   cron.schedule('0 * * * *', async () => {
+    await withCronLock('subscription-sync', 10 * 60, async () => {
     logger.info('🔄 Starting hourly subscription sync...');
     try {
       await syncSubscriptionStatus();
@@ -192,6 +209,7 @@ export function startSubscriptionSyncJob(): void {
     } catch (error) {
       logger.error(`Subscription sync failed: ${(error as Error).message}`);
     }
+    });
   });
   logger.info('✅ Subscription sync schedule registered');
 }
@@ -206,6 +224,7 @@ export function startSubscriptionSyncJob(): void {
  */
 export function startRetentionForecastJob(): void {
   cron.schedule('30 2 * * *', async () => {
+    await withCronLock('retention-forecast', 60 * 60, async () => {
     logger.info('📉 Retention forecast schedule triggered');
     try {
       const { analyticsService } = await import('@/features/analytics/service.js');
@@ -223,6 +242,20 @@ export function startRetentionForecastJob(): void {
             (forecast.satisfactionDelta <= -0.3 && forecast.urgencyRising) ||
             (forecast.trend === 'falling' && highRiskOpen >= 3)
           ) {
+            // Phase 10: churn-insight upsert — while a falling trend persists
+            // we'd otherwise write an identical "Churn risk rising" alert every
+            // night (14 after 2 weeks). Bucket per ISO week (stable periodStart)
+            // and replace any existing churn insight for this week instead of
+            // appending. Safe because the cron runs under a distributed lock
+            // (withCronLock), so only one replica does this delete-then-create.
+            const weekStart = startOfIsoWeek();
+            await prisma.insight.deleteMany({
+              where: {
+                organizationId: org.id,
+                title: 'Churn risk rising — satisfaction falling',
+                periodStart: { gte: weekStart },
+              },
+            });
             await prisma.insight.create({
               data: {
                 organizationId: org.id,
@@ -233,11 +266,11 @@ export function startRetentionForecastJob(): void {
                   `${highRiskOpen} high-risk open).`,
                 action: 'Work the High retention-risk queue this week: Accept/Resolve the top rows first.',
                 priority: 9,
-                periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                periodStart: weekStart,
                 periodEnd: new Date(),
               },
             });
-            logger.info(`Predictive churn insight written for org ${org.id}`);
+            logger.info(`Predictive churn insight upserted for org ${org.id}`);
           }
           const promoters = await prisma.feedback.findMany({
             where: {
@@ -260,6 +293,7 @@ export function startRetentionForecastJob(): void {
     } catch (error) {
       logger.error(`Retention forecast job failed: ${(error as Error).message}`);
     }
+    });
   });
-  logger.info('✅ Retention forecast schedule registered (2:30AM, predictive churn + promoters)');
+  logger.info('✅ Retention forecast schedule registered (2:30AM, predictive churn + promoters, distributed lock)');
 }

@@ -1,5 +1,8 @@
 import { prisma } from '@/lib/prisma.js';
-import { generateInsights, draftOwnerReply } from '../ai/service.js';
+import { generateInsights, draftOwnerReply, DEGRADED_CONFIDENCE_THRESHOLD } from '../ai/service.js';
+
+/** Recommendations cache TTL — stale caches (missed 2AM regen) are regenerated. */
+export const RECOMMENDATIONS_CACHE_TTL_MS = 30 * 60 * 60 * 1000;
 
 export const analyticsService = {
   async getSentimentTrends(organizationId: string, days: number = 30) {
@@ -10,6 +13,8 @@ export const analyticsService = {
         organizationId,
         createdAt: { gte: startDate },
         sentiment: { not: null },
+        // Exclude degraded (fallback) analyses — they look plausible but are junk
+        confidence: { gte: DEGRADED_CONFIDENCE_THRESHOLD },
       },
       select: {
         sentiment: true,
@@ -43,7 +48,10 @@ export const analyticsService = {
   async getCategoryBreakdown(organizationId: string) {
     const categories = await prisma.feedback.groupBy({
       by: ['category'],
-      where: { organizationId },
+      where: {
+        organizationId,
+        confidence: { gte: DEGRADED_CONFIDENCE_THRESHOLD },
+      },
       _count: { category: true },
       orderBy: { _count: { category: 'desc' } },
     });
@@ -60,6 +68,7 @@ export const analyticsService = {
       where: {
         organizationId,
         sentiment: { not: null },
+        confidence: { gte: DEGRADED_CONFIDENCE_THRESHOLD },
       },
       _count: true,
     });
@@ -192,14 +201,27 @@ export const analyticsService = {
       return items.map((i) => ({ ...i, feedbackIds, assigneeId, draftReply }));
     };
 
-    // Check for cached insights
+    // Check for cached insights (Phase 10 freshness: never show week-old data
+    // while new feedback arrived — treat a stale cache as empty and regenerate;
+    // Pro orgs get their cache refreshed nightly by the 2AM worker so a 30h TTL
+    // keeps it fresh between runs without blocking the request every time).
     const cached = await prisma.insight.findMany({
       where: { organizationId },
       orderBy: { createdAt: 'desc' },
       take: 5,
+      select: {
+        title: true,
+        reason: true,
+        action: true,
+        priority: true,
+        createdAt: true,
+      },
     });
+    const cacheFresh =
+      cached.length > 0 &&
+      Date.now() - (cached[0].createdAt?.getTime() ?? 0) < RECOMMENDATIONS_CACHE_TTL_MS;
 
-    if (cached.length > 0) {
+    if (cacheFresh) {
       return enrich(
         cached.map(
           (c: { title: string; reason: string; action: string; priority: number }) => ({
@@ -245,7 +267,11 @@ export const analyticsService = {
     const [byRisk, highRiskRows, satisfactionAgg, fixableCount] = await Promise.all([
       prisma.feedback.groupBy({
         by: ['retentionRisk'],
-        where: { organizationId, createdAt: { gte: startDate } },
+        where: {
+          organizationId,
+          createdAt: { gte: startDate },
+          confidence: { gte: DEGRADED_CONFIDENCE_THRESHOLD },
+        },
         _count: true,
       }),
       prisma.feedback.findMany({
@@ -259,12 +285,22 @@ export const analyticsService = {
         },
       }),
       prisma.feedback.aggregate({
-        where: { organizationId, createdAt: { gte: startDate }, satisfactionEstimate: { not: null } },
+        where: {
+          organizationId,
+          createdAt: { gte: startDate },
+          satisfactionEstimate: { not: null },
+          confidence: { gte: DEGRADED_CONFIDENCE_THRESHOLD },
+        },
         _avg: { satisfactionEstimate: true },
         _count: true,
       }),
       prisma.feedback.count({
-        where: { organizationId, createdAt: { gte: startDate }, fixableProblem: true },
+        where: {
+          organizationId,
+          createdAt: { gte: startDate },
+          fixableProblem: true,
+          confidence: { gte: DEGRADED_CONFIDENCE_THRESHOLD },
+        },
       }),
     ]);
     const counts: Record<string, number> = { Low: 0, Medium: 0, High: 0 };
@@ -294,7 +330,12 @@ export const analyticsService = {
       windows.map(async (w, idx) => {
         const [agg, highUrgency] = await Promise.all([
           prisma.feedback.aggregate({
-            where: { organizationId, createdAt: { gte: w.start, lt: w.end }, satisfactionEstimate: { not: null } },
+            where: {
+              organizationId,
+              createdAt: { gte: w.start, lt: w.end },
+              satisfactionEstimate: { not: null },
+              confidence: { gte: DEGRADED_CONFIDENCE_THRESHOLD },
+            },
             _avg: { satisfactionEstimate: true },
             _count: true,
           }),

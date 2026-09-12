@@ -156,6 +156,17 @@ describe('analyzeFeedback', () => {
       confidence: 0.1,
     });
   });
+
+  it('bounds the model call with a 12s abort signal so outages degrade fast', async () => {
+    mockedGenerateText.mockRejectedValue(new Error('This operation was aborted'));
+
+    const result = await analyzeFeedback('anything', ['General']);
+
+    expect(result.confidence).toBe(0.1);
+    expect(mockedGenerateText).toHaveBeenCalledTimes(1);
+    const opts = mockedGenerateText.mock.calls[0]?.[0] as { abortSignal?: AbortSignal };
+    expect(opts.abortSignal).toBeInstanceOf(AbortSignal);
+  });
 });
 
 describe('generateCategoriesForBusiness', () => {

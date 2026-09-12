@@ -98,11 +98,12 @@ export const verifyFeedbackSchema = z.object({
 export type VerifyFeedbackInput = z.infer<typeof verifyFeedbackSchema>;
 
 // Phase 6 (V3/F7): outbound webhook subscription (signed push for High-urgency).
+// NOTE: no `secret` field — signing secrets are always generated server-side
+// so members can't weaken the HMAC with a guessable value.
 export const createWebhookSchema = z.object({
   body: z.object({
     url: z.string().url('Valid webhook URL is required').max(500),
     events: z.array(z.string().max(60)).min(1).max(20),
-    secret: z.string().min(8).max(200).optional(),
   }),
   params: z.object({
     slug: z.string().min(1),

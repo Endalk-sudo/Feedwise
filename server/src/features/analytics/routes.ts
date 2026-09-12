@@ -181,9 +181,13 @@ router.get('/:slug/export', validate(analyticsExportParamsSchema), async (req, r
     const rows = await analyticsService.getExportRows(ctx.organizationId, days);
     const header =
       'id,text,category,rating,sentiment,urgency,satisfaction,fixable,concrete_issue,retention_risk,verified,status,owner_reply,created_at';
+    // CWE-1236: neutralize spreadsheet formula injection. Customer-controlled
+    // text like `=HYPERLINK(...)` or `=WEBSERVICE(...)` must not execute when
+    // the export is opened in Excel/Sheets — prefix dangerous leading chars.
     const esc = (v: unknown) => {
       if (v == null) return '';
-      const s = String(v).replaceAll('"', '""');
+      let s = String(v).replaceAll('"', '""');
+      if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
       return /[",\n]/.test(s) ? `"${s}"` : s;
     };
     const lines = rows.map((r) =>

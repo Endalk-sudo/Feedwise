@@ -45,18 +45,22 @@ export function SettingsPage() {
   });
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [emailDigest, setEmailDigest] = useState(false);
 
   // Populate the form once the org loads
   useEffect(() => {
     if (org) {
       reset({ name: org.name, logo: org.logo ?? '' });
       setLogoPreview(org.logo);
+      // Default digest ON when no explicit opt-out is stored yet.
+      const settings = (org.settings ?? {}) as { emailDigest?: boolean };
+      setEmailDigest(settings.emailDigest !== false);
     }
   }, [org, reset]);
 
   const onSubmit = async (data: SettingsForm) => {
     try {
-      await updateOrg.mutateAsync(data);
+      await updateOrg.mutateAsync({ ...data, emailDigest });
       addToast({ message: 'Settings saved successfully!', type: 'success' });
     } catch {
       // Error handled by mutation
@@ -222,6 +226,30 @@ export function SettingsPage() {
                   className="text-muted-foreground"
                 />
               </div>
+            </div>
+
+            {/* Email preferences */}
+            <div className="pt-4 border-t border-border">
+              <Field label="Email Notifications" htmlFor="emailDigest">
+                <label
+                  htmlFor="emailDigest"
+                  className="flex items-center gap-3 cursor-pointer select-none"
+                >
+                  <input
+                    id="emailDigest"
+                    type="checkbox"
+                    className="w-4 h-4 accent-primary"
+                    checked={emailDigest}
+                    onChange={(e) => setEmailDigest(e.target.checked)}
+                  />
+                  <span className="text-sm text-foreground">
+                    Daily feedback digest + urgent alerts by email
+                  </span>
+                </label>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Applies to this organization. Unsubscribe links in emails point here.
+                </p>
+              </Field>
             </div>
           </div>
 

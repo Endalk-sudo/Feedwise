@@ -58,6 +58,20 @@ export interface FeedbackAnalysis {
   confidence: number;
 }
 
+/**
+ * Public submission must never hang on a Gemini outage: bound the analysis so
+ * the request degrades to the fallback analysis (confidence 0.1) quickly.
+ */
+export const ANALYSIS_TIMEOUT_MS = 12_000;
+const ANALYSIS_TIMEOUT_SIGNAL = AbortSignal.timeout(ANALYSIS_TIMEOUT_MS);
+
+/**
+ * Rows analyzed by the fallback (confidence 0.1) look plausible but are junk;
+ * analytics exclude anything below this threshold so degraded analyses don't
+ * pollute trends/satisfaction/retention stats.
+ */
+export const DEGRADED_CONFIDENCE_THRESHOLD = 0.5;
+
 export interface ReplyDraftInput {
   text: string;
   category: string;
@@ -127,6 +141,7 @@ export async function analyzeFeedback(
     contextTags.length > 0
       ? `\nCustomer context tags: ${contextTags.join(', ')}`
       : '';
+
   const prompt = `You are an advisor for a small business owner. Analyze this customer feedback and return structured JSON that helps them ACT, not just measure.
 
 Feedback: "${text}"${contextLine}
@@ -160,6 +175,7 @@ Rules:
       prompt,
       temperature: 0.3,
       maxRetries: 3,
+      abortSignal: ANALYSIS_TIMEOUT_SIGNAL,
     });
 
     const analysis: FeedbackAnalysis = output;

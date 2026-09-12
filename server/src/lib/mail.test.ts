@@ -78,6 +78,34 @@ describe('mail', () => {
     expect(result).toEqual({ sent: false, skipped: 'send-failed' });
   });
 
+  it('adds RFC 8058 List-Unsubscribe headers when unsubscribeUrl is set', async () => {
+    env.SMTP_HOST = 'smtp.test';
+    const sendMailMock = vi.fn().mockResolvedValue({ messageId: 'm3' });
+    __setTransporterForTests({ sendMail: sendMailMock } as never);
+
+    const url = 'https://app.example.com/demo/settings';
+    await sendMail({ to: 'a@x.com', subject: 'Alert', html: '<p>x</p>', unsubscribeUrl: url });
+
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: {
+          'List-Unsubscribe': `<${url}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      }),
+    );
+  });
+
+  it('omits List-Unsubscribe headers when no unsubscribeUrl is given', async () => {
+    env.SMTP_HOST = 'smtp.test';
+    const sendMailMock = vi.fn().mockResolvedValue({ messageId: 'm4' });
+    __setTransporterForTests({ sendMail: sendMailMock } as never);
+
+    await sendMail({ to: 'a@x.com', subject: 'Alert', html: '<p>x</p>' });
+
+    expect(sendMailMock.mock.calls[0]?.[0]).not.toHaveProperty('headers');
+  });
+
   it('routes Phase 4 action emails with the draft reply included', async () => {
     env.SMTP_HOST = 'smtp.test';
     const sendMailMock = vi.fn().mockResolvedValue({ messageId: 'm2' });

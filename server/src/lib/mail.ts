@@ -38,6 +38,8 @@ export async function sendMail(options: {
   subject: string;
   html: string;
   text?: string;
+  /** When set, adds List-Unsubscribe headers (RFC 8058) pointing at the org settings page. */
+  unsubscribeUrl?: string;
 }): Promise<MailResult> {
   const tx = getTransporter();
   if (!tx) {
@@ -45,13 +47,29 @@ export async function sendMail(options: {
     return { sent: false, skipped: 'smtp-not-configured' };
   }
   try {
-    const info = await tx.sendMail({
+    const mailOptions: {
+      from: string;
+      to: string | string[];
+      subject: string;
+      html: string;
+      text?: string;
+      headers?: Record<string, string>;
+    } = {
       from: env.EMAIL_FROM,
       to: options.to,
       subject: options.subject,
       html: options.html,
       text: options.text,
-    });
+    };
+    // RFC 8058 one-click unsubscribe + human-visible header; mailbox
+    // providers render the unsubscribe button from these.
+    if (options.unsubscribeUrl) {
+      mailOptions.headers = {
+        'List-Unsubscribe': `<${options.unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      };
+    }
+    const info = await tx.sendMail(mailOptions);
     return { sent: true, messageId: info.messageId };
   } catch (error) {
     logger.error(`Mail send failed: ${(error as Error).message}`);
@@ -74,21 +92,28 @@ function escapeHtml(s: string): string {
 export async function getOrgRecipientEmails(
   organizationId: string,
   opts: { respectDigestOptOut?: boolean } = {},
-): Promise<{ emails: string[]; orgName: string }> {
+): Promise<{ emails: string[]; orgName: string; unsubscribeUrl: string }> {
   const org = await prisma.organization.findUnique({
     where: { id: organizationId },
     select: { name: true, slug: true, settings: true },
   });
-  if (!org) return { emails: [], orgName: 'your business' };
+  if (!org)
+    return { emails: [], orgName: 'your business', unsubscribeUrl: `${env.CLIENT_URL}/settings` };
   if (opts.respectDigestOptOut) {
     const settings = (org.settings ?? {}) as Record<string, unknown>;
-    if (settings.emailDigest === false) return { emails: [], orgName: org.name };
+    if (settings.emailDigest === false)
+      return { emails: [], orgName: org.name, unsubscribeUrl: `${env.CLIENT_URL}/settings` };
   }
   const members = await prisma.organizationMember.findMany({
     where: { organizationId },
     include: { user: { select: { email: true } } },
   });
-  return { emails: members.map((m) => m.user.email), orgName: org.name };
+  return {
+    emails: members.map((m) => m.user.email),
+    orgName: org.name,
+    // RFC 8058 unsubscribe target: the org settings page (email opt-out lives there)
+    unsubscribeUrl: `${env.CLIENT_URL}/${org.slug}/settings`,
+  };
 }
 
 export interface UrgencyAlertFeedback {
@@ -110,7 +135,7 @@ export async function sendHighUrgencyAlert(
   feedback: UrgencyAlertFeedback,
   dashboardUrl: string,
 ): Promise<MailResult> {
-  const { emails, orgName } = await getOrgRecipientEmails(organizationId);
+  const { emails, orgName, unsubscribeUrl } = await getOrgRecipientEmails(organizationId);
   if (emails.length === 0) return { sent: false, skipped: 'no-recipients' };
 
   const subject = `🚨 Urgent feedback for ${orgName}: ${feedback.category}`;
@@ -130,8 +155,11 @@ export async function sendHighUrgencyAlert(
     }
     <blockquote>${snippet}</blockquote>
     <p><a href="${escapeHtml(dashboardUrl)}">Open in dashboard →</a></p>
+    <p style="font-size:12px;color:#666">
+      <a href="${escapeHtml(unsubscribeUrl)}" style="color:#666">Email settings (unsubscribe)</a>
+    </p>
   `;
-  return sendMail({ to: emails, subject, html });
+  return sendMail({ to: emails, subject, html, unsubscribeUrl });
 }
 
 export interface DigestItem {
@@ -152,7 +180,7 @@ export async function sendDigestEmail(
   stats: { total24h: number; highUrgencyOpen: number; avgSatisfaction: number | null },
   dashboardUrl: string,
 ): Promise<MailResult> {
-  const { emails, orgName } = await getOrgRecipientEmails(organizationId, {
+  const { emails, orgName, unsubscribeUrl } = await getOrgRecipientEmails(organizationId, {
     respectDigestOptOut: true,
   });
   if (emails.length === 0) return { sent: false, skipped: 'no-recipients' };
@@ -171,8 +199,11 @@ export async function sendDigestEmail(
     avg satisfaction ${stats.avgSatisfaction != null ? stats.avgSatisfaction.toFixed(1) + '/5' : 'n/a'}</p>
     ${rows ? `<ul>${rows}</ul>` : '<p>No notable items in the last 24h.</p>'}
     <p><a href="${escapeHtml(dashboardUrl)}">Open dashboard →</a></p>
+    <p style="font-size:12px;color:#666">
+      <a href="${escapeHtml(unsubscribeUrl)}" style="color:#666">Email settings (unsubscribe)</a>
+    </p>
   `;
-  return sendMail({ to: emails, subject, html });
+  return sendMail({ to: emails, subject, html, unsubscribeUrl });
 }
 
 export interface ActionRoutedItem {
@@ -221,7 +252,7 @@ export async function sendReferralRequestEmail(
   items: ReferralCandidate[],
   dashboardUrl: string,
 ): Promise<MailResult> {
-  const { emails, orgName } = await getOrgRecipientEmails(organizationId, {
+  const { emails, orgName, unsubscribeUrl } = await getOrgRecipientEmails(organizationId, {
     respectDigestOptOut: true,
   });
   if (emails.length === 0 || items.length === 0) {
@@ -237,8 +268,11 @@ export async function sendReferralRequestEmail(
     <p>These customers left positive, high-satisfaction feedback. A short thank-you + review/referral ask converts them into revenue.</p>
     <ul>${rows}</ul>
     <p><a href="${escapeHtml(dashboardUrl)}">Open dashboard →</a></p>
+    <p style="font-size:12px;color:#666">
+      <a href="${escapeHtml(unsubscribeUrl)}" style="color:#666">Email settings (unsubscribe)</a>
+    </p>
   `;
-  return sendMail({ to: emails, subject, html });
+  return sendMail({ to: emails, subject, html, unsubscribeUrl });
 }
 
 export function dashboardUrlFor(): string {
