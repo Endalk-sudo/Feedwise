@@ -1,11 +1,11 @@
-# 🚀 AI Feedback Collector (SaaS)
+# 🚀 FeedWise (SaaS)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/frontend-React%2019-blue)](https://reactjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL%2016-green)](https://www.postgresql.org/)
 
-**AI Feedback Collector** is a full-stack SaaS platform designed to help businesses turn customer feedback into actionable insights instantly. Using QR codes for collection and Gemini AI for analysis, it categorizes, measures sentiment, and provides growth recommendations in real-time.
+**FeedWise** is a full-stack SaaS platform designed to help businesses turn customer feedback into actionable insights instantly. Using QR codes for collection and Gemini AI for analysis, it categorizes, measures sentiment, and provides growth recommendations in real-time.
 
 ---
 
@@ -17,6 +17,7 @@ The goal of this project is to simplify the feedback loop for small to medium bu
 - **💳 SaaS-Ready**: Integrated Stripe payments for Basic and Pro subscription tiers.
 - **📊 Interactive Dashboard**: Professional analytics using modern charting for sentiment trends and category breakthroughs.
 - **📱 QR Collection**: Unique, organization-specific landing pages and QR codes for easy physical-to-digital feedback.
+- **🔗 Collect Page**: Shareable `/feedback/<slug>` link plus QR code with PNG download and regenerate, in Dashboard → Settings → Collect feedback.
 - **💬 Admin AI Chat**: An intelligent assistant to help admins query their own feedback data using natural language.
 - **👥 Team Collaboration**: Invite staff by email with owner/admin/member roles (`/dashboard/team`).
 - **📧 Email Alerts**: Immediate high-urgency / low-satisfaction alerts plus a daily digest (SMTP, safe no-op when unconfigured).
@@ -33,13 +34,13 @@ The goal of this project is to simplify the feedback loop for small to medium bu
 - **Auth**: Better Auth (email/password, session cookies, Prisma adapter)
 - **Reliability & Background Jobs**:
   - **BullMQ**: Durable job queue for AI insight generation, batch analysis, urgency-alert emails, and daily digests (prevents request timeouts).
-  - **Redis / Upstash**: Shared cache + queue backend and distributed rate limiting (stops AI spam). Local Redis via Docker; production uses Upstash.
+  - **Redis / Upstash (optional)**: Shared cache + queue backend and distributed rate limiting (stops AI spam). Local Redis via Docker; production uses Upstash — or omit `REDIS_URL` entirely for in-memory fallbacks (e.g. Render without Redis).
 - **Integrations**: 
   - **AI**: Google Gemini 2.0 Flash via Vercel AI SDK (`ai` + `@ai-sdk/google`)
   - **Payments**: Stripe (Checkout & Billing Portal) + webhooks + hourly subscription sync
   - **Email**: SMTP via nodemailer — high-urgency alerts + 7AM digest (`server/src/lib/mail.ts`, `workers/notification.worker.ts`)
   - **Storage**: S3-compatible object storage (Org Logos)
-  - **QR**: QRCode.js
+  - **QR**: `qrcode` package (server-generated PNG data URLs, regenerable per org)
 - **Quality**: TypeScript (strict), Zod v4 validation, Vitest, ESLint + Prettier, GitHub Actions CI, Docker Compose (dev + prod)
 
 ---
@@ -114,7 +115,19 @@ context, drop the stale volume first: `docker volume rm feedwise_client-node-mod
 ---
 
 ## 🌍 Deployment
-This app is deployed via **Docker Compose**. Two compose files ship: `docker-compose.yml` (local dev, hot reload) and `docker-compose.prod.yml` (nginx + node + postgres prod stack; Prisma migrate auto-runs on start). See the [Deployment Guide](./deployment.md) and [`docs/UPGRADE_PLAN.md`](./docs/UPGRADE_PLAN.md) for details.
+This app deploys via **Docker Compose** or **Render Blueprint**. Two compose files ship: `docker-compose.yml` (local dev, hot reload) and `docker-compose.prod.yml` (nginx + node + postgres prod stack; Prisma migrate auto-runs on start). See the [Deployment Guide](./deployment.md) and [`docs/UPGRADE_PLAN.md`](./docs/UPGRADE_PLAN.md) for details.
+
+### Render (Docker + Neon Postgres, no Redis)
+A `render.yaml` Blueprint ships at the repo root: Docker web services for server (`/health`) and client (nginx, `BACKEND_URL`-templated `/api` proxy) plus an external Neon database.
+```bash
+# 1. Create a Neon project, copy the pooled URL (?sslmode=require)
+# 2. Render Dashboard → New → Blueprint → select repo, fill prompts
+#    (DATABASE_URL, BETTER_AUTH_URL/CLIENT_URL, GEMINI_API_KEY, STRIPE_*, S3_*)
+# 3. Deploy server first, verify /health (migrations auto-run)
+# 4. Set client BACKEND_URL to https://<server>.onrender.com, deploy client
+# 5. Point the Stripe webhook at https://<server>.onrender.com/api/payments/webhook
+```
+Local `docker compose` dev is unaffected by the Blueprint.
 
 ---
 
