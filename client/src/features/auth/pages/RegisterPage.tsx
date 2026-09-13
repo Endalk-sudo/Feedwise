@@ -254,7 +254,7 @@ export function RegisterPage() {
           {legalDoc === 'privacy' ? (
             <>
               <p>
-                Feedwise collects your account details (name, email) and the customer
+                FeedWise collects your account details (name, email) and the customer
                 feedback you gather. Customer feedback is anonymous by default.
               </p>
               <p>

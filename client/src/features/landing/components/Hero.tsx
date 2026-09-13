@@ -15,7 +15,7 @@ function DashboardMock() {
         <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
         <span className="w-2.5 h-2.5 rounded-full bg-warning/60" />
         <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
-        <span className="ml-2 text-xs text-muted-foreground">Feedwise dashboard</span>
+        <span className="ml-2 text-xs text-muted-foreground">FeedWise dashboard</span>
       </div>
       <div className="p-4 sm:p-5 space-y-4">
         <div className="flex items-center justify-between gap-3">

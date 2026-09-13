@@ -76,6 +76,25 @@ export const organizationService = {
     });
   },
 
+  /**
+   * Rebuild the QR code for an org from the current CLIENT_URL.
+   * Needed when the public domain changed after creation (the QR encodes
+   * `${CLIENT_URL}/feedback/<slug>` at generation time) or when qrDataUrl
+   * is empty for older organizations.
+   */
+  async regenerateQrCode(slug: string) {
+    const organization = await prisma.organization.findUnique({ where: { slug } });
+    if (!organization) {
+      throw new Error('Organization not found');
+    }
+    const feedbackUrl = `${env.CLIENT_URL}/feedback/${organization.slug}`;
+    const qrDataUrl = await QRCode.toDataURL(feedbackUrl);
+    return prisma.organization.update({
+      where: { id: organization.id },
+      data: { qrDataUrl },
+    });
+  },
+
   async update(
     id: string,
     data: { name?: string; logo?: string; emailDigest?: boolean },

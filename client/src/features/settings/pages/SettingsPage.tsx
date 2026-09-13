@@ -21,6 +21,7 @@ import {
   EmptyState,
   LoadingState,
 } from '@/components/ui';
+import { CollectFeedbackCard } from '../components/CollectFeedbackCard';
 
 export function SettingsPage() {
   const slug = useOrgSlug();
@@ -127,6 +128,15 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Settings" description="Manage your organization settings" />
+
+      {/* Public collection point — the dashboard "QR & link" button lands here */}
+      {org && (
+        <CollectFeedbackCard
+          slug={org.slug}
+          qrDataUrl={org.qrDataUrl}
+          canManage={org.userRole === 'owner' || org.userRole === 'admin'}
+        />
+      )}
 
       {/* Plan Status */}
       <Card>

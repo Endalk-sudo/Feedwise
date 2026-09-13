@@ -64,7 +64,7 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
-  EMAIL_FROM: z.string().default('Feedwise <noreply@feedwise.app>'),
+  EMAIL_FROM: z.string().default('FeedWise <noreply@feedwise.app>'),
 });
 
 export type Env = z.infer<typeof envSchema>;

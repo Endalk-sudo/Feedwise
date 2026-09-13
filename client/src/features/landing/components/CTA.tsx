@@ -18,7 +18,7 @@ export function CTA() {
               Ready to understand your customers better?
             </h2>
             <p className="text-muted-foreground text-lg mb-8 max-w-xl mx-auto">
-              Join thousands of businesses using Feedwise to turn feedback into growth. Set up in
+              Join thousands of businesses using FeedWise to turn feedback into growth. Set up in
               minutes — your first QR code is one signup away.
             </p>
             <Link

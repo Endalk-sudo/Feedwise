@@ -110,7 +110,7 @@ export interface Testimonial {
 export const testimonials: Testimonial[] = [
   {
     quote:
-      'FeedbackAI cut our response analysis time from hours to seconds. The AI categorization is incredibly accurate.',
+      'FeedWise cut our response analysis time from hours to seconds. The AI categorization is incredibly accurate.',
     name: 'Sarah Chen',
     role: 'Head of Product at NovaTech',
     initials: 'SC',
@@ -197,7 +197,7 @@ export const faqs: Faq[] = [
       'High-urgency or low-satisfaction feedback triggers an immediate email to your team, plus a daily digest summarizing everything new.',
   },
   {
-    question: 'Can my team collaborate in Feedwise?',
+    question: 'Can my team collaborate in FeedWise?',
     answer:
       'Yes. Invite staff by email with owner, admin, or member roles, add internal notes and owner replies, and verify AI corrections together.',
   },

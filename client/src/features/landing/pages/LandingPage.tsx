@@ -46,7 +46,7 @@ export function LandingPage() {
         {legalDoc === 'privacy' ? (
           <div className="text-sm text-muted-foreground space-y-3">
             <p>
-              Feedwise collects your account details (name, email) and the customer feedback you
+              FeedWise collects your account details (name, email) and the customer feedback you
               gather through your organization pages. Customer feedback is anonymous by default.
             </p>
             <p>
@@ -62,7 +62,7 @@ export function LandingPage() {
         ) : (
           <div className="text-sm text-muted-foreground space-y-3">
             <p>
-              Feedwise provides feedback collection and AI analysis on a 14-day free trial; paid
+              FeedWise provides feedback collection and AI analysis on a 14-day free trial; paid
               plans (Basic, Pro) bill monthly and can be cancelled anytime from the billing portal.
             </p>
             <p>

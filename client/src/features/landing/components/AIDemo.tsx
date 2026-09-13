@@ -24,7 +24,7 @@ export function AIDemo() {
               Watch raw words become a to-do list
             </h2>
             <p className="text-muted-foreground text-lg mb-8">
-              This is what Feedwise produces for every single response — sentiment, satisfaction,
+              This is what FeedWise produces for every single response — sentiment, satisfaction,
               category, urgency, retention risk, and the one action that matters most.
             </p>
             <Link to="/auth/register" className={cn(buttonVariants({ size: 'lg' }))}>

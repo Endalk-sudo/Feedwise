@@ -287,7 +287,7 @@ export function PublicFeedbackPage() {
         </p>
       </form>
 
-      <p className="mt-6 text-center text-xs text-muted-foreground">Powered by FeedbackAI</p>
+      <p className="mt-6 text-center text-xs text-muted-foreground">Powered by FeedWise</p>
     </CenteredLayout>
   );
 }

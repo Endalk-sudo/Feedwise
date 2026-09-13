@@ -174,7 +174,7 @@ export function DashboardLayout() {
           <div className="flex items-center gap-3 p-6 border-b border-border">
             <Logo size="md" />
             <div>
-              <h1 className="font-bold text-lg">Feedwise</h1>
+              <h1 className="font-bold text-lg">FeedWise</h1>
               <p className="text-xs text-muted-foreground">Dashboard</p>
             </div>
           </div>

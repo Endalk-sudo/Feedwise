@@ -53,7 +53,7 @@ export function AuthShell({
             <div>
               <div className="flex items-center gap-2 mb-8">
                 <Logo size="md" />
-                <span className="font-bold text-xl">Feedwise</span>
+                <span className="font-bold text-xl">FeedWise</span>
               </div>
               <h2 className="text-2xl font-bold tracking-tight mb-2">
                 Know what your customers think in seconds, not hours.

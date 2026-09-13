@@ -72,6 +72,7 @@ export const apiClient = {
       api.delete(`/organization/${slug}/members/${userId}`),
     updateMemberRole: (slug: string, userId: string, data: { role: string }) =>
       api.put(`/organization/${slug}/members/${userId}`, data),
+    regenerateQr: (slug: string) => api.post(`/organization/${slug}/qr/regenerate`),
   },
 
   // Feedback

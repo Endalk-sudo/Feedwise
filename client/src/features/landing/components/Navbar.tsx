@@ -21,7 +21,7 @@ export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
             <Logo size="sm" />
-            <span className="font-bold text-xl">Feedwise</span>
+            <span className="font-bold text-xl">FeedWise</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (

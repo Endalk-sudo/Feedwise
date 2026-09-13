@@ -88,6 +88,33 @@ export function useUploadLogo(slug: string) {
 }
 
 /**
+ * Hook to regenerate the org QR code (owner/admin, server-enforced).
+ * Re-encodes the feedback URL from the server's current CLIENT_URL.
+ */
+export function useRegenerateQrCode(slug: string) {
+  const queryClient = useQueryClient();
+  const { addToast } = useUIStore();
+
+  return useMutation<{ qrDataUrl: string }, Error, void>({
+    mutationFn: () => unwrapData(apiClient.organizations.regenerateQr(slug)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['organization', slug] });
+      addToast({ message: 'QR code regenerated!', type: 'success' });
+    },
+    onError: (error) => {
+      const serverMessage = (error as { response?: { data?: { message?: string } } })?.response
+        ?.data?.message;
+      addToast({
+        message:
+          serverMessage ||
+          (error instanceof Error ? error.message : 'Failed to regenerate QR code'),
+        type: 'error',
+      });
+    },
+  });
+}
+
+/**
  * Hook to add member to organization.
  * Note: the server only adds already-registered users by email
  * (404 when the email has no account yet).

@@ -90,6 +90,46 @@ router.get('/:slug', optionalAuthMiddleware, validate(orgParamsSchema), async (r
   }
 });
 
+// Regenerate QR code (protected, owner/admin only) — re-encodes the
+// feedback URL from the current CLIENT_URL so moved deployments get a
+// working code without recreating the organization.
+router.post(
+  '/:slug/qr/regenerate',
+  authMiddleware,
+  validate(orgParamsSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const userId = (req as any).user.id;
+
+      const organization = await organizationService.getBySlug(slug);
+      if (!organization) {
+        return res.status(404).json({ success: false, message: 'Organization not found' });
+      }
+
+      const member = await prisma.organizationMember.findUnique({
+        where: {
+          userId_organizationId: {
+            userId,
+            organizationId: organization.id,
+          },
+        },
+      });
+
+      if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Forbidden - Insufficient permissions' });
+      }
+
+      const updated = await organizationService.regenerateQrCode(slug);
+      res.json({ success: true, data: { qrDataUrl: updated.qrDataUrl } });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
 // Update organization (protected, owner/admin only)
 router.put('/:slug', authMiddleware, validate(updateOrgSchema), async (req, res, next) => {
   try {

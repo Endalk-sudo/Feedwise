@@ -18,7 +18,7 @@ export function Footer({ onOpenLegal }: { onOpenLegal: (doc: Exclude<LegalDoc, n
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Logo size="sm" />
-              <span className="font-bold text-xl">Feedwise</span>
+              <span className="font-bold text-xl">FeedWise</span>
             </div>
             <p className="text-muted-foreground text-sm">
               Turn customer feedback into actionable insights with AI.
@@ -90,7 +90,7 @@ export function Footer({ onOpenLegal }: { onOpenLegal: (doc: Exclude<LegalDoc, n
         </div>
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-muted-foreground text-sm">
-            &copy; {new Date().getFullYear()} Feedwise. All rights reserved.
+            &copy; {new Date().getFullYear()} FeedWise. All rights reserved.
           </p>
           <div className="flex gap-6">
             <a

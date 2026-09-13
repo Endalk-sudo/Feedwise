@@ -23,7 +23,7 @@ export const auth = betterAuth({
       const url = `${env.CLIENT_URL}/auth/reset-password?token=${token}`;
       await sendMail({
         to: user.email,
-        subject: 'Reset your Feedwise password',
+        subject: 'Reset your FeedWise password',
         html: `
           <h2>Reset your password</h2>
           <p>Hi ${user.name || 'there'}, click the link below to choose a new password. It expires in 1 hour.</p>
