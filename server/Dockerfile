@@ -67,6 +67,8 @@ COPY --from=builder /app/server/prisma ./prisma
 COPY --from=builder /app/shared/dist ../shared/dist
 COPY --from=builder /app/shared/package.json ../shared/package.json
 
+RUN npx prisma generate
+
 # Create logs directory
 RUN mkdir -p logs
 
