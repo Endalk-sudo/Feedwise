@@ -29,7 +29,7 @@ export interface CenteredLayoutProps extends HTMLAttributes<HTMLDivElement> {
 /** Full-screen centered shell used by auth, setup, public and error pages. */
 export function CenteredLayout({ width = 'sm', className, ...props }: CenteredLayoutProps) {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-muted/60 via-background to-background flex items-center justify-center px-4 py-10 sm:py-16">
       <div className={cn('w-full', widths[width], className)} {...props} />
     </div>
   );

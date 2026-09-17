@@ -7,18 +7,18 @@ import { cn } from '@/lib/utils';
 const HIGHLIGHTS = [
   {
     icon: QrCode,
-    title: 'QR in seconds',
-    text: 'Print one code, collect feedback on every table and receipt.',
+    title: 'Make it easy to share',
+    text: 'Collect feedback with a QR code or a link. No customer account needed.',
   },
   {
     icon: Sparkles,
-    title: 'AI that triages',
-    text: 'Satisfaction, urgency and fixable issues — flagged instantly.',
+    title: 'Find what needs attention',
+    text: 'See satisfaction, urgency, and recurring issues in one place.',
   },
   {
     icon: BarChart3,
-    title: 'Insights that act',
-    text: 'Trends, alerts and a daily digest in your inbox.',
+    title: 'Keep your team informed',
+    text: 'Follow trends and get feedback summaries in your inbox.',
   },
 ];
 
@@ -33,98 +33,93 @@ export function AuthShell({
   description: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
-  /** Onboarding progress: register is step 1 of 2 (account → organization). */
   step?: { current: number; total: number; label: string };
 }) {
   return (
     <CenteredLayout width="lg">
       <Link
         to="/"
-        className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors mb-8"
+        className="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring mb-5"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-4 h-4" />
         Back to home
       </Link>
 
-      <Card padding="none" className="overflow-hidden">
-        <div className="grid lg:grid-cols-[1fr_1.2fr]">
-          {/* Brand panel — desktop only */}
-          <aside className="hidden lg:flex flex-col justify-between gap-8 bg-gradient-to-br from-primary/15 via-card to-accent/10 border-r border-border p-10">
+      <Card padding="none" className="overflow-hidden rounded-2xl shadow-sm">
+        <div className="grid lg:grid-cols-[0.9fr_1.2fr]">
+          <aside className="hidden lg:flex flex-col justify-between gap-10 bg-muted/50 border-r border-border p-8">
             <div>
-              <div className="flex items-center gap-2 mb-8">
-                <Logo size="md" />
-                <span className="font-bold text-xl">FeedWise</span>
+              <div className="flex items-center gap-2.5 mb-12">
+                <Logo size="sm" />
+                <span className="font-semibold text-lg tracking-tight">FeedWise</span>
               </div>
-              <h2 className="text-2xl font-bold tracking-tight mb-2">
-                Know what your customers think in seconds, not hours.
+              <h2 className="text-3xl font-semibold tracking-tight leading-tight mb-4">
+                A clearer view of your customer experience.
               </h2>
-              <p className="text-muted-foreground text-sm">
-                Join businesses turning raw feedback into revenue-saving action.
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Bring customer feedback into one workspace, then decide what to improve next.
               </p>
             </div>
-            <ul className="space-y-5">
+            <ul className="space-y-6">
               {HIGHLIGHTS.map((h) => (
                 <li key={h.title} className="flex gap-3">
-                  <span className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                    <h.icon className="w-4.5 h-4.5 text-primary" />
+                  <span className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center shrink-0">
+                    <h.icon className="w-4 h-4 text-primary" />
                   </span>
                   <span>
-                    <span className="block text-sm font-semibold">{h.title}</span>
-                    <span className="block text-sm text-muted-foreground">{h.text}</span>
+                    <span className="block text-sm font-medium mb-1">{h.title}</span>
+                    <span className="block text-sm leading-relaxed text-muted-foreground">{h.text}</span>
                   </span>
                 </li>
               ))}
             </ul>
-            <figure className="rounded-xl border border-border bg-card p-4">
-              <blockquote className="text-sm italic text-foreground">
-                “We spotted our top complaint in the first week — and fixed it before
-                the weekend rush.”
-              </blockquote>
-              <figcaption className="text-xs text-muted-foreground mt-2">
-                Sarah Chen, Head of Product at NovaTech
-              </figcaption>
-            </figure>
+            <p className="border-t border-border pt-5 text-xs leading-relaxed text-muted-foreground">
+              Collect feedback. Understand the patterns. Take the next step.
+            </p>
           </aside>
 
-          {/* Form column */}
-          <div className="p-6 sm:p-10">
+          <main className="min-w-0 p-5 sm:p-10">
+            <div className="flex items-center gap-2 mb-8 lg:hidden">
+              <Logo size="sm" />
+              <span className="font-semibold tracking-tight">FeedWise</span>
+            </div>
             {step && (
-              <ol
-                aria-label="Signup progress"
-                className="flex items-center gap-2 mb-6 text-xs font-medium"
-              >
-                {Array.from({ length: step.total }).map((_, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        'w-6 h-6 rounded-full flex items-center justify-center border',
-                        i + 1 < step.current ||
-                          (i + 1 === step.current && step.current === step.total)
-                          ? 'bg-primary border-primary text-primary-foreground'
-                          : i + 1 === step.current
-                            ? 'border-primary text-primary'
-                            : 'border-border text-muted-foreground',
-                      )}
+              <div className="mb-8 border-b border-border pb-6">
+                <p className="mb-3 text-xs font-medium text-muted-foreground">{step.label}</p>
+                <ol aria-label="Signup progress" className="flex flex-wrap items-center gap-4 text-xs font-medium">
+                  {Array.from({ length: step.total }).map((_, i) => (
+                    <li
+                      key={i}
+                      aria-current={i + 1 === step.current ? 'step' : undefined}
+                      className="flex items-center gap-2"
                     >
-                      {i + 1}
-                    </span>
-                    {i === 0 && <span className="text-foreground">Account</span>}
-                    {i === 1 && <span className="text-muted-foreground">Organization</span>}
-                    {i < step.total - 1 && <span className="w-6 h-px bg-border mx-1" />}
-                  </li>
-                ))}
-                <span className="ml-auto text-muted-foreground">{step.label}</span>
-              </ol>
+                      <span
+                        className={cn(
+                          'w-6 h-6 rounded-full flex items-center justify-center border',
+                          i + 1 <= step.current
+                            ? 'bg-primary/10 border-primary/30 text-primary'
+                            : 'border-border text-muted-foreground',
+                        )}
+                      >
+                        {i + 1}
+                      </span>
+                      <span className={i + 1 === step.current ? 'text-foreground' : 'text-muted-foreground'}>
+                        {i === 0 ? 'Account' : 'Organization'}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             )}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2">{title}</h1>
-              <div className="text-muted-foreground">{description}</div>
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3">{title}</h1>
+              <div className="text-sm leading-relaxed text-muted-foreground">{description}</div>
             </div>
 
             {children}
 
-            {footer && <div className="mt-6 text-center text-muted-foreground">{footer}</div>}
-          </div>
+            {footer && <div className="mt-8 border-t border-border pt-6 text-center text-sm leading-relaxed text-muted-foreground">{footer}</div>}
+          </main>
         </div>
       </Card>
     </CenteredLayout>

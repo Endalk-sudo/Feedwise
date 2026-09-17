@@ -208,16 +208,18 @@ export function FeedbackPage() {
       />
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <Card padding="sm" className="space-y-3">
         <form onSubmit={handleSearch} className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search feedback, themes, actions…"
-            className="w-full pl-9 pr-3 py-2.5 bg-background border border-input rounded-lg text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring"
+            aria-label="Search feedback"
+            className="w-full pl-10 pr-3 py-2.5 min-h-11 bg-background border border-input rounded-xl text-[15px] placeholder:text-muted-foreground/80 shadow-xs hover:border-ring/40 focus:outline-none focus:ring-4 focus:ring-ring/15 focus:border-ring transition-all"
           />
         </form>
+        <div className="flex flex-col sm:flex-row gap-2.5">
         <Select
           value={filters.sentiment || ''}
           onChange={(e) => handleFilterChange('sentiment', e.target.value)}
@@ -253,7 +255,8 @@ export function FeedbackPage() {
           <option value="resolved">Resolved</option>
           <option value="ignored">Ignored</option>
         </Select>
-      </div>
+        </div>
+      </Card>
 
       <Card padding="none" className="overflow-hidden">
         {isLoading ? (
@@ -307,8 +310,8 @@ export function FeedbackPage() {
                 const isPending = updateStatus.variables?.id === feedback.id && updateStatus.isPending;
 
                 return (
-                  <div key={feedback.id} className="p-4 sm:p-5 hover:bg-muted transition-colors">
-                    <div className="flex flex-col gap-3">
+                  <article key={feedback.id} className="p-5 sm:p-6 hover:bg-muted/40 transition-colors">
+                    <div className="flex flex-col gap-3.5">
                       <div className="flex flex-wrap items-center gap-2">
                         {feedback.sentiment && (
                           <Badge
@@ -366,7 +369,7 @@ export function FeedbackPage() {
                         </span>
                       </div>
 
-                      <p className="text-sm text-foreground leading-relaxed">{feedback.text}</p>
+                      <p className="text-[15px] text-foreground leading-relaxed text-pretty">{feedback.text}</p>
 
                       <div className="flex items-center gap-1">
                         {[1, 2, 3, 4, 5].map((n) => (
@@ -389,7 +392,7 @@ export function FeedbackPage() {
                       </div>
 
                       {feedback.suggestedAction && (
-                        <div className="flex items-start gap-2 text-xs bg-primary/5 border border-primary/15 rounded-lg px-3 py-2">
+                        <div className="flex items-start gap-2.5 text-[13px] leading-relaxed bg-primary/5 border border-primary/20 rounded-xl px-3.5 py-3">
                           <Lightbulb className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                           <span>
                             <span className="font-medium text-foreground">Suggested action: </span>
@@ -517,22 +520,22 @@ export function FeedbackPage() {
                         <VerifyButton slug={slug || ''} feedbackId={feedback.id} />
                       )}
                     </div>
-                  </div>
+                  </article>
                 );
               })}
             </div>
 
             {totalPages > 1 && (
-              <div className="p-4 border-t border-border flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Page {currentPage} of {totalPages} ({total} total)
+              <div className="px-5 py-4 border-t border-border/70 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                <p className="text-sm text-muted-foreground tabular-nums">
+                  Page {currentPage} of {totalPages} · {total} total
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setPage(currentPage - 1)}
                     disabled={currentPage === 1}
                     aria-label="Previous page"
-                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 transition-colors"
+                    className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
@@ -540,7 +543,7 @@ export function FeedbackPage() {
                     onClick={() => setPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     aria-label="Next page"
-                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 transition-colors"
+                    className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>

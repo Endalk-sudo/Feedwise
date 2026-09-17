@@ -319,7 +319,7 @@
 
 /* Brand gradient button (single source for Button variant `brand`) */
 .btn-brand {
-  @apply bg-gradient-to-r from-primary to-accent text-white font-medium rounded-lg hover:brightness-110 transition-all;
+  @apply bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl shadow-xs shadow-primary/20 hover:brightness-110 hover:shadow-md hover:shadow-primary/20 active:brightness-95 transition-all duration-200;
 }
 
 /* Divider */

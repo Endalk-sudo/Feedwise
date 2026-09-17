@@ -141,25 +141,22 @@ export function DashboardHome() {
             : 'Your feedback overview.'
         }
         actions={
-          <>
-            {/* Always-visible QR/share panel */}
-            <div className="flex items-center gap-2">
-              <Link
-                to="/dashboard/settings"
-                className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 px-3 py-1.5 bg-primary/5 rounded-lg hover:bg-primary/10 transition-colors"
-              >
-                <QrCode className="w-3.5 h-3.5" />
-                QR & link
-              </Link>
-              <Link
-                to="/dashboard/feedback"
-                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                All feedback
-              </Link>
-            </div>
-          </>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/dashboard/settings"
+              className="inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 px-3.5 bg-primary/10 border border-primary/20 rounded-xl hover:bg-primary/15 transition-colors"
+            >
+              <QrCode className="w-4 h-4" />
+              QR & link
+            </Link>
+            <Link
+              to="/dashboard/feedback"
+              className="inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground px-3.5 bg-muted/60 border border-border/60 rounded-xl hover:bg-muted transition-colors"
+            >
+              <Share2 className="w-4 h-4" />
+              All feedback
+            </Link>
+          </div>
         }
       />
 
@@ -186,31 +183,45 @@ export function DashboardHome() {
         <>
           {/* Metric cards — clickable with filters */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {cards.map((card) => (
-              <Link
-                key={card.name}
-                to={card.filterUrl}
-                className={cn(
-                  'relative',
-                  card.isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-60',
-                )}
-              >
-                <Card padding="sm">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center', card.bg)}>
+            {cards.map((card) => {
+              const body = (
+                <Card
+                  padding="sm"
+                  className={cn(
+                    'h-full transition-all duration-200',
+                    card.isClickable && 'hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5',
+                    !card.isClickable && 'opacity-70',
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center border border-border/40', card.bg)}>
                       <card.icon className={cn('w-5 h-5', card.color)} />
                     </div>
+                    {card.isClickable && (
+                      <ExternalLink className="w-4 h-4 text-muted-foreground/50" />
+                    )}
                   </div>
-                  <p className="text-2xl font-bold tabular-nums">
+                  <p className="text-[26px] leading-none font-semibold tracking-tight tabular-nums">
                     {isLoading ? <Skeleton className="h-8 w-20" /> : card.value}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{card.name}</p>
-                  {card.isClickable && (
-                    <ExternalLink className="absolute top-2 right-2 w-4 h-4 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  )}
+                  <p className="text-[13px] text-muted-foreground mt-1.5">{card.name}</p>
                 </Card>
-              </Link>
-            ))}
+              );
+              return card.isClickable ? (
+                <Link
+                  key={card.name}
+                  to={card.filterUrl}
+                  className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={`${card.name}: ${card.value}. View filtered feedback.`}
+                >
+                  {body}
+                </Link>
+              ) : (
+                <div key={card.name} aria-disabled="true">
+                  {body}
+                </div>
+              );
+            })}
           </div>
 
           {/* Top actions this week — the product heart */}

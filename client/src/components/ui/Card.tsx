@@ -15,7 +15,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 export function Card({ padding = 'md', className, ...props }: CardProps) {
   return (
     <div
-      className={cn('bg-card border border-border rounded-xl', paddings[padding], className)}
+      className={cn('bg-card border border-border/70 rounded-2xl shadow-xs', paddings[padding], className)}
       {...props}
     />
   );
@@ -25,7 +25,7 @@ export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElemen
   return (
     <div
       className={cn(
-        'px-5 py-4 border-b border-border flex items-center justify-between gap-3',
+        'px-6 py-5 border-b border-border/70 flex items-center justify-between gap-3',
         className,
       )}
       {...props}
@@ -34,5 +34,10 @@ export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElemen
 }
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn('font-semibold flex items-center gap-2', className)} {...props} />;
+  return (
+    <h2
+      className={cn('font-semibold tracking-tight text-[15px] flex items-center gap-2', className)}
+      {...props}
+    />
+  );
 }

@@ -58,9 +58,9 @@ export function Dialog({
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
         onClick={() => onOpenChange(false)}
         aria-hidden="true"
       />
@@ -71,24 +71,24 @@ export function Dialog({
         aria-labelledby={titleId.current}
         tabIndex={-1}
         className={cn(
-          'relative w-full max-w-md bg-card border border-border rounded-xl shadow-lg p-6 outline-none',
+          'relative w-full max-w-md bg-card border border-border/70 rounded-2xl shadow-xl p-6 sm:p-7 outline-none',
           className,
         )}
       >
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 id={titleId.current} className="text-lg font-bold">
+          <div className="min-w-0">
+            <h2 id={titleId.current} className="text-lg font-semibold tracking-tight">
               {title}
             </h2>
             {description && (
-              <p className="text-sm text-muted-foreground mt-1">{description}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground mt-1.5">{description}</p>
             )}
           </div>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
             aria-label="Close dialog"
-            className="p-1.5 -m-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="w-5 h-5" />
           </button>

@@ -13,19 +13,19 @@ const chips = [
 
 export function AIDemo() {
   return (
-    <section id="demo" className="py-20 bg-card/50 scroll-mt-16">
+    <section id="demo" className="py-20 sm:py-24 bg-muted/40 border-y border-border/60 scroll-mt-16">
       <Container width="xl">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <Reveal>
-            <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
               Live sample
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-balance mb-4">
               Watch raw words become a to-do list
             </h2>
-            <p className="text-muted-foreground text-lg mb-8">
-              This is what FeedWise produces for every single response — sentiment, satisfaction,
-              category, urgency, retention risk, and the one action that matters most.
+            <p className="text-muted-foreground text-lg leading-relaxed mb-8 max-w-xl">
+              Every response gets sentiment, satisfaction, category, urgency, retention risk,
+              and the one action that matters most.
             </p>
             <Link to="/auth/register" className={cn(buttonVariants({ size: 'lg' }))}>
               Try it on your feedback
@@ -34,14 +34,14 @@ export function AIDemo() {
           </Reveal>
 
           <Reveal delay={150}>
-            <div className="rounded-2xl border border-border bg-card shadow-xl shadow-primary/10 overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-border text-sm">
+            <div className="rounded-2xl border border-border/70 bg-card shadow-md overflow-hidden">
+              <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border/70 text-sm">
                 <Sparkles className="w-4 h-4 text-primary" />
-                <span className="font-semibold">AI analysis</span>
+                <span className="font-semibold tracking-tight">AI analysis</span>
                 <span className="ml-auto text-xs text-muted-foreground">analyzed in 8s</span>
               </div>
-              <div className="p-5 space-y-4">
-                <blockquote className="text-foreground italic border-l-2 border-primary pl-3">
+              <div className="p-5 sm:p-6 space-y-4">
+                <blockquote className="text-foreground leading-relaxed border-l-2 border-primary pl-4">
                   “Waited 40 minutes for our food and nobody updated us. The pasta was great, but we
                   almost walked out.”
                 </blockquote>

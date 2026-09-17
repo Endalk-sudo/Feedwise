@@ -172,14 +172,14 @@ export function PublicFeedbackPage() {
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm space-y-5"
+        className="bg-card border border-border/70 rounded-3xl p-5 sm:p-7 shadow-md space-y-6"
       >
         {/* Star rating — optional but prominent */}
         <div>
           <label className="text-sm font-medium text-foreground mb-2 block">
             Overall rating <span className="text-muted-foreground font-normal">(optional)</span>
           </label>
-          <div className="flex gap-1.5" role="group" aria-label="Rating">
+          <div className="flex gap-1" role="group" aria-label="Rating">
             {[1, 2, 3, 4, 5].map((value) => (
               <button
                 key={value}
@@ -187,14 +187,17 @@ export function PublicFeedbackPage() {
                 onClick={() => setRating(rating === value ? undefined : value)}
                 onMouseEnter={() => setHoverRating(value)}
                 onMouseLeave={() => setHoverRating(0)}
-                className="p-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                onFocus={() => setHoverRating(value)}
+                onBlur={() => setHoverRating(0)}
+                aria-pressed={rating === value}
+                className="flex h-12 w-12 items-center justify-center rounded-xl hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={`${value} star${value > 1 ? 's' : ''}`}
               >
                 <Star
                   className={cn(
-                    'w-8 h-8 transition-colors',
+                    'w-7 h-7 transition-all',
                     (hoverRating || rating || 0) >= value
-                      ? 'fill-primary text-primary'
+                      ? 'fill-primary text-primary scale-110'
                       : 'text-muted-foreground/40',
                   )}
                 />
@@ -216,11 +219,11 @@ export function PublicFeedbackPage() {
                   key={tag}
                   type="button"
                   onClick={() => toggleTag(tag)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+                className={cn(
+                    'px-3.5 py-2 min-h-9 rounded-full text-[13px] font-medium border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     active
-                      ? 'bg-primary/15 border-primary/40 text-foreground'
-                        : 'bg-muted/60 border-border text-muted-foreground hover:border-primary/30',
+                      ? 'bg-primary/15 border-primary/40 text-foreground shadow-xs'
+                      : 'bg-muted/50 border-border/70 text-muted-foreground hover:border-primary/30 hover:text-foreground',
                   )}
                 >
                   {tag}

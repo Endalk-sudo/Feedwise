@@ -23,7 +23,7 @@ export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
             <Logo size="sm" />
             <span className="font-bold text-xl">FeedWise</span>
           </div>
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -58,7 +58,7 @@ export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="lg:hidden flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open menu"
           >

@@ -20,13 +20,14 @@ export function Spinner({
 export function LoadingState({ message, className }: { message: string; className?: string }) {
   return (
     <div
+      role="status"
       className={cn(
-        'flex items-center justify-center gap-2 p-12 text-center text-muted-foreground text-sm',
+        'flex flex-col items-center justify-center gap-3 p-12 text-center text-muted-foreground text-sm',
         className,
       )}
     >
       <Spinner size="md" />
-      {message}
+      <p className="leading-relaxed">{message}</p>
     </div>
   );
 }

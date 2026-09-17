@@ -63,7 +63,7 @@ export function ForgotPasswordPage() {
       {sent ? (
         <div
           role="status"
-          className="flex items-start gap-2 text-sm bg-success/10 border border-success/30 text-success rounded-lg px-3 py-2.5"
+          className="flex items-start gap-3 text-sm leading-relaxed bg-success/5 border border-success/25 text-foreground rounded-xl p-5"
         >
           <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
           <span>

@@ -10,7 +10,7 @@ const trendBars = [38, 52, 44, 63, 58, 74, 82];
 
 function DashboardMock() {
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-xl shadow-primary/10 overflow-hidden text-left">
+    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden text-left">
       <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border">
         <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
         <span className="w-2.5 h-2.5 rounded-full bg-warning/60" />
@@ -76,12 +76,7 @@ function QrMock() {
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-32 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8">
-      {/* Ambient background wash */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,var(--primary)_0%,transparent_70%)] opacity-10"
-      />
+    <section className="pt-28 pb-16 sm:pt-36 sm:pb-24">
       <Container width="xl">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="text-center lg:text-left">

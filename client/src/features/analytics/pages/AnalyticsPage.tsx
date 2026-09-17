@@ -86,15 +86,17 @@ function Section({
   action?: ReactNode;
 }) {
   return (
-    <section>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Icon className={`w-5 h-5 ${iconClassName ?? 'text-primary'}`} />
+    <section aria-label={title}>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 className="text-[17px] font-semibold tracking-tight flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+            <Icon className={`w-4 h-4 ${iconClassName ?? 'text-primary'}`} />
+          </span>
           {title}
         </h2>
         {action}
       </div>
-      <Card>{children}</Card>
+      <Card padding="md">{children}</Card>
     </section>
   );
 }
@@ -564,22 +566,25 @@ function NlqAskBar({ slug }: { slug: string }) {
   };
 
   return (
-    <section>
-      <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-        <Sparkles className="w-5 h-5 text-primary" />
+    <section aria-label="Ask your data">
+      <h2 className="text-[17px] font-semibold tracking-tight flex items-center gap-2.5 mb-3">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+          <Sparkles className="w-4 h-4 text-primary" />
+        </span>
         Ask your data
       </h2>
       <Card>
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder='e.g. "What are customers most frustrated about this week?"'
-            className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+            aria-label="Ask a question about your feedback"
+            className="flex-1 rounded-xl border border-input bg-background px-4 py-2.5 min-h-11 text-[15px] shadow-xs outline-none hover:border-ring/40 focus:ring-4 focus:ring-ring/15 focus:border-ring transition-all"
             disabled={nlq.isPending}
           />
-          <Button type="submit" size="sm" disabled={!query.trim() || nlq.isPending}>
+          <Button type="submit" size="md" disabled={!query.trim() || nlq.isPending} className="sm:w-auto w-full">
             {nlq.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             Ask
           </Button>

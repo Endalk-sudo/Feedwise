@@ -9,7 +9,7 @@ import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const inputBase =
-  'w-full bg-background border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all disabled:opacity-50';
+  'w-full bg-background border border-input rounded-xl text-foreground text-[15px] placeholder:text-muted-foreground/80 shadow-xs hover:border-ring/40 focus:outline-none focus:ring-4 focus:ring-ring/15 focus:border-ring transition-all duration-200 disabled:opacity-50';
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   ({ className, ...props }, ref) => (

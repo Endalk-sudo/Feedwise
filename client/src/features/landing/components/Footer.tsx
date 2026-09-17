@@ -12,21 +12,21 @@ const productLinks = [
 
 export function Footer({ onOpenLegal }: { onOpenLegal: (doc: Exclude<LegalDoc, null>) => void }) {
   return (
-    <footer className="py-12 border-t border-border bg-background">
+    <footer className="py-12 sm:py-16 border-t border-border/70 bg-muted/30">
       <Container width="xl">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 mb-10">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Logo size="sm" />
-              <span className="font-bold text-xl">FeedWise</span>
+              <span className="font-semibold text-lg tracking-tight">FeedWise</span>
             </div>
-            <p className="text-muted-foreground text-sm">
-              Turn customer feedback into actionable insights with AI.
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
+              Customer feedback, understood. Collect responses and see what to fix first.
             </p>
           </div>
-          <div>
-            <h4 className="font-semibold mb-4">Product</h4>
-            <ul className="space-y-2 text-muted-foreground text-sm">
+          <nav aria-label="Product">
+            <h4 className="text-[13px] font-semibold tracking-tight mb-4">Product</h4>
+            <ul className="space-y-2.5 text-muted-foreground text-sm">
               {productLinks.map((link) => (
                 <li key={link.href}>
                   <a href={link.href} className="hover:text-foreground transition-colors">
@@ -35,10 +35,10 @@ export function Footer({ onOpenLegal }: { onOpenLegal: (doc: Exclude<LegalDoc, n
                 </li>
               ))}
             </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-muted-foreground text-sm">
+          </nav>
+          <nav aria-label="Company">
+            <h4 className="text-[13px] font-semibold tracking-tight mb-4">Company</h4>
+            <ul className="space-y-2.5 text-muted-foreground text-sm">
               <li>
                 <a href="#testimonials" className="hover:text-foreground transition-colors">
                   Testimonials
@@ -63,10 +63,10 @@ export function Footer({ onOpenLegal }: { onOpenLegal: (doc: Exclude<LegalDoc, n
                 </a>
               </li>
             </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-muted-foreground text-sm">
+          </nav>
+          <nav aria-label="Legal">
+            <h4 className="text-[13px] font-semibold tracking-tight mb-4">Legal</h4>
+            <ul className="space-y-2.5 text-muted-foreground text-sm">
               <li>
                 <button
                   type="button"
@@ -86,7 +86,7 @@ export function Footer({ onOpenLegal }: { onOpenLegal: (doc: Exclude<LegalDoc, n
                 </button>
               </li>
             </ul>
-          </div>
+          </nav>
         </div>
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-muted-foreground text-sm">

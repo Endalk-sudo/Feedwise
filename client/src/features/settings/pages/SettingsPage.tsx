@@ -141,21 +141,26 @@ export function SettingsPage() {
       {/* Plan Status */}
       <Card>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
               {currentPlan === 'pro' ? (
                 <Zap className="w-6 h-6 text-primary" />
               ) : (
                 <Building2 className="w-6 h-6 text-primary" />
               )}
             </div>
-            <div>
-              <h3 className="font-semibold capitalize">{currentPlan} Plan</h3>
+            <div className="min-w-0">
+              <h3 className="font-semibold tracking-tight capitalize">{currentPlan} plan</h3>
               <p className="text-sm text-muted-foreground capitalize">{subscriptionStatus}</p>
             </div>
           </div>
-          <Button variant="secondary" onClick={handleManageSubscription} disabled={isPortalLoading}>
-            {isPortalLoading ? 'Opening…' : 'Manage Subscription'}
+          <Button
+            variant="outline"
+            onClick={handleManageSubscription}
+            disabled={isPortalLoading}
+            className="w-full sm:w-auto"
+          >
+            {isPortalLoading ? 'Opening…' : 'Manage subscription'}
           </Button>
         </div>
       </Card>

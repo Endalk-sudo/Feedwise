@@ -80,7 +80,11 @@ export function MembersPage() {
 
       {canManage && (
         <Card>
-          <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3">
+          <h2 className="text-[15px] font-semibold tracking-tight mb-1">Invite a teammate</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+            They need a FeedWise account first — then add them here by email.
+          </p>
+          <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-2.5">
             <div className="flex-1">
               <Input
                 type="email"
@@ -105,10 +109,9 @@ export function MembersPage() {
               {addMember.isPending ? 'Adding…' : 'Add member'}
             </Button>
           </form>
-          <p className="text-xs text-muted-foreground mt-3">
+          <p className="text-[13px] leading-relaxed text-muted-foreground mt-4 pt-4 border-t border-border/60">
             Members see the dashboard and can act on feedback. Admins can also manage
-            members; only owners can change roles. The email must already be registered —
-            ask your teammate to sign up first.
+            members; only owners can change roles.
           </p>
         </Card>
       )}
@@ -133,10 +136,10 @@ export function MembersPage() {
               return (
                 <li
                   key={member.id}
-                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3"
+                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-muted/40 transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-medium text-primary-foreground shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-semibold text-primary-foreground shrink-0 shadow-xs">
                       {(member.user.name?.charAt(0) || member.user.email.charAt(0)).toUpperCase()}
                     </div>
                     <div className="min-w-0">

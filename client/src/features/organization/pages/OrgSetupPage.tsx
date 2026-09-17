@@ -158,15 +158,19 @@ export function OrgSetupPage() {
 
   return (
     <CenteredLayout width="md">
-      <Card padding="lg">
+      <Card padding="lg" className="rounded-3xl shadow-md">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-5">
             <Logo icon={Building2} size="xl" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">Set up your organization</h1>
-          <p className="text-muted-foreground">
-            Step 2 of 2 — tell us about your business so we can customize your feedback
-            experience
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
+            Step 2 of 2
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-balance mb-2">
+            Set up your organization
+          </h1>
+          <p className="text-muted-foreground text-[15px] leading-relaxed max-w-md mx-auto">
+            Tell us about your business so feedback categories and insights fit from day one.
           </p>
         </div>
 

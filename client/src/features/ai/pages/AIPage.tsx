@@ -39,13 +39,13 @@ function MessageBubble({
     <div className={cn('flex gap-3', message.role === 'user' ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-[80%] rounded-xl px-4 py-3',
+          'max-w-[85%] sm:max-w-[78%] rounded-2xl px-4 py-3 shadow-xs',
           message.role === 'user'
-            ? 'bg-primary text-primary-foreground rounded-tr-none'
-            : 'bg-muted text-foreground rounded-tl-none',
+            ? 'bg-primary text-primary-foreground rounded-br-md'
+            : 'bg-card border border-border/70 text-foreground rounded-bl-md',
         )}
       >
-        <p className="whitespace-pre-wrap">{text}</p>
+        <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{text}</p>
         <div className="flex items-center justify-end gap-2 mt-2">
           {message.role === 'assistant' && (
             <button
@@ -106,8 +106,8 @@ function InputForm({
   currentPlan: string | null | undefined;
 }) {
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t border-border">
-      <div className="flex gap-2">
+    <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t border-border/70 bg-muted/20">
+      <div className="flex flex-col sm:flex-row gap-2.5">
         <Input
           type="text"
           value={input}
@@ -305,7 +305,7 @@ export function AIPage() {
       )}
 
       {/* Chat Messages */}
-      <Card padding="none" className="flex flex-col h-[500px] overflow-hidden">
+      <Card padding="none" className="flex flex-col h-[560px] sm:h-[600px] overflow-hidden">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
