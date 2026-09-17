@@ -1,5 +1,5 @@
 #!/bin/sh
-# Render/compose runtime templating for the nginx frontend.
+# Compose runtime templating for the nginx frontend.
 # Substitutes ONLY ${PORT} and ${BACKEND_URL} so nginx variables
 # ($host, $http_upgrade, $uri, ...) pass through untouched.
 # Executed automatically by the nginx image's /docker-entrypoint.d runner.

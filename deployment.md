@@ -1,9 +1,9 @@
 # Deployment Guide - AI Feedback Collector App
 
-> Supersedes the old Render (backend) + Vercel (frontend) + MongoDB Atlas guide.
-> Current strategy: Docker Compose for both local dev and production, PostgreSQL 16,
-> Prisma `migrate deploy` on server start. See `DOCUMENTATION.md` (Deployment Strategy),
-> `docker-compose.yml` (dev), `docker-compose.prod.yml` (prod), and `docs/UPGRADE_PLAN.md`.
+> Docker-only deployment guide. Current strategy: Docker Compose for both
+> local dev and production, PostgreSQL 16, Prisma `migrate deploy` on server
+> start. See `DOCUMENTATION.md` (Deployment Strategy), `docker-compose.yml`
+> (dev), `docker-compose.prod.yml` (prod), and `docs/UPGRADE_PLAN.md`.
 
 ## Prerequisites
 

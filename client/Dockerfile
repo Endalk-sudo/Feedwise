@@ -52,9 +52,8 @@ RUN npm run build
 # Production stage - serve with nginx
 FROM nginx:alpine AS production
 
-# Runtime-configurable backend + port (Render sets PORT automatically;
-# BACKEND_URL points at the public server URL on Render, defaults to the
-# compose-network backend for docker-compose.prod.yml self-host).
+# Runtime-configurable backend + port (BACKEND_URL points at the server URL;
+# defaults to the compose-network backend for docker-compose.prod.yml).
 # NOTE: we do NOT use /etc/nginx/templates/*.template (its blanket envsubst
 # would also rewrite nginx vars like $host/$uri). Instead docker-entrypoint.sh
 # substitutes ONLY ${PORT} and ${BACKEND_URL}.
@@ -73,7 +72,7 @@ COPY --from=builder /app/client/dist /usr/share/nginx/html
 # Expose port
 EXPOSE 80
 
-# Health check (PORT-aware: Render overrides PORT at runtime)
+# Health check (PORT-aware)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD sh -c 'wget --no-verbose --tries=1 --spider http://localhost:${PORT:-80} || exit 1'
 

@@ -34,7 +34,7 @@ The goal of this project is to simplify the feedback loop for small to medium bu
 - **Auth**: Better Auth (email/password, session cookies, Prisma adapter)
 - **Reliability & Background Jobs**:
   - **BullMQ**: Durable job queue for AI insight generation, batch analysis, urgency-alert emails, and daily digests (prevents request timeouts).
-  - **Redis / Upstash (optional)**: Shared cache + queue backend and distributed rate limiting (stops AI spam). Local Redis via Docker; production uses Upstash — or omit `REDIS_URL` entirely for in-memory fallbacks (e.g. Render without Redis).
+  - **Redis / Upstash (optional)**: Shared cache + queue backend and distributed rate limiting (stops AI spam). Local Redis via Docker; production uses Upstash — or omit `REDIS_URL` entirely for in-memory fallbacks.
 - **Integrations**: 
   - **AI**: Google Gemini 2.0 Flash via Vercel AI SDK (`ai` + `@ai-sdk/google`)
   - **Payments**: Stripe (Checkout & Billing Portal) + webhooks + hourly subscription sync
@@ -115,19 +115,7 @@ context, drop the stale volume first: `docker volume rm feedwise_client-node-mod
 ---
 
 ## 🌍 Deployment
-This app deploys via **Docker Compose** or **Render Blueprint**. Two compose files ship: `docker-compose.yml` (local dev, hot reload) and `docker-compose.prod.yml` (nginx + node + postgres prod stack; Prisma migrate auto-runs on start). See the [Deployment Guide](./deployment.md) and [`docs/UPGRADE_PLAN.md`](./docs/UPGRADE_PLAN.md) for details.
-
-### Render (Docker + Neon Postgres, no Redis)
-A `render.yaml` Blueprint ships at the repo root: Docker web services for server (`/health`) and client (nginx, `BACKEND_URL`-templated `/api` proxy) plus an external Neon database.
-```bash
-# 1. Create a Neon project, copy the pooled URL (?sslmode=require)
-# 2. Render Dashboard → New → Blueprint → select repo, fill prompts
-#    (DATABASE_URL, BETTER_AUTH_URL/CLIENT_URL, GEMINI_API_KEY, STRIPE_*, S3_*)
-# 3. Deploy server first, verify /health (migrations auto-run)
-# 4. Set client BACKEND_URL to https://<server>.onrender.com, deploy client
-# 5. Point the Stripe webhook at https://<server>.onrender.com/api/payments/webhook
-```
-Local `docker compose` dev is unaffected by the Blueprint.
+This app deploys via **Docker Compose** only. Two compose files ship: `docker-compose.yml` (local dev, hot reload) and `docker-compose.prod.yml` (nginx + node + postgres prod stack; Prisma migrate auto-runs on start). See the [Deployment Guide](./deployment.md) and [`docs/UPGRADE_PLAN.md`](./docs/UPGRADE_PLAN.md) for details.
 
 ---
 
