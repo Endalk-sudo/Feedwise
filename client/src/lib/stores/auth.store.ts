@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authClient, type Session, type User } from '@/lib/auth-client';
-
 export interface ActiveOrganization {
   id: string;
   slug: string;
@@ -53,6 +52,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      // v2: drop pre-2026-09 persisted state — activeOrganization from an
+      // older session could belong to a different account, which made every
+      // org-scoped request 403 after logging in with another user.
+      version: 2,
       partialize: (state) => ({
         session: state.session,
         user: state.user,

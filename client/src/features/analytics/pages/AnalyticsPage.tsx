@@ -42,7 +42,7 @@ import {
 } from 'recharts';
 import { PageHeader, Card, Badge, EmptyState, Button, SkeletonChart, Skeleton } from '@/components/ui';
 import { sentimentVariant, urgencyVariant } from '@/lib/status-variants';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, extractApiErrorMessage } from '@/lib/utils';
 import { useNlqQuery } from '@/features/feedback/hooks';
 import { useState, type FormEvent } from 'react';
 import { Send, Sparkles, Loader2 } from 'lucide-react';
@@ -101,7 +101,7 @@ function Section({
   );
 }
 
-function SentimentTrendsChart({ trends, isLoading, isError, refetch }: { trends: SentimentTrend[] | undefined; isLoading?: boolean; isError?: boolean; refetch?: () => void }) {
+function SentimentTrendsChart({ trends, isLoading, isError, error, refetch }: { trends: SentimentTrend[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
   if (isLoading) return <SkeletonChart />;
   if (isError) {
     return (
@@ -111,7 +111,9 @@ function SentimentTrendsChart({ trends, isLoading, isError, refetch }: { trends:
             <AlertTriangle className="w-5 h-5 text-destructive" />
             <div>
               <p className="font-medium">Failed to load sentiment trends</p>
-              <p className="text-sm text-muted-foreground">Please try again.</p>
+              <p className="text-sm text-muted-foreground">
+                {extractApiErrorMessage(error, 'Please try again.')}
+              </p>
             </div>
           </div>
           {refetch && (
@@ -164,7 +166,7 @@ function SentimentTrendsChart({ trends, isLoading, isError, refetch }: { trends:
   );
 }
 
-function CategoryBreakdownChart({ categories, isLoading, isError, refetch }: { categories: CategoryBreakdown[] | undefined; isLoading?: boolean; isError?: boolean; refetch?: () => void }) {
+function CategoryBreakdownChart({ categories, isLoading, isError, error, refetch }: { categories: CategoryBreakdown[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
   if (isLoading) return <SkeletonChart />;
   if (isError) {
     return (
@@ -174,7 +176,9 @@ function CategoryBreakdownChart({ categories, isLoading, isError, refetch }: { c
             <AlertTriangle className="w-5 h-5 text-destructive" />
             <div>
               <p className="font-medium">Failed to load category breakdown</p>
-              <p className="text-sm text-muted-foreground">Please try again.</p>
+              <p className="text-sm text-muted-foreground">
+                {extractApiErrorMessage(error, 'Please try again.')}
+              </p>
             </div>
           </div>
           {refetch && (
@@ -220,7 +224,7 @@ function CategoryBreakdownChart({ categories, isLoading, isError, refetch }: { c
   );
 }
 
-function HeatmapTable({ heatmap, isLoading, isError, refetch }: { heatmap: HeatmapData[] | undefined; isLoading?: boolean; isError?: boolean; refetch?: () => void }) {
+function HeatmapTable({ heatmap, isLoading, isError, error, refetch }: { heatmap: HeatmapData[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
   if (isLoading) return <div className="overflow-x-auto"><Skeleton /></div>;
   if (isError) {
     return (
@@ -230,7 +234,9 @@ function HeatmapTable({ heatmap, isLoading, isError, refetch }: { heatmap: Heatm
             <AlertTriangle className="w-5 h-5 text-destructive" />
             <div>
               <p className="font-medium">Failed to load heatmap</p>
-              <p className="text-sm text-muted-foreground">Please try again.</p>
+              <p className="text-sm text-muted-foreground">
+                {extractApiErrorMessage(error, 'Please try again.')}
+              </p>
             </div>
           </div>
           {refetch && (
@@ -292,7 +298,7 @@ function HeatmapTable({ heatmap, isLoading, isError, refetch }: { heatmap: Heatm
   );
 }
 
-function TopIssuesList({ issues, isLoading, isError, refetch }: { issues: TopIssue[] | undefined; isLoading?: boolean; isError?: boolean; refetch?: () => void }) {
+function TopIssuesList({ issues, isLoading, isError, error, refetch }: { issues: TopIssue[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
   if (isLoading) return <div className="space-y-4"><Skeleton /><Skeleton /><Skeleton /></div>;
   if (isError) {
     return (
@@ -302,7 +308,9 @@ function TopIssuesList({ issues, isLoading, isError, refetch }: { issues: TopIss
             <AlertTriangle className="w-5 h-5 text-destructive" />
             <div>
               <p className="font-medium">Failed to load top issues</p>
-              <p className="text-sm text-muted-foreground">Please try again.</p>
+              <p className="text-sm text-muted-foreground">
+                {extractApiErrorMessage(error, 'Please try again.')}
+              </p>
             </div>
           </div>
           {refetch && (
@@ -345,7 +353,7 @@ function TopIssuesList({ issues, isLoading, isError, refetch }: { issues: TopIss
   );
 }
 
-function AlertsList({ alerts, isLoading, isError, refetch }: { alerts: Alert[] | undefined; isLoading?: boolean; isError?: boolean; refetch?: () => void }) {
+function AlertsList({ alerts, isLoading, isError, error, refetch }: { alerts: Alert[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
   if (isLoading) return <div className="space-y-3"><Skeleton /><Skeleton /><Skeleton /></div>;
   if (isError) {
     return (
@@ -355,7 +363,9 @@ function AlertsList({ alerts, isLoading, isError, refetch }: { alerts: Alert[] |
             <AlertTriangle className="w-5 h-5 text-destructive" />
             <div>
               <p className="font-medium">Failed to load alerts</p>
-              <p className="text-sm text-muted-foreground">Please try again.</p>
+              <p className="text-sm text-muted-foreground">
+                {extractApiErrorMessage(error, 'Please try again.')}
+              </p>
             </div>
           </div>
           {refetch && (
@@ -402,11 +412,13 @@ function RecommendationsList({
   recommendations,
   isLoading,
   isError,
+  error,
   refetch,
 }: {
   recommendations: Recommendation[] | undefined;
   isLoading?: boolean;
   isError?: boolean;
+  error?: unknown;
   refetch?: () => void;
 }) {
   if (isLoading) return <div className="grid gap-4"><SkeletonChart /><SkeletonChart /><SkeletonChart /></div>;
@@ -418,7 +430,9 @@ function RecommendationsList({
             <AlertTriangle className="w-5 h-5 text-destructive" />
             <div>
               <p className="font-medium">Failed to load recommendations</p>
-              <p className="text-sm text-muted-foreground">Please try again.</p>
+              <p className="text-sm text-muted-foreground">
+                {extractApiErrorMessage(error, 'Please try again.')}
+              </p>
             </div>
           </div>
           {refetch && (
@@ -637,12 +651,12 @@ function NlqAskBar({ slug }: { slug: string }) {
 export function AnalyticsPage() {
   const slug = useOrgSlug();
 
-  const { data: trends, isLoading: trendsLoading, isError: trendsError, refetch: refetchTrends } = useSentimentTrends(slug);
-  const { data: categories, isLoading: catLoading, isError: catError, refetch: refetchCategories } = useCategoryBreakdown(slug);
-  const { data: heatmap, isLoading: heatmapLoading, isError: heatmapError, refetch: refetchHeatmap } = useHeatmap(slug);
-  const { data: issues, isLoading: issuesLoading, isError: issuesError, refetch: refetchIssues } = useTopIssues(slug);
-  const { data: alerts, isLoading: alertsLoading, isError: alertsError, refetch: refetchAlerts } = useAlerts(slug);
-  const { data: recommendations, isLoading: recLoading, isError: recError, refetch: refetchRecs } = useRecommendations(slug);
+  const { data: trends, isLoading: trendsLoading, isError: trendsError, error: trendsErr, refetch: refetchTrends } = useSentimentTrends(slug);
+  const { data: categories, isLoading: catLoading, isError: catError, error: catErr, refetch: refetchCategories } = useCategoryBreakdown(slug);
+  const { data: heatmap, isLoading: heatmapLoading, isError: heatmapError, error: heatmapErr, refetch: refetchHeatmap } = useHeatmap(slug);
+  const { data: issues, isLoading: issuesLoading, isError: issuesError, error: issuesErr, refetch: refetchIssues } = useTopIssues(slug);
+  const { data: alerts, isLoading: alertsLoading, isError: alertsError, error: alertsErr, refetch: refetchAlerts } = useAlerts(slug);
+  const { data: recommendations, isLoading: recLoading, isError: recError, error: recErr, refetch: refetchRecs } = useRecommendations(slug);
 
   if (!slug) {
     return (
@@ -688,6 +702,7 @@ export function AnalyticsPage() {
           trends={trends}
           isLoading={trendsLoading}
           isError={trendsError}
+          error={trendsErr}
           refetch={refetchTrends}
         />
       </Section>
@@ -707,6 +722,7 @@ export function AnalyticsPage() {
             categories={categories}
             isLoading={catLoading}
             isError={catError}
+            error={catErr}
             refetch={refetchCategories}
           />
         </Section>
@@ -722,6 +738,7 @@ export function AnalyticsPage() {
             heatmap={heatmap}
             isLoading={heatmapLoading}
             isError={heatmapError}
+            error={heatmapErr}
             refetch={refetchHeatmap}
           />
         </Section>
@@ -743,6 +760,7 @@ export function AnalyticsPage() {
             issues={issues}
             isLoading={issuesLoading}
             isError={issuesError}
+            error={issuesErr}
             refetch={refetchIssues}
           />
         </Section>
@@ -761,6 +779,7 @@ export function AnalyticsPage() {
             alerts={alerts}
             isLoading={alertsLoading}
             isError={alertsError}
+            error={alertsErr}
             refetch={refetchAlerts}
           />
         </Section>
@@ -770,6 +789,7 @@ export function AnalyticsPage() {
         recommendations={recommendations}
         isLoading={recLoading}
         isError={recError}
+        error={recErr}
         refetch={refetchRecs}
       />
 

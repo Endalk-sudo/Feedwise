@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
+import { isAxiosError } from 'axios';
 import { twMerge } from 'tailwind-merge';
 
 /**
@@ -71,4 +72,20 @@ export function debounce<T extends (...args: never[]) => void>(
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
+}
+/**
+ * Pull the human-readable message out of a failed API call.
+ *
+ * The server always answers errors with `{ success: false, message: string }`
+ * (axios puts it at `error.response.data.message`). Falls back to the axios
+ * error text, then the given fallback — so error cards can show "Forbidden"
+ * instead of a generic "check your connection".
+ */
+export function extractApiErrorMessage(error: unknown, fallback: string): string {
+  if (isAxiosError(error)) {
+    const data = error.response?.data as { message?: string } | undefined;
+    return data?.message || error.message || fallback;
+  }
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
 }

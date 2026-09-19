@@ -99,9 +99,11 @@ For a detailed look at the architecture, database schema, and technical decision
 5. **Seed demo data** (in `server/`, with Postgres running):
    ```bash
    npx prisma migrate dev
-   npm run prisma:seed   # demo org `demo-coffee`
+   npm run prisma:seed   # creates demo org `demo-coffee` + 30 AI-analyzed feedbacks
    ```
-   Then register `demo@example.com` in the UI to explore with the seeded org.
+   The seed also creates the demo account — just log in with
+   `demo@example.com` / `Demo1234!` (also shown on the login page).
+   No manual registration needed.
 
 ### Docker (recommended)
 ```bash

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { cn, extractApiErrorMessage } from '@/lib/utils';
 import {
   PageHeader,
   Card,
@@ -36,10 +36,32 @@ export function DashboardHome() {
   const { user, activeOrganization, setActiveOrganization } = useAuthStore();
   const slug = useOrgSlug();
   const { data: myOrgs } = useMyOrganizations();
-  const { data: statsData, isLoading, isError, refetch } = useFeedbackStats(slug);
+  const { data: statsData, isLoading, isError, error, refetch } = useFeedbackStats(slug);
 
+  // Auto-select logic:
+  // 1. If the active org is stale — persisted from a *previous* account and
+  //    this user is not a member — switch to the first org they belong to.
+  //    (Without this, every org-scoped query runs against an org the server
+  //    correctly refuses, i.e. 403 "You do not have access".)
+  // 2. If no org is active at all, pick the first membership.
   useEffect(() => {
-    if (!activeOrganization && myOrgs && myOrgs.length > 0) {
+    if (!myOrgs) return;
+    const member = activeOrganization
+      ? myOrgs.find((m) => m.organization.id === activeOrganization.id)
+      : null;
+    if (activeOrganization && !member) {
+      const fallback = myOrgs[0];
+      if (fallback) {
+        setActiveOrganization({
+          id: fallback.organization.id,
+          slug: fallback.organization.slug,
+          name: fallback.organization.name,
+          currentPlan: fallback.organization.currentPlan,
+        });
+      }
+      return;
+    }
+    if (!activeOrganization && myOrgs.length > 0) {
       const first = myOrgs[0];
       if (first) {
         setActiveOrganization({
@@ -168,7 +190,9 @@ export function DashboardHome() {
               <AlertTriangle className="w-5 h-5 text-destructive" />
               <div>
                 <p className="font-medium">Failed to load dashboard data</p>
-                <p className="text-sm text-muted-foreground">Please check your connection and try again.</p>
+                <p className="text-sm text-muted-foreground">
+                  {extractApiErrorMessage(error, 'Please check your connection and try again.')}
+                </p>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => refetch()}>

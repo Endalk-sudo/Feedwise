@@ -18,6 +18,7 @@ import { useAuthStore, useOrgSlug, useSyncSession } from '@/lib/stores/auth.stor
 import { useUIStore } from '@/lib/stores/ui.store';
 import { authClient } from '@/lib/auth-client';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { useQueryClient } from '@tanstack/react-query';
 import { Logo } from '@/components/ui';
 import { useMyOrganizations } from '@/features/organization/hooks';
 import { useAlerts } from '@/features/feedback/hooks';
@@ -60,6 +61,7 @@ export function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, activeOrganization, logout, setActiveOrganization } = useAuthStore();
   const { sidebarOpen, setSidebarOpen, toggleSidebar } = useUIStore();
+  const queryClient = useQueryClient();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [orgSwitcherOpen, setOrgSwitcherOpen] = useState(false);
@@ -110,6 +112,31 @@ export function DashboardLayout() {
   // Keep the persisted session in sync while inside the dashboard
   useSyncSession();
 
+  // Guard against a stale persisted organization: if the active org is not in
+  // this user's memberships (e.g. localStorage left over from a previous
+  // account), switch to their first org and drop every cached query so
+  // nothing from the old account renders or refetches.
+  useEffect(() => {
+    if (!myOrgs) return; // memberships not loaded yet
+    if (!activeOrganization) return; // auto-select handled elsewhere
+    const isMember = myOrgs.some((m) => m.organization.id === activeOrganization.id);
+    if (isMember) return;
+    const first = myOrgs[0];
+    if (first) {
+      setActiveOrganization({
+        id: first.organization.id,
+        slug: first.organization.slug,
+        name: first.organization.name,
+        currentPlan: first.organization.currentPlan,
+      });
+      queryClient.clear();
+    } else {
+      // User belongs to no org at all — send them to setup.
+      setActiveOrganization(null);
+      navigate({ to: '/org-setup' });
+    }
+  }, [activeOrganization, myOrgs, navigate, queryClient, setActiveOrganization]);
+
   // Close mobile sidebar on navigation
   useEffect(() => {
     if (sidebarOpen) setSidebarOpen(false);
@@ -150,6 +177,7 @@ export function DashboardLayout() {
   const handleLogout = async () => {
     await authClient.signOut();
     logout();
+    queryClient.clear();
     navigate({ to: '/' });
   };
 

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginForm } from '@aifc/contracts';
-import { Eye, EyeOff, Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Mail, Lock, AlertCircle, Sparkles } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import api from '@/lib/api';
 import { useAuthStore } from '@/lib/stores/auth.store';
+import { useFeedbackStore } from '@/lib/stores/feedback.store';
 import { useUIStore } from '@/lib/stores/ui.store';
 import { AuthShell } from '@/features/auth/components/AuthShell';
 import { Button, Input, Field } from '@/components/ui';
@@ -15,6 +17,9 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { addToast } = useUIStore();
   const setSession = useAuthStore((state) => state.setSession);
+  const setActiveOrganization = useAuthStore((state) => state.setActiveOrganization);
+  const clearFeedbacks = useFeedbackStore((state) => state.clearFeedbacks);
+  const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -45,6 +50,15 @@ export function LoginPage() {
       }
       const session = await authClient.getSession({ fetchOptions: { credentials: 'include' } });
       setSession(session.data);
+
+      // Wipe any state that could belong to a *previous* account:
+      // a persisted activeOrganization (else every org-scoped query 403s
+      // until the dashboard corrects it), feedback list filters, and the
+      // TanStack Query cache (cross-account data leak).
+      setActiveOrganization(null);
+      clearFeedbacks();
+      queryClient.clear();
+
       addToast({ message: 'Welcome back!', type: 'success' });
       // New users (or users who never finished setup) have no org yet —
       // send them to org setup instead of an empty dashboard.
@@ -146,6 +160,19 @@ export function LoginPage() {
             'Sign In'
           )}
         </Button>
+
+        {/* Demo credentials (local dev convenience — seed creates this account) */}
+        <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm">
+          <p className="font-medium text-foreground mb-1 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            Try the demo
+          </p>
+          <p className="text-muted-foreground">
+            <span className="font-medium text-foreground">demo@example.com</span> /{' '}
+            <span className="font-mono">Demo1234!</span> — pre-seeded coffee shop with 30+
+            AI-analyzed feedbacks.
+          </p>
+        </div>
       </form>
     </AuthShell>
   );

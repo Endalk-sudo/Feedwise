@@ -18,7 +18,7 @@ import {
   Wrench,
   Calendar,
 } from 'lucide-react';
-import { cn, formatRelativeTime } from '@/lib/utils';
+import { cn, extractApiErrorMessage, formatRelativeTime } from '@/lib/utils';
 import {
   PageHeader,
   Card,
@@ -53,7 +53,7 @@ type SortDir = 'asc' | 'desc';
 export function FeedbackPage() {
   const slug = useOrgSlug();
   const { currentPage, setPage, filters, setFilters } = useFeedbackStore();
-  const { data, isLoading, isError, refetch } = useFeedbacks(slug);
+  const { data, isLoading, isError, error, refetch } = useFeedbacks(slug);
   const updateStatus = useUpdateFeedbackStatus(slug || '');
   const { addToast } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
@@ -272,7 +272,9 @@ export function FeedbackPage() {
                 <AlertTriangle className="w-5 h-5 text-destructive" />
                 <div>
                   <p className="font-medium">Failed to load feedback</p>
-                  <p className="text-sm text-muted-foreground">Please try again.</p>
+                  <p className="text-sm text-muted-foreground">
+                    {extractApiErrorMessage(error, 'Please try again.')}
+                  </p>
                 </div>
               </div>
               <Button variant="outline" size="sm" onClick={() => refetch()}>
