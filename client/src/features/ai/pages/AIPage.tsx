@@ -120,12 +120,7 @@ function InputForm({
           disabled={isBusy || currentPlan !== 'pro'}
         />
         {isStreaming ? (
-          <Button
-            type="button"
-            size="lg"
-            onClick={onStop}
-            className="shrink-0"
-          >
+          <Button type="button" size="lg" onClick={onStop} className="shrink-0">
             <Square className="w-5 h-5" />
             Stop
           </Button>
@@ -153,8 +148,8 @@ function UpgradeCTA() {
         <span className="font-semibold text-lg">Pro plan required for AI Chat</span>
       </div>
       <p className="text-muted-foreground mb-4 max-w-sm mx-auto">
-        Unlock AI-powered insights, growth recommendations, and natural-language queries
-        with a Pro subscription.
+        Unlock AI-powered insights, growth recommendations, and natural-language queries with a Pro
+        subscription.
       </p>
       <a
         href="/dashboard/settings"
@@ -202,11 +197,13 @@ export function AIPage() {
   const isBusy = status === 'submitted' || status === 'streaming';
   const isStreaming = status === 'streaming';
 
-  // Track timestamps for new assistant messages
+  // Track timestamps for new assistant messages.
+  // The "already stamped?" check lives inside the setState updater so the
+  // effect only depends on messages (no stale-closure over timestamps).
   useEffect(() => {
     const latest = messages[messages.length - 1];
-    if (latest && latest.role === 'assistant' && !timestamps[latest.id]) {
-      setTimestamps((prev) => ({ ...prev, [latest.id]: new Date() }));
+    if (latest && latest.role === 'assistant') {
+      setTimestamps((prev) => (prev[latest.id] ? prev : { ...prev, [latest.id]: new Date() }));
     }
   }, [messages]);
 
