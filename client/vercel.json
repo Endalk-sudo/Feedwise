@@ -1,4 +1,5 @@
 {
+  "installCommand": "npm ci --legacy-peer-deps && (cd ../shared && npm ci)",
   "rewrites": [
     {
       "source": "/(.*)",
