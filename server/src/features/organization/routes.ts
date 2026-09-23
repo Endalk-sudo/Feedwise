@@ -152,7 +152,9 @@ router.put('/:slug', authMiddleware, validate(updateOrgSchema), async (req, res,
     });
 
     if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
-      return res.status(403).json({ success: false, message: 'Forbidden - Insufficient permissions' });
+      return res
+        .status(403)
+        .json({ success: false, message: 'Forbidden - Insufficient permissions' });
     }
 
     const updated = await organizationService.update(organization.id, req.body);
@@ -185,7 +187,9 @@ router.post('/:slug/members', authMiddleware, validate(addMemberSchema), async (
     });
 
     if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
-      return res.status(403).json({ success: false, message: 'Forbidden - Insufficient permissions' });
+      return res
+        .status(403)
+        .json({ success: false, message: 'Forbidden - Insufficient permissions' });
     }
 
     // Find user by email
@@ -207,41 +211,42 @@ router.delete(
   authMiddleware,
   validate(removeMemberSchema),
   async (req, res, next) => {
-  try {
-    const slug = req.params.slug as string;
-    const targetUserId = req.params.userId as string;
-    const userId = (req as any).user.id;
+    try {
+      const slug = req.params.slug as string;
+      const targetUserId = req.params.userId as string;
+      const userId = (req as any).user.id;
 
-    const organization = await organizationService.getBySlug(slug);
-    if (!organization) {
-      return res.status(404).json({ success: false, message: 'Organization not found' });
-    }
+      const organization = await organizationService.getBySlug(slug);
+      if (!organization) {
+        return res.status(404).json({ success: false, message: 'Organization not found' });
+      }
 
-    // Check if requester is owner
-    const member = await prisma.organizationMember.findUnique({
-      where: {
-        userId_organizationId: {
-          userId,
-          organizationId: organization.id,
+      // Check if requester is owner
+      const member = await prisma.organizationMember.findUnique({
+        where: {
+          userId_organizationId: {
+            userId,
+            organizationId: organization.id,
+          },
         },
-      },
-    });
+      });
 
-    if (!member || member.role !== 'owner') {
-      return res.status(403).json({ success: false, message: 'Forbidden - Owner only' });
+      if (!member || member.role !== 'owner') {
+        return res.status(403).json({ success: false, message: 'Forbidden - Owner only' });
+      }
+
+      // Can't remove self
+      if (targetUserId === userId) {
+        return res.status(400).json({ success: false, message: 'Cannot remove yourself' });
+      }
+
+      await organizationService.removeMember(organization.id, targetUserId);
+      res.json({ success: true, message: 'Member removed' });
+    } catch (error) {
+      next(error);
     }
-
-    // Can't remove self
-    if (targetUserId === userId) {
-      return res.status(400).json({ success: false, message: 'Cannot remove yourself' });
-    }
-
-    await organizationService.removeMember(organization.id, targetUserId);
-    res.json({ success: true, message: 'Member removed' });
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 // Update member role (protected, owner only)
 router.put(

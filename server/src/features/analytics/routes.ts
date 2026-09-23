@@ -192,9 +192,20 @@ router.get('/:slug/export', validate(analyticsExportParamsSchema), async (req, r
     };
     const lines = rows.map((r) =>
       [
-        r.id, r.text, r.category, r.rating, r.sentiment, r.urgency,
-        r.satisfactionEstimate, r.fixableProblem, r.concreteIssue,
-        r.retentionRisk, r.verified, r.status, r.ownerReply, r.createdAt.toISOString(),
+        r.id,
+        r.text,
+        r.category,
+        r.rating,
+        r.sentiment,
+        r.urgency,
+        r.satisfactionEstimate,
+        r.fixableProblem,
+        r.concreteIssue,
+        r.retentionRisk,
+        r.verified,
+        r.status,
+        r.ownerReply,
+        r.createdAt.toISOString(),
       ]
         .map(esc)
         .join(','),

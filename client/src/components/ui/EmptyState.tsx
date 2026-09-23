@@ -26,12 +26,7 @@ export function EmptyState({
             compact ? 'h-14 w-14' : 'h-16 w-16',
           )}
         >
-          <Icon
-            className={cn(
-              'text-muted-foreground',
-              compact ? 'w-7 h-7' : 'w-8 h-8',
-            )}
-          />
+          <Icon className={cn('text-muted-foreground', compact ? 'w-7 h-7' : 'w-8 h-8')} />
         </div>
       )}
       {compact ? (

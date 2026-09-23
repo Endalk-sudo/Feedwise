@@ -3,7 +3,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { useFeedbackStore } from '@/lib/stores/feedback.store';
 import { useUIStore } from '@/lib/stores/ui.store';
-import type { Feedback, FeedbackListResponse, FeedbackStats, SentimentTrend, CategoryBreakdown, HeatmapData, TopIssue, Alert, Recommendation, RetentionRisk, AIChatResponse, NlqResponse } from './types';
+import type {
+  Feedback,
+  FeedbackListResponse,
+  FeedbackStats,
+  SentimentTrend,
+  CategoryBreakdown,
+  HeatmapData,
+  TopIssue,
+  Alert,
+  Recommendation,
+  RetentionRisk,
+  AIChatResponse,
+  NlqResponse,
+} from './types';
 
 /**
  * Unwrap the standard server envelope: { success: true, data: T }.
@@ -64,7 +77,10 @@ export function useSubmitFeedback(slug: string) {
       addToast({ message: 'Feedback submitted successfully!', type: 'success' });
     },
     onError: (error) => {
-      addToast({ message: error instanceof Error ? error.message : 'Failed to submit feedback', type: 'error' });
+      addToast({
+        message: error instanceof Error ? error.message : 'Failed to submit feedback',
+        type: 'error',
+      });
     },
   });
 }
@@ -98,8 +114,7 @@ export function useSentimentTrends(slug: string, days: number = 30) {
  */
 export function useNlqQuery(slug: string) {
   return useMutation<NlqResponse, Error, string>({
-    mutationFn: (message: string) =>
-      unwrapData<NlqResponse>(apiClient.ai.nlq(slug, message)),
+    mutationFn: (message: string) => unwrapData<NlqResponse>(apiClient.ai.nlq(slug, message)),
   });
 }
 
@@ -175,13 +190,23 @@ export function useRetentionRisk(slug: string, days: number = 30) {
 export function useStaffPerformance(slug: string) {
   return useQuery<{
     members: Array<{ userId: string; name: string | null; email: string; role: string }>;
-    orgTotals: { resolved: number; open: number; avgSatisfaction: number | null; avgResolutionHours: number | null };
+    orgTotals: {
+      resolved: number;
+      open: number;
+      avgSatisfaction: number | null;
+      avgResolutionHours: number | null;
+    };
   }>({
     queryKey: ['staff-performance', slug],
     queryFn: () =>
       unwrapData<{
         members: Array<{ userId: string; name: string | null; email: string; role: string }>;
-        orgTotals: { resolved: number; open: number; avgSatisfaction: number | null; avgResolutionHours: number | null };
+        orgTotals: {
+          resolved: number;
+          open: number;
+          avgSatisfaction: number | null;
+          avgResolutionHours: number | null;
+        };
       }>(apiClient.analytics.getStaffPerformance(slug)),
     enabled: !!slug,
   });
@@ -208,11 +233,13 @@ export function useAIChat(slug: string) {
   return useMutation({
     mutationFn: (message: string) => unwrapData<AIChatResponse>(apiClient.ai.chat(slug, message)),
     onError: (error) => {
-      addToast({ message: error instanceof Error ? error.message : 'Failed to send message', type: 'error' });
+      addToast({
+        message: error instanceof Error ? error.message : 'Failed to send message',
+        type: 'error',
+      });
     },
   });
 }
-
 
 /**
  * Close-the-loop: mark feedback resolved / in progress / ignored, optional reply & note.

@@ -11,5 +11,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Router />
     <Toaster position="top-right" richColors closeButton />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

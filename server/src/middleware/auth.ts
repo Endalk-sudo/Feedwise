@@ -10,7 +10,7 @@ import { fromNodeHeaders } from 'better-auth/node';
 export async function authMiddleware(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const session = await auth.api.getSession({
@@ -45,7 +45,7 @@ export async function authMiddleware(
 export async function optionalAuthMiddleware(
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const session = await auth.api.getSession({
@@ -86,7 +86,9 @@ export function requireOrganizationMember(role?: string) {
     });
 
     if (!member) {
-      res.status(403).json({ success: false, message: 'Forbidden - Not a member of this organization' });
+      res
+        .status(403)
+        .json({ success: false, message: 'Forbidden - Not a member of this organization' });
       return;
     }
 

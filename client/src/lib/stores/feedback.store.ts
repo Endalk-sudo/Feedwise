@@ -36,25 +36,29 @@ export const useFeedbackStore = create<FeedbackState>((set) => ({
   isLoading: false,
   error: null,
 
-  setFeedbacks: (feedbacks, totalCount, totalPages) => set({
-    feedbacks,
-    totalCount,
-    totalPages,
-  }),
+  setFeedbacks: (feedbacks, totalCount, totalPages) =>
+    set({
+      feedbacks,
+      totalCount,
+      totalPages,
+    }),
 
-  addFeedback: (feedback) => set((state) => ({
-    feedbacks: [feedback, ...state.feedbacks],
-    totalCount: state.totalCount + 1,
-  })),
+  addFeedback: (feedback) =>
+    set((state) => ({
+      feedbacks: [feedback, ...state.feedbacks],
+      totalCount: state.totalCount + 1,
+    })),
 
-  updateFeedback: (id, data) => set((state) => ({
-    feedbacks: state.feedbacks.map((f) => f.id === id ? { ...f, ...data } : f),
-  })),
+  updateFeedback: (id, data) =>
+    set((state) => ({
+      feedbacks: state.feedbacks.map((f) => (f.id === id ? { ...f, ...data } : f)),
+    })),
 
-  removeFeedback: (id) => set((state) => ({
-    feedbacks: state.feedbacks.filter((f) => f.id !== id),
-    totalCount: state.totalCount - 1,
-  })),
+  removeFeedback: (id) =>
+    set((state) => ({
+      feedbacks: state.feedbacks.filter((f) => f.id !== id),
+      totalCount: state.totalCount - 1,
+    })),
 
   setPage: (page) => set({ currentPage: page }),
 
@@ -64,10 +68,11 @@ export const useFeedbackStore = create<FeedbackState>((set) => ({
 
   setError: (error) => set({ error }),
 
-  clearFeedbacks: () => set({
-    feedbacks: [],
-    totalCount: 0,
-    currentPage: 1,
-    totalPages: 0,
-  }),
+  clearFeedbacks: () =>
+    set({
+      feedbacks: [],
+      totalCount: 0,
+      currentPage: 1,
+      totalPages: 0,
+    }),
 }));

@@ -43,7 +43,10 @@ export function useCreateOrganization() {
       addToast({ message: 'Organization created successfully!', type: 'success' });
     },
     onError: (error) => {
-      addToast({ message: error instanceof Error ? error.message : 'Failed to create organization', type: 'error' });
+      addToast({
+        message: error instanceof Error ? error.message : 'Failed to create organization',
+        type: 'error',
+      });
     },
   });
 }
@@ -63,7 +66,10 @@ export function useUpdateOrganization(slug: string) {
       addToast({ message: 'Organization updated successfully!', type: 'success' });
     },
     onError: (error) => {
-      addToast({ message: error instanceof Error ? error.message : 'Failed to update organization', type: 'error' });
+      addToast({
+        message: error instanceof Error ? error.message : 'Failed to update organization',
+        type: 'error',
+      });
     },
   });
 }
@@ -82,7 +88,10 @@ export function useUploadLogo(slug: string) {
       addToast({ message: 'Logo uploaded successfully!', type: 'success' });
     },
     onError: (error) => {
-      addToast({ message: error instanceof Error ? error.message : 'Failed to upload logo', type: 'error' });
+      addToast({
+        message: error instanceof Error ? error.message : 'Failed to upload logo',
+        type: 'error',
+      });
     },
   });
 }
@@ -154,7 +163,10 @@ export function useRemoveMember(slug: string) {
       addToast({ message: 'Member removed successfully!', type: 'success' });
     },
     onError: (error) => {
-      addToast({ message: error instanceof Error ? error.message : 'Failed to remove member', type: 'error' });
+      addToast({
+        message: error instanceof Error ? error.message : 'Failed to remove member',
+        type: 'error',
+      });
     },
   });
 }

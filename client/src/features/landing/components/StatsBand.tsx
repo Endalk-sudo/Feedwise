@@ -13,9 +13,7 @@ export function StatsBand() {
                 <dd className="text-3xl sm:text-4xl font-semibold tracking-tight gradient-text">
                   {stat.value}
                 </dd>
-                <dt className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {stat.label}
-                </dt>
+                <dt className="mt-2 text-sm leading-relaxed text-muted-foreground">{stat.label}</dt>
               </div>
             </Reveal>
           ))}

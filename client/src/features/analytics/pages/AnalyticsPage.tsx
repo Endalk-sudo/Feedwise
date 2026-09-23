@@ -40,7 +40,15 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { PageHeader, Card, Badge, EmptyState, Button, SkeletonChart, Skeleton } from '@/components/ui';
+import {
+  PageHeader,
+  Card,
+  Badge,
+  EmptyState,
+  Button,
+  SkeletonChart,
+  Skeleton,
+} from '@/components/ui';
 import { sentimentVariant, urgencyVariant } from '@/lib/status-variants';
 import { formatRelativeTime, extractApiErrorMessage } from '@/lib/utils';
 import { useNlqQuery } from '@/features/feedback/hooks';
@@ -101,7 +109,19 @@ function Section({
   );
 }
 
-function SentimentTrendsChart({ trends, isLoading, isError, error, refetch }: { trends: SentimentTrend[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
+function SentimentTrendsChart({
+  trends,
+  isLoading,
+  isError,
+  error,
+  refetch,
+}: {
+  trends: SentimentTrend[] | undefined;
+  isLoading?: boolean;
+  isError?: boolean;
+  error?: unknown;
+  refetch?: () => void;
+}) {
   if (isLoading) return <SkeletonChart />;
   if (isError) {
     return (
@@ -166,7 +186,19 @@ function SentimentTrendsChart({ trends, isLoading, isError, error, refetch }: { 
   );
 }
 
-function CategoryBreakdownChart({ categories, isLoading, isError, error, refetch }: { categories: CategoryBreakdown[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
+function CategoryBreakdownChart({
+  categories,
+  isLoading,
+  isError,
+  error,
+  refetch,
+}: {
+  categories: CategoryBreakdown[] | undefined;
+  isLoading?: boolean;
+  isError?: boolean;
+  error?: unknown;
+  refetch?: () => void;
+}) {
   if (isLoading) return <SkeletonChart />;
   if (isError) {
     return (
@@ -224,8 +256,25 @@ function CategoryBreakdownChart({ categories, isLoading, isError, error, refetch
   );
 }
 
-function HeatmapTable({ heatmap, isLoading, isError, error, refetch }: { heatmap: HeatmapData[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
-  if (isLoading) return <div className="overflow-x-auto"><Skeleton /></div>;
+function HeatmapTable({
+  heatmap,
+  isLoading,
+  isError,
+  error,
+  refetch,
+}: {
+  heatmap: HeatmapData[] | undefined;
+  isLoading?: boolean;
+  isError?: boolean;
+  error?: unknown;
+  refetch?: () => void;
+}) {
+  if (isLoading)
+    return (
+      <div className="overflow-x-auto">
+        <Skeleton />
+      </div>
+    );
   if (isError) {
     return (
       <Card padding="lg" className="border-destructive/30 bg-destructive/5">
@@ -298,8 +347,27 @@ function HeatmapTable({ heatmap, isLoading, isError, error, refetch }: { heatmap
   );
 }
 
-function TopIssuesList({ issues, isLoading, isError, error, refetch }: { issues: TopIssue[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
-  if (isLoading) return <div className="space-y-4"><Skeleton /><Skeleton /><Skeleton /></div>;
+function TopIssuesList({
+  issues,
+  isLoading,
+  isError,
+  error,
+  refetch,
+}: {
+  issues: TopIssue[] | undefined;
+  isLoading?: boolean;
+  isError?: boolean;
+  error?: unknown;
+  refetch?: () => void;
+}) {
+  if (isLoading)
+    return (
+      <div className="space-y-4">
+        <Skeleton />
+        <Skeleton />
+        <Skeleton />
+      </div>
+    );
   if (isError) {
     return (
       <Card padding="lg" className="border-destructive/30 bg-destructive/5">
@@ -353,8 +421,27 @@ function TopIssuesList({ issues, isLoading, isError, error, refetch }: { issues:
   );
 }
 
-function AlertsList({ alerts, isLoading, isError, error, refetch }: { alerts: Alert[] | undefined; isLoading?: boolean; isError?: boolean; error?: unknown; refetch?: () => void }) {
-  if (isLoading) return <div className="space-y-3"><Skeleton /><Skeleton /><Skeleton /></div>;
+function AlertsList({
+  alerts,
+  isLoading,
+  isError,
+  error,
+  refetch,
+}: {
+  alerts: Alert[] | undefined;
+  isLoading?: boolean;
+  isError?: boolean;
+  error?: unknown;
+  refetch?: () => void;
+}) {
+  if (isLoading)
+    return (
+      <div className="space-y-3">
+        <Skeleton />
+        <Skeleton />
+        <Skeleton />
+      </div>
+    );
   if (isError) {
     return (
       <Card padding="lg" className="border-destructive/30 bg-destructive/5">
@@ -381,13 +468,24 @@ function AlertsList({ alerts, isLoading, isError, error, refetch }: { alerts: Al
   return (
     <div className="space-y-3">
       {alerts.slice(0, 10).map((alert) => {
-        const urgencyBadge = alert.urgency ? urgencyVariant[alert.urgency as string] ?? 'neutral' : 'neutral';
-        const sentimentBadge = alert.sentiment ? sentimentVariant[alert.sentiment as string] ?? 'neutral' : 'neutral';
+        const urgencyBadge = alert.urgency
+          ? (urgencyVariant[alert.urgency as string] ?? 'neutral')
+          : 'neutral';
+        const sentimentBadge = alert.sentiment
+          ? (sentimentVariant[alert.sentiment as string] ?? 'neutral')
+          : 'neutral';
         return (
           <div
             key={alert.id}
             className="p-3 bg-muted/60 rounded-lg border-l-4"
-            style={{ borderLeftColor: urgencyBadge === 'destructive' ? 'var(--destructive)' : urgencyBadge === 'warning' ? 'var(--warning)' : 'var(--primary)' }}
+            style={{
+              borderLeftColor:
+                urgencyBadge === 'destructive'
+                  ? 'var(--destructive)'
+                  : urgencyBadge === 'warning'
+                    ? 'var(--warning)'
+                    : 'var(--primary)',
+            }}
           >
             <p className="text-foreground text-sm line-clamp-1">{alert.text}</p>
             <div className="flex gap-2 mt-2">
@@ -421,7 +519,14 @@ function RecommendationsList({
   error?: unknown;
   refetch?: () => void;
 }) {
-  if (isLoading) return <div className="grid gap-4"><SkeletonChart /><SkeletonChart /><SkeletonChart /></div>;
+  if (isLoading)
+    return (
+      <div className="grid gap-4">
+        <SkeletonChart />
+        <SkeletonChart />
+        <SkeletonChart />
+      </div>
+    );
   if (isError) {
     return (
       <Card padding="lg" className="border-destructive/30 bg-destructive/5">
@@ -447,7 +552,9 @@ function RecommendationsList({
   if (!recommendations?.length) {
     return (
       <Card className="bg-muted/50">
-        <p className="text-muted-foreground text-center py-8">No AI recommendations yet — check back after more feedback comes in.</p>
+        <p className="text-muted-foreground text-center py-8">
+          No AI recommendations yet — check back after more feedback comes in.
+        </p>
       </Card>
     );
   }
@@ -469,7 +576,8 @@ function RecommendationsList({
                 <p className="text-primary text-sm font-medium">Action: {rec.action}</p>
                 {(rec.feedbackIds?.length ?? 0) > 0 && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    Linked feedback: {rec.feedbackIds!.length} open row{rec.feedbackIds!.length === 1 ? '' : 's'} —{' '}
+                    Linked feedback: {rec.feedbackIds!.length} open row
+                    {rec.feedbackIds!.length === 1 ? '' : 's'} —{' '}
                     <a className="text-primary underline" href="/dashboard/feedback">
                       open the queue →
                     </a>
@@ -511,12 +619,14 @@ function RetentionRiskCard({ slug }: { slug: string }) {
         <Badge variant="warning">Medium: {data.counts.Medium}</Badge>
         <Badge variant="neutral">Low: {data.counts.Low}</Badge>
         <span className="text-xs text-muted-foreground ml-auto">
-          avg satisfaction {data.avgSatisfaction != null ? data.avgSatisfaction.toFixed(1) : 'n/a'}/5 ·{' '}
-          {data.fixableCount} fixable
+          avg satisfaction {data.avgSatisfaction != null ? data.avgSatisfaction.toFixed(1) : 'n/a'}
+          /5 · {data.fixableCount} fixable
         </span>
       </div>
       {data.highRiskOpen.length === 0 ? (
-        <p className="text-muted-foreground text-center py-4 text-sm">No high-risk open feedback — nice.</p>
+        <p className="text-muted-foreground text-center py-4 text-sm">
+          No high-risk open feedback — nice.
+        </p>
       ) : (
         <div className="space-y-2">
           {data.highRiskOpen.slice(0, 5).map((f) => (
@@ -553,7 +663,9 @@ function StaffPerformanceCard({ slug }: { slug: string }) {
         {data.members.map((m) => (
           <div key={m.userId} className="flex items-center gap-3 text-sm">
             <span className="font-medium truncate">{m.name || m.email}</span>
-            <Badge size="sm" variant="neutral">{m.role}</Badge>
+            <Badge size="sm" variant="neutral">
+              {m.role}
+            </Badge>
           </div>
         ))}
       </div>
@@ -598,15 +710,25 @@ function NlqAskBar({ slug }: { slug: string }) {
             className="flex-1 rounded-xl border border-input bg-background px-4 py-2.5 min-h-11 text-[15px] shadow-xs outline-none hover:border-ring/40 focus:ring-4 focus:ring-ring/15 focus:border-ring transition-all"
             disabled={nlq.isPending}
           />
-          <Button type="submit" size="md" disabled={!query.trim() || nlq.isPending} className="sm:w-auto w-full">
-            {nlq.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          <Button
+            type="submit"
+            size="md"
+            disabled={!query.trim() || nlq.isPending}
+            className="sm:w-auto w-full"
+          >
+            {nlq.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
             Ask
           </Button>
         </form>
 
         {nlq.isError && (
           <p className="text-sm text-destructive mt-3">
-            Couldn&apos;t answer that. {nlq.error instanceof Error ? nlq.error.message : 'Try again.'}
+            Couldn&apos;t answer that.{' '}
+            {nlq.error instanceof Error ? nlq.error.message : 'Try again.'}
           </p>
         )}
 
@@ -627,12 +749,16 @@ function NlqAskBar({ slug }: { slug: string }) {
                       <tbody>
                         {card.rows.slice(0, 6).map((row, j) => (
                           <tr key={j} className="border-b border-border/50 last:border-0">
-                            {Object.entries(row).slice(0, 5).map(([k, v]) => (
-                              <td key={k} className="py-1.5 pr-4 whitespace-nowrap">
-                                <span className="text-muted-foreground">{k}: </span>
-                                <span className="font-medium">{String(v ?? '—').slice(0, 60)}</span>
-                              </td>
-                            ))}
+                            {Object.entries(row)
+                              .slice(0, 5)
+                              .map(([k, v]) => (
+                                <td key={k} className="py-1.5 pr-4 whitespace-nowrap">
+                                  <span className="text-muted-foreground">{k}: </span>
+                                  <span className="font-medium">
+                                    {String(v ?? '—').slice(0, 60)}
+                                  </span>
+                                </td>
+                              ))}
                           </tr>
                         ))}
                       </tbody>
@@ -651,12 +777,48 @@ function NlqAskBar({ slug }: { slug: string }) {
 export function AnalyticsPage() {
   const slug = useOrgSlug();
 
-  const { data: trends, isLoading: trendsLoading, isError: trendsError, error: trendsErr, refetch: refetchTrends } = useSentimentTrends(slug);
-  const { data: categories, isLoading: catLoading, isError: catError, error: catErr, refetch: refetchCategories } = useCategoryBreakdown(slug);
-  const { data: heatmap, isLoading: heatmapLoading, isError: heatmapError, error: heatmapErr, refetch: refetchHeatmap } = useHeatmap(slug);
-  const { data: issues, isLoading: issuesLoading, isError: issuesError, error: issuesErr, refetch: refetchIssues } = useTopIssues(slug);
-  const { data: alerts, isLoading: alertsLoading, isError: alertsError, error: alertsErr, refetch: refetchAlerts } = useAlerts(slug);
-  const { data: recommendations, isLoading: recLoading, isError: recError, error: recErr, refetch: refetchRecs } = useRecommendations(slug);
+  const {
+    data: trends,
+    isLoading: trendsLoading,
+    isError: trendsError,
+    error: trendsErr,
+    refetch: refetchTrends,
+  } = useSentimentTrends(slug);
+  const {
+    data: categories,
+    isLoading: catLoading,
+    isError: catError,
+    error: catErr,
+    refetch: refetchCategories,
+  } = useCategoryBreakdown(slug);
+  const {
+    data: heatmap,
+    isLoading: heatmapLoading,
+    isError: heatmapError,
+    error: heatmapErr,
+    refetch: refetchHeatmap,
+  } = useHeatmap(slug);
+  const {
+    data: issues,
+    isLoading: issuesLoading,
+    isError: issuesError,
+    error: issuesErr,
+    refetch: refetchIssues,
+  } = useTopIssues(slug);
+  const {
+    data: alerts,
+    isLoading: alertsLoading,
+    isError: alertsError,
+    error: alertsErr,
+    refetch: refetchAlerts,
+  } = useAlerts(slug);
+  const {
+    data: recommendations,
+    isLoading: recLoading,
+    isError: recError,
+    error: recErr,
+    refetch: refetchRecs,
+  } = useRecommendations(slug);
 
   if (!slug) {
     return (
@@ -667,7 +829,8 @@ export function AnalyticsPage() {
     );
   }
 
-  const anyLoading = trendsLoading || catLoading || heatmapLoading || issuesLoading || alertsLoading || recLoading;
+  const anyLoading =
+    trendsLoading || catLoading || heatmapLoading || issuesLoading || alertsLoading || recLoading;
 
   return (
     <div className="space-y-6">
@@ -693,7 +856,12 @@ export function AnalyticsPage() {
         icon={TrendingUp}
         title="Sentiment Trends (30 days)"
         action={
-          <Button variant="ghost" size="sm" onClick={() => refetchTrends()} disabled={trendsLoading}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetchTrends()}
+            disabled={trendsLoading}
+          >
             Refresh
           </Button>
         }
@@ -713,7 +881,12 @@ export function AnalyticsPage() {
           icon={BarChart3}
           title="Category Breakdown"
           action={
-            <Button variant="ghost" size="sm" onClick={() => refetchCategories()} disabled={catLoading}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetchCategories()}
+              disabled={catLoading}
+            >
               Refresh
             </Button>
           }
@@ -727,9 +900,17 @@ export function AnalyticsPage() {
           />
         </Section>
 
-        <Section icon={Zap} iconClassName="text-warning" title="Sentiment by Category"
+        <Section
+          icon={Zap}
+          iconClassName="text-warning"
+          title="Sentiment by Category"
           action={
-            <Button variant="ghost" size="sm" onClick={() => refetchHeatmap()} disabled={heatmapLoading}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetchHeatmap()}
+              disabled={heatmapLoading}
+            >
               Refresh
             </Button>
           }
@@ -751,7 +932,12 @@ export function AnalyticsPage() {
           iconClassName="text-warning"
           title="Top Recurring Issues"
           action={
-            <Button variant="ghost" size="sm" onClick={() => refetchIssues()} disabled={issuesLoading}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetchIssues()}
+              disabled={issuesLoading}
+            >
               Refresh
             </Button>
           }
@@ -770,7 +956,12 @@ export function AnalyticsPage() {
           iconClassName="text-destructive"
           title="Priority Alerts"
           action={
-            <Button variant="ghost" size="sm" onClick={() => refetchAlerts()} disabled={alertsLoading}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetchAlerts()}
+              disabled={alertsLoading}
+            >
               Refresh
             </Button>
           }

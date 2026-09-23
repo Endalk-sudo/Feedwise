@@ -19,10 +19,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div
-      className={cn(
-        'flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between',
-        className,
-      )}
+      className={cn('flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between', className)}
     >
       <div className="min-w-0 max-w-2xl">
         <h1 className="text-[22px] sm:text-2xl font-semibold tracking-tight text-balance flex items-center gap-2.5">
@@ -37,9 +34,7 @@ export function PageHeader({
           <p className="text-muted-foreground text-sm leading-relaxed mt-2">{description}</p>
         )}
       </div>
-      {actions && (
-        <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>
-      )}
+      {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
     </div>
   );
 }

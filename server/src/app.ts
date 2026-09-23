@@ -78,9 +78,11 @@ app.get('/api/docs', (_req, res) => {
     success: true,
     data: {
       auth: 'Cookie session for dashboard; `Authorization: Bearer fw_...` (scoped ApiToken) for integrations.',
-      issueToken: 'POST /api/webhooks/:slug/tokens { name?, scopes?, expiresInDays? } (owner/admin, cookie session)',
+      issueToken:
+        'POST /api/webhooks/:slug/tokens { name?, scopes?, expiresInDays? } (owner/admin, cookie session)',
       tokenAnalytics: 'GET /api/analytics/:slug/token/sentiment?days=30 (scope analytics:read)',
-      webhooks: 'POST /api/feedback/:slug/webhooks { url, events, secret? } — signed with X-Feedwise-Signature (HMAC-SHA256)',
+      webhooks:
+        'POST /api/feedback/:slug/webhooks { url, events, secret? } — signed with X-Feedwise-Signature (HMAC-SHA256)',
       webhookLogs: 'GET /api/webhooks/:slug/webhooks/logs',
       exportCsv: 'GET /api/analytics/:slug/export?format=csv&days=90 (cookie session)',
     },
@@ -105,13 +107,15 @@ app.get('/health', async (_req, res) => {
 });
 
 // Error handling middleware
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  logger.error(`${error.message}`, { stack: error.stack });
+app.use(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Express identifies error handlers by 4-arg signature; _next must stay.
+  (error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    logger.error(`${error.message}`, { stack: error.stack });
 
-  res.status((error as { status?: number }).status ?? 500).json({
-    success: false,
-    message: error.message || 'Internal Server Error',
-    ...(env.NODE_ENV === 'development' ? { stack: error.stack } : {}),
-  });
-});
+    res.status((error as { status?: number }).status ?? 500).json({
+      success: false,
+      message: error.message || 'Internal Server Error',
+      ...(env.NODE_ENV === 'development' ? { stack: error.stack } : {}),
+    });
+  },
+);

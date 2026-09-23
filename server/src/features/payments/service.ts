@@ -126,7 +126,10 @@ const BILLING_ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due', 'unpa
  * subscription was canceled or deleted in Stripe — the pointer is cleared and
  * null is returned so a legitimate re-subscribe can proceed.
  */
-async function activeSubscriptionOn(organization: { id: string; stripeSubscriptionId: string | null }) {
+async function activeSubscriptionOn(organization: {
+  id: string;
+  stripeSubscriptionId: string | null;
+}) {
   if (!organization.stripeSubscriptionId) return null;
 
   try {

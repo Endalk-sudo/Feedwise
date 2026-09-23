@@ -48,18 +48,21 @@ export const useUIStore = create<UIState>((set) => ({
 
   // Toasts
   toasts: [],
-  addToast: (toast) => set((state) => ({
-    toasts: [...state.toasts, { ...toast, id: nextToastId() }],
-  })),
-  removeToast: (id) => set((state) => ({
-    toasts: state.toasts.filter((t) => t.id !== id),
-  })),
+  addToast: (toast) =>
+    set((state) => ({
+      toasts: [...state.toasts, { ...toast, id: nextToastId() }],
+    })),
+  removeToast: (id) =>
+    set((state) => ({
+      toasts: state.toasts.filter((t) => t.id !== id),
+    })),
 
   // Modals
   modals: {},
   openModal: (key) => set((state) => ({ modals: { ...state.modals, [key]: true } })),
   closeModal: (key) => set((state) => ({ modals: { ...state.modals, [key]: false } })),
-  toggleModal: (key) => set((state) => ({ modals: { ...state.modals, [key]: !state.modals[key] } })),
+  toggleModal: (key) =>
+    set((state) => ({ modals: { ...state.modals, [key]: !state.modals[key] } })),
 
   // Loading
   globalLoading: false,

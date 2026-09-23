@@ -219,7 +219,7 @@ export function PublicFeedbackPage() {
                   key={tag}
                   type="button"
                   onClick={() => toggleTag(tag)}
-                className={cn(
+                  className={cn(
                     'px-3.5 py-2 min-h-9 rounded-full text-[13px] font-medium border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     active
                       ? 'bg-primary/15 border-primary/40 text-foreground shadow-xs'

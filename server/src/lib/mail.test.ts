@@ -122,17 +122,19 @@ describe('mail', () => {
     const result = await sendActionRoutedEmail(
       'org-1',
       {
-        id: 'f1', text: 'cold food', category: 'Food', urgency: 'High',
-        concreteIssue: 'No heat lamps', draftReply: 'Sorry — fixing it.',
+        id: 'f1',
+        text: 'cold food',
+        category: 'Food',
+        urgency: 'High',
+        concreteIssue: 'No heat lamps',
+        draftReply: 'Sorry — fixing it.',
         createdAt: new Date(),
       },
       'http://x/dashboard',
     );
 
     expect(result).toEqual({ sent: true, messageId: 'm2' });
-    expect(sendMailMock).toHaveBeenCalledWith(
-      expect.objectContaining({ to: ['owner@x.com'] }),
-    );
+    expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: ['owner@x.com'] }));
   });
 
   it('skips Phase 7 referral emails when there are no recipients', async () => {

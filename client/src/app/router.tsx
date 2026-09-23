@@ -69,9 +69,7 @@ const SettingsPageLazy = lazy(() =>
 );
 
 function lazyRoute(message: string, children: ReactNode) {
-  return (
-    <Suspense fallback={<LoadingState message={message} />}>{children}</Suspense>
-  );
+  return <Suspense fallback={<LoadingState message={message} />}>{children}</Suspense>;
 }
 
 function RouteErrorFallback({ error }: { error: unknown }) {

@@ -6,9 +6,7 @@ import { authClient } from './auth-client';
  * Works with Better Auth cookies automatically
  */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL}/api`
-    : '/api',
+  baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -18,7 +16,7 @@ const api = axios.create({
 // Request interceptor - Better Auth handles cookies automatically
 api.interceptors.request.use(
   (config) => config,
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor for error handling
@@ -34,7 +32,7 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 /**
@@ -46,19 +44,26 @@ export const apiClient = {
   auth: {
     getSession: () => authClient.getSession({ fetchOptions: { credentials: 'include' } }),
     signIn: (email: string, password: string) => authClient.signIn.email({ email, password }),
-    signUp: (data: { email: string; password: string; name: string }) => authClient.signUp.email(data),
+    signUp: (data: { email: string; password: string; name: string }) =>
+      authClient.signUp.email(data),
     signOut: () => authClient.signOut({ fetchOptions: { credentials: 'include' } }),
     updateUser: (data: { name?: string; image?: string }) => authClient.updateUser(data),
-    changePassword: (data: { currentPassword: string; newPassword: string }) => authClient.changePassword(data),
+    changePassword: (data: { currentPassword: string; newPassword: string }) =>
+      authClient.changePassword(data),
   },
 
   // Organizations
   organizations: {
-    create: (data: { name: string; slug: string; businessType: string; businessDescription: string }) =>
-      api.post('/organization', data),
+    create: (data: {
+      name: string;
+      slug: string;
+      businessType: string;
+      businessDescription: string;
+    }) => api.post('/organization', data),
     getBySlug: (slug: string) => api.get(`/organization/${slug}`),
     getMyOrgs: () => api.get('/organization/my-orgs'),
-    update: (slug: string, data: { name?: string; logo?: string; emailDigest?: boolean }) => api.put(`/organization/${slug}`, data),
+    update: (slug: string, data: { name?: string; logo?: string; emailDigest?: boolean }) =>
+      api.put(`/organization/${slug}`, data),
     uploadLogo: (slug: string, file: File) => {
       const formData = new FormData();
       formData.append('logo', file);
@@ -80,11 +85,7 @@ export const apiClient = {
     submit: (
       slug: string,
       payload: { text: string; rating?: number; contextTags?: string[] } | string,
-    ) =>
-      api.post(
-        `/feedback/${slug}`,
-        typeof payload === 'string' ? { text: payload } : payload,
-      ),
+    ) => api.post(`/feedback/${slug}`, typeof payload === 'string' ? { text: payload } : payload),
     getAll: (
       slug: string,
       params?: {
@@ -121,11 +122,13 @@ export const apiClient = {
 
   // Analytics
   analytics: {
-    getSentiment: (slug: string, days?: number) => api.get(`/analytics/${slug}/sentiment`, { params: { days } }),
+    getSentiment: (slug: string, days?: number) =>
+      api.get(`/analytics/${slug}/sentiment`, { params: { days } }),
     getCategories: (slug: string) => api.get(`/analytics/${slug}/categories`),
     getHeatmap: (slug: string) => api.get(`/analytics/${slug}/heatmap`),
     getIssues: (slug: string) => api.get(`/analytics/${slug}/issues`),
-    getAlerts: (slug: string, days?: number) => api.get(`/analytics/${slug}/alerts`, { params: { days } }),
+    getAlerts: (slug: string, days?: number) =>
+      api.get(`/analytics/${slug}/alerts`, { params: { days } }),
     getRecommendations: (slug: string) => api.get(`/analytics/${slug}/recommendations`),
     getRetentionRisk: (slug: string, days?: number) =>
       api.get(`/analytics/${slug}/retention-risk`, { params: { days } }),

@@ -60,7 +60,12 @@ export function MembersPage() {
     if (!trimmed) return;
     addMember.mutate(
       { email: trimmed, role },
-      { onSuccess: () => { setEmail(''); setRole('member'); } },
+      {
+        onSuccess: () => {
+          setEmail('');
+          setRole('member');
+        },
+      },
     );
   };
 
@@ -110,8 +115,8 @@ export function MembersPage() {
             </Button>
           </form>
           <p className="text-[13px] leading-relaxed text-muted-foreground mt-4 pt-4 border-t border-border/60">
-            Members see the dashboard and can act on feedback. Admins can also manage
-            members; only owners can change roles.
+            Members see the dashboard and can act on feedback. Admins can also manage members; only
+            owners can change roles.
           </p>
         </Card>
       )}

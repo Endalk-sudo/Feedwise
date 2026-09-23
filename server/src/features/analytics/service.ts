@@ -223,14 +223,12 @@ export const analyticsService = {
 
     if (cacheFresh) {
       return enrich(
-        cached.map(
-          (c: { title: string; reason: string; action: string; priority: number }) => ({
-            title: c.title,
-            reason: c.reason,
-            action: c.action,
-            priority: c.priority,
-          }),
-        ),
+        cached.map((c: { title: string; reason: string; action: string; priority: number }) => ({
+          title: c.title,
+          reason: c.reason,
+          action: c.action,
+          priority: c.priority,
+        })),
       );
     }
 
@@ -279,9 +277,17 @@ export const analyticsService = {
         orderBy: [{ urgency: 'desc' }, { createdAt: 'desc' }],
         take: 10,
         select: {
-          id: true, text: true, category: true, urgency: true, sentiment: true,
-          satisfactionEstimate: true, fixableProblem: true, concreteIssue: true,
-          retentionRisk: true, status: true, createdAt: true,
+          id: true,
+          text: true,
+          category: true,
+          urgency: true,
+          sentiment: true,
+          satisfactionEstimate: true,
+          fixableProblem: true,
+          concreteIssue: true,
+          retentionRisk: true,
+          status: true,
+          createdAt: true,
         },
       }),
       prisma.feedback.aggregate({
@@ -308,9 +314,11 @@ export const analyticsService = {
       if (row.retentionRisk && row.retentionRisk in counts) counts[row.retentionRisk] = row._count;
     }
     return {
-      counts, highRiskOpen: highRiskRows,
+      counts,
+      highRiskOpen: highRiskRows,
       avgSatisfaction: satisfactionAgg._avg.satisfactionEstimate,
-      total: satisfactionAgg._count, fixableCount,
+      total: satisfactionAgg._count,
+      fixableCount,
     };
   },
 
@@ -343,7 +351,12 @@ export const analyticsService = {
             where: { organizationId, createdAt: { gte: w.start, lt: w.end }, urgency: 'High' },
           }),
         ]);
-        return { weeksAgo: idx, avgSatisfaction: agg._avg.satisfactionEstimate, count: agg._count, highUrgency };
+        return {
+          weeksAgo: idx,
+          avgSatisfaction: agg._avg.satisfactionEstimate,
+          count: agg._count,
+          highUrgency,
+        };
       }),
     );
     const current = stats[0];
@@ -354,7 +367,11 @@ export const analyticsService = {
         : 0;
     const urgencyRising = (current?.highUrgency ?? 0) > (previous?.highUrgency ?? 0);
     const trend: 'rising' | 'stable' | 'falling' =
-      satisfactionDelta <= -0.3 || urgencyRising ? 'falling' : satisfactionDelta >= 0.3 ? 'rising' : 'stable';
+      satisfactionDelta <= -0.3 || urgencyRising
+        ? 'falling'
+        : satisfactionDelta >= 0.3
+          ? 'rising'
+          : 'stable';
     return { windows: stats, satisfactionDelta, urgencyRising, trend };
   },
 
@@ -366,10 +383,20 @@ export const analyticsService = {
       orderBy: { createdAt: 'desc' },
       take: Math.min(Math.max(limit, 1), 5000),
       select: {
-        id: true, text: true, category: true, rating: true, sentiment: true,
-        urgency: true, satisfactionEstimate: true, fixableProblem: true,
-        concreteIssue: true, retentionRisk: true, verified: true, status: true,
-        ownerReply: true, createdAt: true,
+        id: true,
+        text: true,
+        category: true,
+        rating: true,
+        sentiment: true,
+        urgency: true,
+        satisfactionEstimate: true,
+        fixableProblem: true,
+        concreteIssue: true,
+        retentionRisk: true,
+        verified: true,
+        status: true,
+        ownerReply: true,
+        createdAt: true,
       },
     });
   },
@@ -405,8 +432,18 @@ export const analyticsService = {
           ) / withTiming.length
         : null;
     return {
-      members: members.map((m) => ({ userId: m.user.id, name: m.user.name, email: m.user.email, role: m.role })),
-      orgTotals: { resolved, open, avgSatisfaction: avgSatisfaction._avg.satisfactionEstimate, avgResolutionHours },
+      members: members.map((m) => ({
+        userId: m.user.id,
+        name: m.user.name,
+        email: m.user.email,
+        role: m.role,
+      })),
+      orgTotals: {
+        resolved,
+        open,
+        avgSatisfaction: avgSatisfaction._avg.satisfactionEstimate,
+        avgResolutionHours,
+      },
     };
   },
 };

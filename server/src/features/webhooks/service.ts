@@ -43,8 +43,16 @@ function isPrivateIpv4(host: string): boolean {
 function isPrivateIpv6(host: string): boolean {
   const h = host.replace(/^\[|\]$/g, '').toLowerCase();
   // loopback (::1), unspecified (::), link-local fe80::/10, unique-local fc00::/7
-  return h === '::1' || h === '::' || h.startsWith('fe8') || h.startsWith('fe9') ||
-    h.startsWith('fea') || h.startsWith('feb') || h.startsWith('fc') || h.startsWith('fd');
+  return (
+    h === '::1' ||
+    h === '::' ||
+    h.startsWith('fe8') ||
+    h.startsWith('fe9') ||
+    h.startsWith('fea') ||
+    h.startsWith('feb') ||
+    h.startsWith('fc') ||
+    h.startsWith('fd')
+  );
 }
 
 /** Throws WebhookError(400) when the URL targets a private/metadata resource. */
@@ -85,7 +93,13 @@ export function signPayload(secret: string, body: string): string {
 export async function issueApiToken(
   organizationId: string,
   data: { name?: string; scopes?: string[]; expiresInDays?: number },
-): Promise<{ id: string; token: string; prefix: string; scopes: string[]; expiresAt: Date | null }> {
+): Promise<{
+  id: string;
+  token: string;
+  prefix: string;
+  scopes: string[];
+  expiresAt: Date | null;
+}> {
   const { token, tokenHash } = newToken();
   const created = await prisma.apiToken.create({
     data: {
@@ -110,7 +124,15 @@ export async function listApiTokens(organizationId: string) {
   return prisma.apiToken.findMany({
     where: { organizationId },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, name: true, tokenPrefix: true, scopes: true, expiresAt: true, lastUsedAt: true, createdAt: true },
+    select: {
+      id: true,
+      name: true,
+      tokenPrefix: true,
+      scopes: true,
+      expiresAt: true,
+      lastUsedAt: true,
+      createdAt: true,
+    },
   });
 }
 
@@ -131,7 +153,9 @@ export async function validateApiToken(
   if (!row || row.organizationId !== org.id) return null;
   if (row.expiresAt && row.expiresAt.getTime() < Date.now()) return null;
   if (!row.scopes.includes(scope) && !row.scopes.includes('*')) return null;
-  await prisma.apiToken.update({ where: { id: row.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
+  await prisma.apiToken
+    .update({ where: { id: row.id }, data: { lastUsedAt: new Date() } })
+    .catch(() => {});
   return { organizationId: org.id };
 }
 
@@ -188,7 +212,12 @@ export async function pushWebhookEvent(
     where: { organizationId, active: true, events: { has: event } },
   });
   if (targets.length === 0) return { delivered: 0, targets: 0 };
-  const body = JSON.stringify({ event, organizationId, at: new Date().toISOString(), data: payload });
+  const body = JSON.stringify({
+    event,
+    organizationId,
+    at: new Date().toISOString(),
+    data: payload,
+  });
   let delivered = 0;
   for (const hook of targets) {
     // Re-check at push time: a webhook created before the guard existed, or a
@@ -207,7 +236,11 @@ export async function pushWebhookEvent(
     try {
       const res = await fetch(hook.url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Feedwise-Signature': signature, 'X-Feedwise-Event': event },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Feedwise-Signature': signature,
+          'X-Feedwise-Event': event,
+        },
         body,
         signal: AbortSignal.timeout(8000),
       });

@@ -68,7 +68,9 @@ export function AuthShell({
                   </span>
                   <span>
                     <span className="block text-sm font-medium mb-1">{h.title}</span>
-                    <span className="block text-sm leading-relaxed text-muted-foreground">{h.text}</span>
+                    <span className="block text-sm leading-relaxed text-muted-foreground">
+                      {h.text}
+                    </span>
                   </span>
                 </li>
               ))}
@@ -86,7 +88,10 @@ export function AuthShell({
             {step && (
               <div className="mb-8 border-b border-border pb-6">
                 <p className="mb-3 text-xs font-medium text-muted-foreground">{step.label}</p>
-                <ol aria-label="Signup progress" className="flex flex-wrap items-center gap-4 text-xs font-medium">
+                <ol
+                  aria-label="Signup progress"
+                  className="flex flex-wrap items-center gap-4 text-xs font-medium"
+                >
                   {Array.from({ length: step.total }).map((_, i) => (
                     <li
                       key={i}
@@ -103,7 +108,11 @@ export function AuthShell({
                       >
                         {i + 1}
                       </span>
-                      <span className={i + 1 === step.current ? 'text-foreground' : 'text-muted-foreground'}>
+                      <span
+                        className={
+                          i + 1 === step.current ? 'text-foreground' : 'text-muted-foreground'
+                        }
+                      >
                         {i === 0 ? 'Account' : 'Organization'}
                       </span>
                     </li>
@@ -118,7 +127,11 @@ export function AuthShell({
 
             {children}
 
-            {footer && <div className="mt-8 border-t border-border pt-6 text-center text-sm leading-relaxed text-muted-foreground">{footer}</div>}
+            {footer && (
+              <div className="mt-8 border-t border-border pt-6 text-center text-sm leading-relaxed text-muted-foreground">
+                {footer}
+              </div>
+            )}
           </main>
         </div>
       </Card>

@@ -62,17 +62,22 @@ router.get('/:slug/tokens', authMiddleware, validate(tokenParams), async (req, r
   }
 });
 
-router.delete('/:slug/tokens/:id', authMiddleware, validate(revokeTokenSchema), async (req, res, next) => {
-  try {
-    const slug = req.params.slug as string;
-    const ctx = await requireManager(slug, (req as any).user.id);
-    if (!ctx.ok) return res.status(ctx.status).json({ success: false, message: ctx.message });
-    await revokeApiToken(ctx.organizationId, req.params.id as string);
-    res.json({ success: true, message: 'Token revoked' });
-  } catch (error) {
-    next(error);
-  }
-});
+router.delete(
+  '/:slug/tokens/:id',
+  authMiddleware,
+  validate(revokeTokenSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const ctx = await requireManager(slug, (req as any).user.id);
+      if (!ctx.ok) return res.status(ctx.status).json({ success: false, message: ctx.message });
+      await revokeApiToken(ctx.organizationId, req.params.id as string);
+      res.json({ success: true, message: 'Token revoked' });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 // Phase 6 (V3/F7): outbound webhook delivery log.
 router.get('/:slug/webhooks/logs', authMiddleware, validate(logsQuery), async (req, res, next) => {

@@ -67,8 +67,8 @@ export function ForgotPasswordPage() {
         >
           <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
           <span>
-            If an account exists for that email, a reset link is on its way. Check your
-            inbox (and spam folder).
+            If an account exists for that email, a reset link is on its way. Check your inbox (and
+            spam folder).
           </span>
         </div>
       ) : (

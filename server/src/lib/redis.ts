@@ -16,7 +16,9 @@ export function getRedis(): Redis | null {
 
   const url = env.REDIS_URL;
   if (!url) {
-    logger.warn('REDIS_URL not set — background jobs and Redis rate limiting disabled (in-memory fallbacks used)');
+    logger.warn(
+      'REDIS_URL not set — background jobs and Redis rate limiting disabled (in-memory fallbacks used)',
+    );
     return null;
   }
 
@@ -129,4 +131,3 @@ export async function withCronLock(
     await release();
   }
 }
-

@@ -7,7 +7,10 @@ import { Reveal } from './Reveal';
 
 export function Pricing() {
   return (
-    <section id="pricing" className="py-20 sm:py-24 bg-muted/40 border-y border-border/60 scroll-mt-16">
+    <section
+      id="pricing"
+      className="py-20 sm:py-24 bg-muted/40 border-y border-border/60 scroll-mt-16"
+    >
       <Container width="xl">
         <Reveal className="text-center mb-12 sm:mb-16">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
@@ -40,17 +43,24 @@ export function Pricing() {
 
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold tracking-tight mb-1.5">{plan.name}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{plan.description}</p>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {plan.description}
+                  </p>
                 </div>
 
                 <div className="mb-6 flex items-baseline gap-1.5">
-                  <span className="text-5xl font-semibold tracking-tight tabular-nums">${plan.price}</span>
+                  <span className="text-5xl font-semibold tracking-tight tabular-nums">
+                    ${plan.price}
+                  </span>
                   <span className="text-muted-foreground text-sm">/month</span>
                 </div>
 
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-[15px] text-foreground">
+                    <li
+                      key={feature}
+                      className="flex items-start gap-3 text-[15px] text-foreground"
+                    >
                       <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0" />
                       <span className="leading-relaxed">{feature}</span>
                     </li>

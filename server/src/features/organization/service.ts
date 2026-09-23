@@ -4,12 +4,15 @@ import { env } from '../../lib/env.js';
 import { generateCategoriesForBusiness } from '../ai/service.js';
 
 export const organizationService = {
-  async create(userId: string, data: {
-    name: string;
-    slug: string;
-    businessType: string;
-    businessDescription: string;
-  }) {
+  async create(
+    userId: string,
+    data: {
+      name: string;
+      slug: string;
+      businessType: string;
+      businessDescription: string;
+    },
+  ) {
     // Check if slug is already taken
     const existing = await prisma.organization.findUnique({ where: { slug: data.slug } });
     if (existing) {
@@ -17,7 +20,10 @@ export const organizationService = {
     }
 
     // Generate AI categories based on business type
-    const categories = await generateCategoriesForBusiness(data.businessType, data.businessDescription);
+    const categories = await generateCategoriesForBusiness(
+      data.businessType,
+      data.businessDescription,
+    );
 
     // Create organization with owner as member
     const organization = await prisma.organization.create({
@@ -95,10 +101,7 @@ export const organizationService = {
     });
   },
 
-  async update(
-    id: string,
-    data: { name?: string; logo?: string; emailDigest?: boolean },
-  ) {
+  async update(id: string, data: { name?: string; logo?: string; emailDigest?: boolean }) {
     const { emailDigest, ...fields } = data;
     // emailDigest is not a column: merge it into the settings JSON opt-out
     // consumed by getOrgRecipientEmails (mail.ts).

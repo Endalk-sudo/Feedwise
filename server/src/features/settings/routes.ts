@@ -19,10 +19,7 @@ const upload = multer({
   },
 });
 
-function settingsError(
-  res: import('express').Response,
-  error: unknown,
-): boolean {
+function settingsError(res: import('express').Response, error: unknown): boolean {
   if (error instanceof SettingsError) {
     res.status(error.status).json({ success: false, message: error.message });
     return true;

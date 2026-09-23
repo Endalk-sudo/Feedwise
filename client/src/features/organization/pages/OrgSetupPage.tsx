@@ -23,15 +23,35 @@ import {
 } from '@/components/ui';
 
 const BUSINESS_TYPE_GROUPS: { label: string; options: string[] }[] = [
-  { label: 'Food & Hospitality', options: ['Restaurant', 'Food & Beverage', 'Travel', 'Entertainment', 'Sports'] },
+  {
+    label: 'Food & Hospitality',
+    options: ['Restaurant', 'Food & Beverage', 'Travel', 'Entertainment', 'Sports'],
+  },
   { label: 'Retail & Commerce', options: ['Retail', 'E-commerce', 'Fashion', 'Automotive'] },
   {
     label: 'Services',
-    options: ['Healthcare', 'Education', 'Finance', 'Legal', 'Marketing', 'Consulting', 'Real Estate', 'Logistics', 'Media'],
+    options: [
+      'Healthcare',
+      'Education',
+      'Finance',
+      'Legal',
+      'Marketing',
+      'Consulting',
+      'Real Estate',
+      'Logistics',
+      'Media',
+    ],
   },
   {
     label: 'Industry & Tech',
-    options: ['SaaS', 'Manufacturing', 'Telecommunications', 'Construction', 'Energy', 'Agriculture'],
+    options: [
+      'SaaS',
+      'Manufacturing',
+      'Telecommunications',
+      'Construction',
+      'Energy',
+      'Agriculture',
+    ],
   },
   { label: 'Other', options: ['Non-profit', 'Government', 'Other'] },
 ];
@@ -277,10 +297,7 @@ export function OrgSetupPage() {
               <p className="text-xs text-muted-foreground">
                 This helps our AI generate relevant feedback categories for your business.
               </p>
-              <p
-                className="text-xs text-muted-foreground tabular-nums shrink-0"
-                aria-live="polite"
-              >
+              <p className="text-xs text-muted-foreground tabular-nums shrink-0" aria-live="polite">
                 {descriptionValue.length}/{DESCRIPTION_MAX}
               </p>
             </div>
@@ -311,8 +328,8 @@ export function OrgSetupPage() {
 
         <div className="mt-6 pt-6 border-t border-border text-center space-y-3">
           <p className="text-sm text-muted-foreground">
-            Joining a team? Ask your workspace owner to invite your account email first —
-            then you&apos;ll land in their workspace after sign in.
+            Joining a team? Ask your workspace owner to invite your account email first — then
+            you&apos;ll land in their workspace after sign in.
           </p>
           <div className="flex items-center justify-center gap-4 text-sm">
             <button

@@ -38,15 +38,17 @@ async function processInsightJob(job: Job<InsightsJobData>): Promise<{ count: nu
     });
 
     await prisma.insight.createMany({
-      data: insights.map((i: { title: string; reason: string; action: string; priority: number }) => ({
-        organizationId,
-        title: i.title,
-        reason: i.reason,
-        action: i.action,
-        priority: i.priority,
-        periodStart: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        periodEnd: new Date(),
-      })),
+      data: insights.map(
+        (i: { title: string; reason: string; action: string; priority: number }) => ({
+          organizationId,
+          title: i.title,
+          reason: i.reason,
+          action: i.action,
+          priority: i.priority,
+          periodStart: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          periodEnd: new Date(),
+        }),
+      ),
       skipDuplicates: true,
     });
   }

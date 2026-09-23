@@ -48,7 +48,10 @@ export function FAQ() {
                     />
                   </button>
                   {open && (
-                    <p id={`faq-panel-${i}`} className="px-5 sm:px-6 pb-5 sm:pb-6 text-muted-foreground text-[15px] leading-relaxed">
+                    <p
+                      id={`faq-panel-${i}`}
+                      className="px-5 sm:px-6 pb-5 sm:pb-6 text-muted-foreground text-[15px] leading-relaxed"
+                    >
                       {faq.answer}
                     </p>
                   )}

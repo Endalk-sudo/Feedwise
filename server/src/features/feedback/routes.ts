@@ -13,11 +13,7 @@ import {
   draftReplyParamsSchema,
   verifyFeedbackSchema,
 } from './schemas.js';
-import {
-  listWebhooks,
-  createWebhook,
-  deleteWebhook,
-} from '@/features/webhooks/service.js';
+import { listWebhooks, createWebhook, deleteWebhook } from '@/features/webhooks/service.js';
 import { createWebhookSchema, webhookParamsSchema } from './schemas.js';
 import { prisma } from '@/lib/prisma.js';
 
@@ -38,26 +34,31 @@ async function requireMember(slug: string, userId: string) {
 }
 
 // Public - submit feedback (rate limited)
-router.post('/:slug', feedbackRateLimiter, validate(submitFeedbackSchema), async (req, res, next) => {
-  try {
-    const slug = req.params.slug as string;
-    const { text, rating, contextTags } = req.body;
-    // `trust proxy` (app.ts) makes req.ip the real client IP behind nginx.
-    // Do NOT fall back to x-forwarded-for directly: without the proxy setting
-    // it is client-spoofable. Hash before persisting — raw IPs are PII with no
-    // retention policy; a salted hash still supports dedupe/abuse analysis.
-    const ip = req.ip;
-    const ipHash = ip ? createHash('sha256').update(`fw-ip:${ip}`).digest('hex') : undefined;
-    const feedback = await feedbackService.submit(slug, text, {
-      ipAddress: ipHash,
-      rating,
-      contextTags,
-    });
-    res.status(201).json({ success: true, data: feedback });
-  } catch (error) {
-    next(error);
-  }
-});
+router.post(
+  '/:slug',
+  feedbackRateLimiter,
+  validate(submitFeedbackSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const { text, rating, contextTags } = req.body;
+      // `trust proxy` (app.ts) makes req.ip the real client IP behind nginx.
+      // Do NOT fall back to x-forwarded-for directly: without the proxy setting
+      // it is client-spoofable. Hash before persisting — raw IPs are PII with no
+      // retention policy; a salted hash still supports dedupe/abuse analysis.
+      const ip = req.ip;
+      const ipHash = ip ? createHash('sha256').update(`fw-ip:${ip}`).digest('hex') : undefined;
+      const feedback = await feedbackService.submit(slug, text, {
+        ipAddress: ipHash,
+        rating,
+        contextTags,
+      });
+      res.status(201).json({ success: true, data: feedback });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 // Protected - list feedbacks
 router.get('/:slug', authMiddleware, validate(getFeedbacksSchema), async (req, res, next) => {
@@ -76,20 +77,25 @@ router.get('/:slug', authMiddleware, validate(getFeedbacksSchema), async (req, r
 });
 
 // Protected - stats (includes top actions + acted-on rate)
-router.get('/:slug/stats', authMiddleware, validate(feedbackParamsSchema), async (req, res, next) => {
-  try {
-    const slug = req.params.slug as string;
-    const userId = (req as any).user.id;
-    const result = await requireMember(slug, userId);
-    if (!result.ok) {
-      return res.status(result.status).json({ success: false, message: result.message });
+router.get(
+  '/:slug/stats',
+  authMiddleware,
+  validate(feedbackParamsSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const userId = (req as any).user.id;
+      const result = await requireMember(slug, userId);
+      if (!result.ok) {
+        return res.status(result.status).json({ success: false, message: result.message });
+      }
+      const stats = await feedbackService.getStats(result.organization.id);
+      res.json({ success: true, data: stats });
+    } catch (error) {
+      next(error);
     }
-    const stats = await feedbackService.getStats(result.organization.id);
-    res.json({ success: true, data: stats });
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 // Protected - single feedback
 router.get('/:slug/:id', authMiddleware, validate(feedbackParamsSchema), async (req, res, next) => {
@@ -212,20 +218,25 @@ router.patch(
 );
 
 // Phase 6 (V3/F7): outbound webhook subscriptions (owner/admin via service).
-router.get('/:slug/webhooks', authMiddleware, validate(feedbackParamsSchema), async (req, res, next) => {
-  try {
-    const slug = req.params.slug as string;
-    const userId = (req as any).user.id;
-    const result = await requireMember(slug, userId);
-    if (!result.ok) {
-      return res.status(result.status).json({ success: false, message: result.message });
+router.get(
+  '/:slug/webhooks',
+  authMiddleware,
+  validate(feedbackParamsSchema),
+  async (req, res, next) => {
+    try {
+      const slug = req.params.slug as string;
+      const userId = (req as any).user.id;
+      const result = await requireMember(slug, userId);
+      if (!result.ok) {
+        return res.status(result.status).json({ success: false, message: result.message });
+      }
+      const data = await listWebhooks(result.organization.id);
+      res.json({ success: true, data });
+    } catch (error) {
+      next(error);
     }
-    const data = await listWebhooks(result.organization.id);
-    res.json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 router.post(
   '/:slug/webhooks',

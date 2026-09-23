@@ -44,9 +44,7 @@ export function RegisterPage() {
   });
 
   const passwordValue = watch('password') ?? '';
-  const passwordChecks = [
-    { label: 'At least 8 characters', ok: passwordValue.length >= 8 },
-  ];
+  const passwordChecks = [{ label: 'At least 8 characters', ok: passwordValue.length >= 8 }];
 
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
@@ -254,15 +252,12 @@ export function RegisterPage() {
           {legalDoc === 'privacy' ? (
             <>
               <p>
-                FeedWise collects your account details (name, email) and the customer
-                feedback you gather. Customer feedback is anonymous by default.
+                FeedWise collects your account details (name, email) and the customer feedback you
+                gather. Customer feedback is anonymous by default.
               </p>
               <p>
                 We never sell personal data. You can request export or deletion via{' '}
-                <a
-                  href="mailto:hello@feedwise.app"
-                  className="text-primary hover:underline"
-                >
+                <a href="mailto:hello@feedwise.app" className="text-primary hover:underline">
                   hello@feedwise.app
                 </a>
                 .
@@ -271,12 +266,12 @@ export function RegisterPage() {
           ) : (
             <>
               <p>
-                14-day free trial; paid plans bill monthly and can be cancelled anytime
-                from the billing portal.
+                14-day free trial; paid plans bill monthly and can be cancelled anytime from the
+                billing portal.
               </p>
               <p>
-                You are responsible for content you collect. Abusive use may lead to
-                suspension. AI analysis is advisory — verify urgent matters yourself.
+                You are responsible for content you collect. Abusive use may lead to suspension. AI
+                analysis is advisory — verify urgent matters yourself.
               </p>
             </>
           )}

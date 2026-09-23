@@ -1,6 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { useOrgSlug } from '@/lib/stores/auth.store';
-import { useFeedbacks, useUpdateFeedbackStatus, useDraftReply, useVerifyFeedback } from '@/features/feedback/hooks';
+import {
+  useFeedbacks,
+  useUpdateFeedbackStatus,
+  useDraftReply,
+  useVerifyFeedback,
+} from '@/features/feedback/hooks';
 import { useFeedbackStore } from '@/lib/stores/feedback.store';
 import { useUIStore } from '@/lib/stores/ui.store';
 import {
@@ -79,15 +84,16 @@ export function FeedbackPage() {
   };
 
   const query = searchQuery.trim().toLowerCase();
-  let feedbacks = query.length === 0
-    ? allFeedbacks
-    : allFeedbacks.filter(
-        (f) =>
-          f.text.toLowerCase().includes(query) ||
-          f.category.toLowerCase().includes(query) ||
-          f.keywords.some((k) => k.toLowerCase().includes(query)) ||
-          (f.suggestedAction || '').toLowerCase().includes(query),
-      );
+  let feedbacks =
+    query.length === 0
+      ? allFeedbacks
+      : allFeedbacks.filter(
+          (f) =>
+            f.text.toLowerCase().includes(query) ||
+            f.category.toLowerCase().includes(query) ||
+            f.keywords.some((k) => k.toLowerCase().includes(query)) ||
+            (f.suggestedAction || '').toLowerCase().includes(query),
+        );
 
   // Client-side sort
   feedbacks = [...feedbacks].sort((a, b) => {
@@ -124,7 +130,7 @@ export function FeedbackPage() {
             addToast({ message: 'Marked as resolved', type: 'success' });
           }
         },
-      }
+      },
     );
     setExpandedId(null);
     // Clear note draft for this item
@@ -141,7 +147,7 @@ export function FeedbackPage() {
     if (note) {
       updateStatus.mutate(
         { id, internalNote: note },
-        { onSuccess: () => addToast({ message: 'Note saved', type: 'success' }) }
+        { onSuccess: () => addToast({ message: 'Note saved', type: 'success' }) },
       );
     }
     setExpandedId(null);
@@ -220,41 +226,41 @@ export function FeedbackPage() {
           />
         </form>
         <div className="flex flex-col sm:flex-row gap-2.5">
-        <Select
-          value={filters.sentiment || ''}
-          onChange={(e) => handleFilterChange('sentiment', e.target.value)}
-          className="bg-background sm:w-auto"
-          aria-label="Filter by sentiment"
-        >
-          <option value="">All sentiments</option>
-          <option value="Positive">Positive</option>
-          <option value="Negative">Negative</option>
-          <option value="Neutral">Neutral</option>
-          <option value="Mixed">Mixed</option>
-        </Select>
-        <Select
-          value={filters.urgency || ''}
-          onChange={(e) => handleFilterChange('urgency', e.target.value)}
-          className="bg-background sm:w-auto"
-          aria-label="Filter by urgency"
-        >
-          <option value="">All urgency</option>
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </Select>
-        <Select
-          value={(filters as { status?: string }).status || ''}
-          onChange={(e) => handleFilterChange('status', e.target.value)}
-          className="bg-background sm:w-auto"
-          aria-label="Filter by status"
-        >
-          <option value="">All status</option>
-          <option value="open">Open</option>
-          <option value="in_progress">In progress</option>
-          <option value="resolved">Resolved</option>
-          <option value="ignored">Ignored</option>
-        </Select>
+          <Select
+            value={filters.sentiment || ''}
+            onChange={(e) => handleFilterChange('sentiment', e.target.value)}
+            className="bg-background sm:w-auto"
+            aria-label="Filter by sentiment"
+          >
+            <option value="">All sentiments</option>
+            <option value="Positive">Positive</option>
+            <option value="Negative">Negative</option>
+            <option value="Neutral">Neutral</option>
+            <option value="Mixed">Mixed</option>
+          </Select>
+          <Select
+            value={filters.urgency || ''}
+            onChange={(e) => handleFilterChange('urgency', e.target.value)}
+            className="bg-background sm:w-auto"
+            aria-label="Filter by urgency"
+          >
+            <option value="">All urgency</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </Select>
+          <Select
+            value={(filters as { status?: string }).status || ''}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="bg-background sm:w-auto"
+            aria-label="Filter by status"
+          >
+            <option value="">All status</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="ignored">Ignored</option>
+          </Select>
         </div>
       </Card>
 
@@ -309,10 +315,14 @@ export function FeedbackPage() {
                 const StatusIcon = statusConfig[status].icon;
                 const isExpanded = expandedId === feedback.id;
                 const noteDraft = noteDrafts[feedback.id] || '';
-                const isPending = updateStatus.variables?.id === feedback.id && updateStatus.isPending;
+                const isPending =
+                  updateStatus.variables?.id === feedback.id && updateStatus.isPending;
 
                 return (
-                  <article key={feedback.id} className="p-5 sm:p-6 hover:bg-muted/40 transition-colors">
+                  <article
+                    key={feedback.id}
+                    className="p-5 sm:p-6 hover:bg-muted/40 transition-colors"
+                  >
                     <div className="flex flex-col gap-3.5">
                       <div className="flex flex-wrap items-center gap-2">
                         {feedback.sentiment && (
@@ -329,9 +339,8 @@ export function FeedbackPage() {
                         {feedback.urgency && (
                           <Badge
                             variant={
-                              urgencyVariant[
-                                feedback.urgency as keyof typeof urgencyVariant
-                              ] ?? 'neutral'
+                              urgencyVariant[feedback.urgency as keyof typeof urgencyVariant] ??
+                              'neutral'
                             }
                           >
                             {feedback.urgency === 'High' && <AlertTriangle className="w-3 h-3" />}
@@ -351,8 +360,12 @@ export function FeedbackPage() {
                           </Badge>
                         )}
                         {feedback.retentionRisk && feedback.retentionRisk !== 'Low' && (
-                          <Badge variant={retentionRiskVariant[feedback.retentionRisk] ?? 'warning'}>
-                            {feedback.retentionRisk === 'High' && <AlertTriangle className="w-3 h-3" />}
+                          <Badge
+                            variant={retentionRiskVariant[feedback.retentionRisk] ?? 'warning'}
+                          >
+                            {feedback.retentionRisk === 'High' && (
+                              <AlertTriangle className="w-3 h-3" />
+                            )}
                             {feedback.retentionRisk} risk
                           </Badge>
                         )}
@@ -371,7 +384,9 @@ export function FeedbackPage() {
                         </span>
                       </div>
 
-                      <p className="text-[15px] text-foreground leading-relaxed text-pretty">{feedback.text}</p>
+                      <p className="text-[15px] text-foreground leading-relaxed text-pretty">
+                        {feedback.text}
+                      </p>
 
                       <div className="flex items-center gap-1">
                         {[1, 2, 3, 4, 5].map((n) => (
@@ -398,7 +413,9 @@ export function FeedbackPage() {
                           <Lightbulb className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                           <span>
                             <span className="font-medium text-foreground">Suggested action: </span>
-                            <span className="text-muted-foreground">{feedback.suggestedAction}</span>
+                            <span className="text-muted-foreground">
+                              {feedback.suggestedAction}
+                            </span>
                           </span>
                         </div>
                       )}
@@ -472,12 +489,19 @@ export function FeedbackPage() {
                         >
                           {isExpanded ? 'Hide note' : 'Internal note'}
                         </Button>
-                        <DraftReplyButton slug={slug || ''} feedbackId={feedback.id} onUse={(draft) =>
-                          updateStatus.mutate(
-                            { id: feedback.id, ownerReply: draft, status: 'resolved' },
-                            { onSuccess: () => addToast({ message: 'Reply sent & resolved', type: 'success' }) },
-                          )
-                        } />
+                        <DraftReplyButton
+                          slug={slug || ''}
+                          feedbackId={feedback.id}
+                          onUse={(draft) =>
+                            updateStatus.mutate(
+                              { id: feedback.id, ownerReply: draft, status: 'resolved' },
+                              {
+                                onSuccess: () =>
+                                  addToast({ message: 'Reply sent & resolved', type: 'success' }),
+                              },
+                            )
+                          }
+                        />
                       </div>
 
                       {isExpanded && (
@@ -499,11 +523,7 @@ export function FeedbackPage() {
                             >
                               Save note
                             </Button>
-                            <Button
-                              size="xs"
-                              variant="outline"
-                              onClick={() => setExpandedId(null)}
-                            >
+                            <Button size="xs" variant="outline" onClick={() => setExpandedId(null)}>
                               Cancel
                             </Button>
                           </div>
@@ -517,7 +537,9 @@ export function FeedbackPage() {
                         </p>
                       )}
                       {feedback.verified ? (
-                        <Badge size="sm" variant="success">✓ Verified</Badge>
+                        <Badge size="sm" variant="success">
+                          ✓ Verified
+                        </Badge>
                       ) : (
                         <VerifyButton slug={slug || ''} feedbackId={feedback.id} />
                       )}
@@ -573,7 +595,11 @@ function DraftReplyButton({
   const { data, isLoading, isError, refetch } = useDraftReply(slug, open ? feedbackId : null);
   return (
     <>
-      <Button size="xs" variant="outline" onClick={() => (open ? setOpen(false) : (setOpen(true), refetch()))}>
+      <Button
+        size="xs"
+        variant="outline"
+        onClick={() => (open ? setOpen(false) : (setOpen(true), refetch()))}
+      >
         <MessageSquare className="w-3 h-3" />
         AI draft
       </Button>
@@ -587,11 +613,22 @@ function DraftReplyButton({
             <>
               <p className="text-foreground leading-relaxed">{data.draft}</p>
               <div className="flex gap-2">
-                <Button size="xs" variant="success" onClick={() => { onUse(data.draft); setOpen(false); }}>
+                <Button
+                  size="xs"
+                  variant="success"
+                  onClick={() => {
+                    onUse(data.draft);
+                    setOpen(false);
+                  }}
+                >
                   <CheckCircle2 className="w-3 h-3" />
                   Use & resolve
                 </Button>
-                <Button size="xs" variant="ghost" onClick={() => navigator.clipboard?.writeText(data.draft)}>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => navigator.clipboard?.writeText(data.draft)}
+                >
                   Copy
                 </Button>
               </div>

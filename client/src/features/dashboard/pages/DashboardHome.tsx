@@ -213,12 +213,18 @@ export function DashboardHome() {
                   padding="sm"
                   className={cn(
                     'h-full transition-all duration-200',
-                    card.isClickable && 'hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5',
+                    card.isClickable &&
+                      'hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5',
                     !card.isClickable && 'opacity-70',
                   )}
                 >
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center border border-border/40', card.bg)}>
+                    <div
+                      className={cn(
+                        'w-10 h-10 rounded-xl flex items-center justify-center border border-border/40',
+                        card.bg,
+                      )}
+                    >
                       <card.icon className={cn('w-5 h-5', card.color)} />
                     </div>
                     {card.isClickable && (
@@ -321,7 +327,7 @@ export function DashboardHome() {
                               {item.sentiment}
                             </Badge>
                           )}
-</div>
+                        </div>
                       </div>
                     </div>
                     <Link

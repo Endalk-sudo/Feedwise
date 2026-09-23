@@ -26,7 +26,9 @@ export function FeaturesGrid() {
                   <feature.icon className="w-5 h-5 text-primary" />
                 </div>
                 <h3 className="text-[17px] font-semibold tracking-tight mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground text-[15px] leading-relaxed">{feature.description}</p>
+                <p className="text-muted-foreground text-[15px] leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
             </Reveal>
           ))}

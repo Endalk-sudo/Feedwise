@@ -4,7 +4,13 @@ vi.mock('@/lib/prisma.js', () => ({
   prisma: {
     organization: { findUnique: vi.fn() },
     organizationMember: { findUnique: vi.fn() },
-    apiToken: { create: vi.fn(), findMany: vi.fn(), findUnique: vi.fn(), update: vi.fn(), deleteMany: vi.fn() },
+    apiToken: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      deleteMany: vi.fn(),
+    },
     webhook: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), deleteMany: vi.fn() },
     webhookLog: { create: vi.fn(), findMany: vi.fn() },
   },
@@ -31,12 +37,16 @@ describe('SSRF guard for webhook URLs', () => {
 
   it('rejects localhost, metadata, and internal hostnames', () => {
     expect(() => assertPublicWebhookUrl('http://localhost:8080/hook')).toThrow(WebhookError);
-    expect(() => assertPublicWebhookUrl('http://metadata.google.internal/computeMetadata/v1/')).toThrow(WebhookError);
+    expect(() =>
+      assertPublicWebhookUrl('http://metadata.google.internal/computeMetadata/v1/'),
+    ).toThrow(WebhookError);
     expect(() => assertPublicWebhookUrl('https://my.service.internal/hook')).toThrow(WebhookError);
   });
 
   it('rejects private/metadata IPv4 ranges', () => {
-    expect(() => assertPublicWebhookUrl('http://169.254.169.254/latest/meta-data')).toThrow(WebhookError);
+    expect(() => assertPublicWebhookUrl('http://169.254.169.254/latest/meta-data')).toThrow(
+      WebhookError,
+    );
     expect(() => assertPublicWebhookUrl('http://10.0.0.5/hook')).toThrow(WebhookError);
     expect(() => assertPublicWebhookUrl('http://192.168.1.1/hook')).toThrow(WebhookError);
     expect(() => assertPublicWebhookUrl('http://172.16.0.9/hook')).toThrow(WebhookError);
@@ -67,7 +77,9 @@ describe('webhooks service (Phase 6 D4 + V3/F7)', () => {
   it('rejects expired tokens', async () => {
     vi.mocked(prisma.organization.findUnique).mockResolvedValue({ id: 'org-1' } as never);
     vi.mocked(prisma.apiToken.findUnique).mockResolvedValue({
-      id: 't1', organizationId: 'org-1', scopes: ['analytics:read'],
+      id: 't1',
+      organizationId: 'org-1',
+      scopes: ['analytics:read'],
       expiresAt: new Date(Date.now() - 1000),
     } as never);
     await expect(validateApiToken('demo', 'fw_expired', 'analytics:read')).resolves.toBeNull();
@@ -76,14 +88,21 @@ describe('webhooks service (Phase 6 D4 + V3/F7)', () => {
   it('gates webhook creation to owner/admin members', async () => {
     vi.mocked(prisma.organizationMember.findUnique).mockResolvedValue({ role: 'member' } as never);
     await expect(
-      createWebhook('org-1', 'user-1', { url: 'https://x.example/hook', events: ['feedback.high_urgency'] }),
+      createWebhook('org-1', 'user-1', {
+        url: 'https://x.example/hook',
+        events: ['feedback.high_urgency'],
+      }),
     ).rejects.toThrow('Forbidden');
   });
 
   it('always generates the signing secret server-side, ignoring client secrets', async () => {
     vi.mocked(prisma.organizationMember.findUnique).mockResolvedValue({ role: 'owner' } as never);
     vi.mocked(prisma.webhook.create).mockResolvedValue({
-      id: 'wh-1', url: 'https://x.example/hook', events: ['feedback.high_urgency'], active: true, createdAt: new Date(),
+      id: 'wh-1',
+      url: 'https://x.example/hook',
+      events: ['feedback.high_urgency'],
+      active: true,
+      createdAt: new Date(),
     } as never);
     await createWebhook('org-1', 'user-1', {
       url: 'https://x.example/hook',
@@ -100,7 +119,10 @@ describe('webhooks service (Phase 6 D4 + V3/F7)', () => {
     vi.mocked(prisma.organizationMember.findUnique).mockResolvedValue({ role: 'owner' } as never);
     vi.mocked(prisma.webhook.create).mockClear();
     await expect(
-      createWebhook('org-1', 'user-1', { url: 'http://169.254.169.254/latest/meta-data', events: ['feedback.high_urgency'] }),
+      createWebhook('org-1', 'user-1', {
+        url: 'http://169.254.169.254/latest/meta-data',
+        events: ['feedback.high_urgency'],
+      }),
     ).rejects.toThrow('private network');
     expect(prisma.webhook.create).not.toHaveBeenCalled();
   });

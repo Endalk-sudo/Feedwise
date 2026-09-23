@@ -13,7 +13,10 @@ const chips = [
 
 export function AIDemo() {
   return (
-    <section id="demo" className="py-20 sm:py-24 bg-muted/40 border-y border-border/60 scroll-mt-16">
+    <section
+      id="demo"
+      className="py-20 sm:py-24 bg-muted/40 border-y border-border/60 scroll-mt-16"
+    >
       <Container width="xl">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <Reveal>
@@ -24,8 +27,8 @@ export function AIDemo() {
               Watch raw words become a to-do list
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8 max-w-xl">
-              Every response gets sentiment, satisfaction, category, urgency, retention risk,
-              and the one action that matters most.
+              Every response gets sentiment, satisfaction, category, urgency, retention risk, and
+              the one action that matters most.
             </p>
             <Link to="/auth/register" className={cn(buttonVariants({ size: 'lg' }))}>
               Try it on your feedback

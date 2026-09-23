@@ -7,7 +7,12 @@ import { env } from './lib/env.js';
 import { prisma } from './lib/prisma.js';
 import { ensureRedisConnected, closeRedis } from './lib/redis.js';
 import logger from './utils/logger.js';
-import { startInsightGenerationJob, startDigestJob, startSubscriptionSyncJob, startRetentionForecastJob } from './jobs/generateInsights.js';
+import {
+  startInsightGenerationJob,
+  startDigestJob,
+  startSubscriptionSyncJob,
+  startRetentionForecastJob,
+} from './jobs/generateInsights.js';
 import { stopInsightsWorker } from './workers/insights.worker.js';
 import { stopNotificationWorker } from './workers/notification.worker.js';
 

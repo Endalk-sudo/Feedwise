@@ -65,8 +65,7 @@ export function LoginPage() {
       try {
         const hasOrg = await api.get('/auth/has-org');
         const hasOrganization =
-          (hasOrg.data as { data?: { hasOrganization?: boolean } })?.data?.hasOrganization ??
-          true;
+          (hasOrg.data as { data?: { hasOrganization?: boolean } })?.data?.hasOrganization ?? true;
         navigate(hasOrganization ? { to: '/dashboard' } : { to: '/org-setup' });
       } catch {
         navigate({ to: '/dashboard' });

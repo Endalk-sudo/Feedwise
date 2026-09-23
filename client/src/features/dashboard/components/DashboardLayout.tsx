@@ -32,7 +32,15 @@ const navigation = [
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
-function NavItem({ item, isActive, onClose }: { item: (typeof navigation)[0]; isActive: boolean; onClose: () => void }) {
+function NavItem({
+  item,
+  isActive,
+  onClose,
+}: {
+  item: (typeof navigation)[0];
+  isActive: boolean;
+  onClose: () => void;
+}) {
   return (
     <Link
       to={item.href}
@@ -148,10 +156,18 @@ export function DashboardLayout() {
       if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
       }
-      if (notificationsOpen && notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
+      if (
+        notificationsOpen &&
+        notificationsRef.current &&
+        !notificationsRef.current.contains(e.target as Node)
+      ) {
         setNotificationsOpen(false);
       }
-      if (orgSwitcherOpen && orgSwitcherRef.current && !orgSwitcherRef.current.contains(e.target as Node)) {
+      if (
+        orgSwitcherOpen &&
+        orgSwitcherRef.current &&
+        !orgSwitcherRef.current.contains(e.target as Node)
+      ) {
         setOrgSwitcherOpen(false);
       }
     }
@@ -283,7 +299,9 @@ export function DashboardLayout() {
               <div className="relative" ref={notificationsRef}>
                 <button
                   className="relative flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+                  aria-label={
+                    unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'
+                  }
                   aria-expanded={notificationsOpen}
                   aria-haspopup="dialog"
                   onClick={() => setNotificationsOpen(!notificationsOpen)}
@@ -384,9 +402,7 @@ export function DashboardLayout() {
                       <div className="px-4 py-2.5 border-b border-border/70 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
                         Switch workspace
                       </div>
-                      <ul className="p-1.5">
-                        {orgListItems}
-                      </ul>
+                      <ul className="p-1.5">{orgListItems}</ul>
                     </div>
                   )}
                 </div>
@@ -414,12 +430,21 @@ export function DashboardLayout() {
                       {currentOrg?.name || 'No organization'}
                     </p>
                   </div>
-                  <ChevronDown className={cn('w-4 h-4 text-muted-foreground transition-transform', userMenuOpen && 'rotate-180')} />
+                  <ChevronDown
+                    className={cn(
+                      'w-4 h-4 text-muted-foreground transition-transform',
+                      userMenuOpen && 'rotate-180',
+                    )}
+                  />
                 </button>
 
                 {userMenuOpen && (
                   <>
-                    <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} aria-hidden="true" />
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setUserMenuOpen(false)}
+                      aria-hidden="true"
+                    />
                     <div
                       className="absolute right-0 top-full mt-2 w-60 max-w-[85vw] bg-card border border-border/70 rounded-2xl shadow-xl z-50 py-2"
                       role="menu"
