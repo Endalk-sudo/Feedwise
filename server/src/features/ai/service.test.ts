@@ -154,18 +154,67 @@ describe('analyzeFeedback', () => {
       rootCause: 'Unknown',
       suggestedAction: 'Review this feedback manually',
       confidence: 0.1,
+      analysisFailed: true,
     });
   });
 
-  it('bounds the model call with a 12s abort signal so outages degrade fast', async () => {
+  it('preserves a clearly negative fixture: High urgency + High retention risk', async () => {
+    mockedGenerateText.mockResolvedValue({
+      output: {
+        category: 'Service',
+        sentiment: 'Negative',
+        urgency: 'High',
+        rating: 1,
+        satisfactionEstimate: 1,
+        fixableProblem: true,
+        concreteIssue: 'Cold food after 45 minute wait',
+        retentionRisk: 'High',
+        keyPoints: ['rude staff', 'cold food'],
+        keywords: ['rude', 'cold', 'wait'],
+        themes: ['Wait time', 'Staff attitude'],
+        rootCause: 'Understaffed',
+        suggestedAction: 'Apologize and retrain at peak hours',
+        confidence: 0.9,
+      },
+    } as never);
+
+    const result = await analyzeFeedback('rude staff, 45 min wait, cold food, rating 1', [
+      'Service',
+    ]);
+
+    // Regression guard for the degraded-fallback bug: a strongly negative
+    // input must never be collapsed to Neutral/Low by the failure path.
+    expect(result.urgency).toBe('High');
+    expect(result.retentionRisk).toBe('High');
+    expect(result.sentiment).toBe('Negative');
+    expect(result.satisfactionEstimate).toBe(1);
+    expect(result.analysisFailed).not.toBe(true);
+    expect(result.confidence).toBeGreaterThan(0.5);
+  });
+
+  it('bounds each model call with a fresh 12s abort signal', async () => {
     mockedGenerateText.mockRejectedValue(new Error('This operation was aborted'));
 
-    const result = await analyzeFeedback('anything', ['General']);
+    const first = await analyzeFeedback('anything', ['General']);
+    const second = await analyzeFeedback('anything else', ['General']);
 
-    expect(result.confidence).toBe(0.1);
-    expect(mockedGenerateText).toHaveBeenCalledTimes(1);
-    const opts = mockedGenerateText.mock.calls[0]?.[0] as { abortSignal?: AbortSignal };
-    expect(opts.abortSignal).toBeInstanceOf(AbortSignal);
+    expect(first.confidence).toBe(0.1);
+    expect(second.confidence).toBe(0.1);
+    expect(mockedGenerateText).toHaveBeenCalledTimes(2);
+
+    const sig1 = (mockedGenerateText.mock.calls[0]?.[0] as { abortSignal?: AbortSignal })
+      .abortSignal;
+    const sig2 = (mockedGenerateText.mock.calls[1]?.[0] as { abortSignal?: AbortSignal })
+      .abortSignal;
+
+    expect(sig1).toBeInstanceOf(AbortSignal);
+    expect(sig2).toBeInstanceOf(AbortSignal);
+    // Regression: a module-level AbortSignal.timeout fires once ~12s after
+    // server start, then aborts every later call instantly. Each call must get
+    // its own un-aborted signal.
+    expect(sig1).not.toBe(sig2);
+    expect(sig1?.aborted).toBe(false);
+    expect(sig2?.aborted).toBe(false);
   });
 });
 

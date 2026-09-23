@@ -21,6 +21,14 @@ export const feedbackService = {
     const contextTags = options.contextTags ?? [];
     const analysis = await analyzeFeedback(text, org.categories as string[], contextTags);
 
+    if (analysis.analysisFailed) {
+      // Loud server-side marker: degraded rows are excluded from analytics via
+      // confidence 0.1, but operators need to see failures in the log.
+      logger.warn(
+        `Degraded AI analysis stored for org ${org.id} (confidence ${analysis.confidence})`,
+      );
+    }
+
     const created = await prisma.feedback.create({
       data: {
         organizationId: org.id,
@@ -107,8 +115,7 @@ export const feedbackService = {
     if (params.satisfactionEstimate != null)
       where.satisfactionEstimate = Number(params.satisfactionEstimate);
     if (params.fixableProblem != null)
-      where.fixableProblem =
-        params.fixableProblem === true || params.fixableProblem === 'true';
+      where.fixableProblem = params.fixableProblem === true || params.fixableProblem === 'true';
     if (params.retentionRisk) where.retentionRisk = params.retentionRisk;
     if (params.verified != null)
       where.verified = params.verified === true || params.verified === 'true';
@@ -198,7 +205,7 @@ export const feedbackService = {
     const status = data.status ?? (existing.status as FeedbackStatus);
     const resolvedAt =
       status === 'resolved' || status === 'ignored'
-        ? existing.resolvedAt ?? new Date()
+        ? (existing.resolvedAt ?? new Date())
         : status === 'open' || status === 'in_progress'
           ? null
           : existing.resolvedAt;

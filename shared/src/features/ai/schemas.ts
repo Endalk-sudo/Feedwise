@@ -37,6 +37,9 @@ export const aiFeedbackAnalysisSchema = z.object({
   rootCause: z.string(),
   suggestedAction: z.string(),
   confidence: z.number().min(0).max(1),
+  // Present (and true) when the Gemini call failed and every value above is
+  // the degraded neutral fallback (confidence 0.1), not a real reading.
+  analysisFailed: z.boolean().optional(),
 });
 
 export type AiFeedbackAnalysis = z.infer<typeof aiFeedbackAnalysisSchema>;

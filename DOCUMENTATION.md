@@ -17,13 +17,13 @@ graph TD
     Client -->|API Requests| Server[Node/Express Backend]
     Server -->|Queries| DB[(PostgreSQL)]
     Server -->|Queues / rate limits| Redis[(Redis / Upstash)]
-    Server -->|Analysis| AI[Gemini 2.0 via Vercel AI SDK]
+    Server -->|Analysis| AI[Gemini via Vercel AI SDK]
     Server -->|Payments| Stripe[Stripe API]
     Server -->|Images| S3[S3-Compatible Storage]
 ```
 
 ### Key Technical Decisions
-- **AI Engine (Gemini 2.0 Flash)**: Chosen for its speed and native support for structured JSON output, which is critical for parsing sentiment and keywords.
+- **AI Engine (Gemini Flash)**: Chosen for its speed and native support for structured JSON output, which is critical for parsing sentiment and keywords.
 - **Vite Proxy**: Used to eliminate CORS issues during development and provide a seamless dev experience.
 - **Stripe Webhooks**: Implemented to ensure the application's subscription state is always in sync with the payment processor, handling edge cases like failed renewals and cancellations.
 - **Better Auth**: Session-based authentication (email/password via Better Auth with the Prisma adapter), replacing custom JWT + refresh token handing.
@@ -48,7 +48,7 @@ graph TD
 The core "magic" happens in the `analyzeFeedback` pipeline:
 1.  **Input**: Raw text from a customer.
 2.  **Context**: The organization categories (used as the AI context)..
-3.  **Processing**: A structured prompt is sent to `gemini-2.0-flash` with a strict JSON schema.
+3.  **Processing**: A structured prompt is sent to `gemini-3.6-flash` with a strict JSON schema.
 4.  **Enrichment**: The AI returns sentiment (Positive/Negative/Neutral/Mixed), an inferred 1-5 rating, key themes, an urgency score — plus `satisfactionEstimate` (1–5 outcome satisfaction, distinct from tone), `fixableProblem` + `concreteIssue`, and `retentionRisk` (Low/Medium/High). Missing structured fields are backfilled deterministically so old rows stay queryable.
 5.  **Storage**: The enriched data is saved, enabling real-time dashboard analytics.
 

@@ -278,7 +278,7 @@ internal-only postgres; `prisma migrate deploy` on server start.
 | **Frontend** | React 19, Vite, Plain CSS | React 19, Vite 7, TypeScript strict, Tailwind v4, custom UI kit ✅ |
 | **Backend** | Node.js, Express 5, JavaScript | Node.js 22, Express 5, TypeScript strict ✅ |
 | **Database** | PostgreSQL 16, Prisma 6 | PostgreSQL 16, Prisma 6 (kept) ✅ |
-| **AI** | Gemini 2.0 Flash | Gemini 2.0 Flash via Vercel AI SDK ✅ |
+| **AI** | Gemini Flash | Gemini Flash via Vercel AI SDK ✅ |
 | **Payments** | Stripe | Stripe v22 ✅ |
 | **Storage** | S3-compatible object storage | S3-compatible object storage (kept) ✅ |
 | **Auth** | Better-Auth session cookies | Better-Auth session cookies (kept) ✅ |

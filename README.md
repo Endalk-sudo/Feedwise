@@ -13,7 +13,7 @@
 The goal of this project is to simplify the feedback loop for small to medium businesses. Customers scan a QR code, leave their thoughts, and the AI handles the rest—categorizing the input, detecting sentiment, and alerting owners to urgent issues.
 
 ### 💡 Key Features
-- **🤖 Smart AI Analysis**: Powered by Gemini 2.0, providing sentiment detection, satisfaction scoring (1–5, distinct from tone), fixable-problem flags, retention-risk signals, priority scoring, and keyword extraction.
+- **🤖 Smart AI Analysis**: Powered by Gemini, providing sentiment detection, satisfaction scoring (1–5, distinct from tone), fixable-problem flags, retention-risk signals, priority scoring, and keyword extraction.
 - **💳 SaaS-Ready**: Integrated Stripe payments for Basic and Pro subscription tiers.
 - **📊 Interactive Dashboard**: Professional analytics using modern charting for sentiment trends and category breakthroughs.
 - **📱 QR Collection**: Unique, organization-specific landing pages and QR codes for easy physical-to-digital feedback.
@@ -36,7 +36,7 @@ The goal of this project is to simplify the feedback loop for small to medium bu
   - **BullMQ**: Durable job queue for AI insight generation, batch analysis, urgency-alert emails, and daily digests (prevents request timeouts).
   - **Redis / Upstash (optional)**: Shared cache + queue backend and distributed rate limiting (stops AI spam). Local Redis via Docker; production uses Upstash — or omit `REDIS_URL` entirely for in-memory fallbacks.
 - **Integrations**: 
-  - **AI**: Google Gemini 2.0 Flash via Vercel AI SDK (`ai` + `@ai-sdk/google`)
+  - **AI**: Google Gemini Flash via Vercel AI SDK (`ai` + `@ai-sdk/google`)
   - **Payments**: Stripe (Checkout & Billing Portal) + webhooks + hourly subscription sync
   - **Email**: SMTP via nodemailer — high-urgency alerts + 7AM digest (`server/src/lib/mail.ts`, `workers/notification.worker.ts`)
   - **Storage**: S3-compatible object storage (Org Logos)

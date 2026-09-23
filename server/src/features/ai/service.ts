@@ -27,9 +27,12 @@ const feedbackAnalysisSchema = z.object({
   // Structured satisfaction (arXiv 2606.19698): satisfaction 1-5 is the
   // customer's inferred outcome, distinct from sentiment tone. fixableProblem
   // flags concrete, actionable issues ("tolerated friction" included).
-  satisfactionEstimate: z.number().int().min(1).max(5).describe(
-    'Inferred customer satisfaction 1-5, distinct from sentiment tone',
-  ),
+  satisfactionEstimate: z
+    .number()
+    .int()
+    .min(1)
+    .max(5)
+    .describe('Inferred customer satisfaction 1-5, distinct from sentiment tone'),
   fixableProblem: z.boolean().describe('Whether a concrete fixable problem exists'),
   concreteIssue: z.string().describe('One-sentence fixable problem, or "None"'),
   retentionRisk: z.enum(['Low', 'Medium', 'High']).describe('Churn/revenue-at-risk signal'),
@@ -56,14 +59,24 @@ export interface FeedbackAnalysis {
   rootCause: string;
   suggestedAction: string;
   confidence: number;
+  /**
+   * True when the Gemini call failed (timeout/error) and these values are the
+   * degraded fallback, not a real reading. Analytics already exclude the
+   * fallback via confidence 0.1; this flag makes the failure explicit for API
+   * consumers instead of a plausible-looking Neutral/Low row.
+   */
+  analysisFailed?: boolean;
 }
 
 /**
  * Public submission must never hang on a Gemini outage: bound the analysis so
  * the request degrades to the fallback analysis (confidence 0.1) quickly.
+ *
+ * The signal MUST be created per call (AbortSignal.timeout starts counting at
+ * creation). A module-level signal would fire ~12s after server start and then
+ * abort EVERY subsequent analysis instantly — see analyzeFeedback.
  */
 export const ANALYSIS_TIMEOUT_MS = 12_000;
-const ANALYSIS_TIMEOUT_SIGNAL = AbortSignal.timeout(ANALYSIS_TIMEOUT_MS);
 
 /**
  * Rows analyzed by the fallback (confidence 0.1) look plausible but are junk;
@@ -91,8 +104,7 @@ export async function draftOwnerReply(input: ReplyDraftInput): Promise<string> {
   const business = input.businessName?.trim() || 'our team';
   const fallback =
     `Thanks for sharing this with ${business} — ` +
-    (input.suggestedAction?.trim() ||
-      `we're looking into the ${input.category} issue you raised`) +
+    (input.suggestedAction?.trim() || `we're looking into the ${input.category} issue you raised`) +
     `. We'll follow up once it's resolved.`;
   const prompt = `You are writing a short public reply from a small business owner to a customer's feedback review.
 
@@ -138,9 +150,7 @@ export async function analyzeFeedback(
   const fallbackCategory = categories[0] ?? 'General';
   const categoriesList = categories.join(', ');
   const contextLine =
-    contextTags.length > 0
-      ? `\nCustomer context tags: ${contextTags.join(', ')}`
-      : '';
+    contextTags.length > 0 ? `\nCustomer context tags: ${contextTags.join(', ')}` : '';
 
   const prompt = `You are an advisor for a small business owner. Analyze this customer feedback and return structured JSON that helps them ACT, not just measure.
 
@@ -175,7 +185,7 @@ Rules:
       prompt,
       temperature: 0.3,
       maxRetries: 3,
-      abortSignal: ANALYSIS_TIMEOUT_SIGNAL,
+      abortSignal: AbortSignal.timeout(ANALYSIS_TIMEOUT_MS),
     });
 
     const analysis: FeedbackAnalysis = output;
@@ -209,7 +219,14 @@ Rules:
 
     return analysis;
   } catch (error) {
-    logger.error(`AI analysis failed: ${(error as Error).message}`);
+    const err = error as Error;
+    logger.error(
+      `AI analysis failed (model=${modelName}, timedOut=${err.name === 'TimeoutError'}): ${err.message}`,
+    );
+    // Honest degraded marker: confidence 0.1 keeps this row out of every
+    // analytics aggregate (DEGRADED_CONFIDENCE_THRESHOLD), analysisFailed
+    // flags it for API consumers instead of masquerading as a real Neutral/Low
+    // reading, and the neutral values below are placeholders only.
     return {
       category: fallbackCategory,
       sentiment: 'Neutral' as const,
@@ -225,6 +242,7 @@ Rules:
       rootCause: 'Unknown',
       suggestedAction: 'Review this feedback manually',
       confidence: 0.1,
+      analysisFailed: true,
     };
   }
 }
@@ -357,27 +375,51 @@ export async function answerAnalyticsQuery(
   }
   if (wants('trend', 'over time', 'last month', 'this week', 'sentiment')) {
     const trends = await analyticsService.getSentimentTrends(organizationId, 30);
-    cards.push({ kind: 'sentiment', title: 'Sentiment trend (30 days)', rows: trends.slice(-14) as unknown as Array<Record<string, unknown>> });
+    cards.push({
+      kind: 'sentiment',
+      title: 'Sentiment trend (30 days)',
+      rows: trends.slice(-14) as unknown as Array<Record<string, unknown>>,
+    });
   }
   if (wants('categor', 'breakdown', 'which area', 'pricing', 'service', 'staff')) {
     const cats = await analyticsService.getCategoryBreakdown(organizationId);
-    cards.push({ kind: 'categories', title: 'Feedback by category', rows: cats.slice(0, 8) as unknown as Array<Record<string, unknown>> });
+    cards.push({
+      kind: 'categories',
+      title: 'Feedback by category',
+      rows: cats.slice(0, 8) as unknown as Array<Record<string, unknown>>,
+    });
   }
   if (wants('heatmap', 'by category', 'compare')) {
     const heat = await analyticsService.getHeatmap(organizationId);
-    cards.push({ kind: 'heatmap', title: 'Sentiment by category', rows: (heat as unknown as Array<Record<string, unknown>>).slice(0, 12) });
+    cards.push({
+      kind: 'heatmap',
+      title: 'Sentiment by category',
+      rows: (heat as unknown as Array<Record<string, unknown>>).slice(0, 12),
+    });
   }
   if (wants('issue', 'problem', 'top', 'recurring', 'complaint')) {
     const issues = await analyticsService.getTopIssues(organizationId, 5);
-    cards.push({ kind: 'issues', title: 'Top recurring issues', rows: issues as unknown as Array<Record<string, unknown>> });
+    cards.push({
+      kind: 'issues',
+      title: 'Top recurring issues',
+      rows: issues as unknown as Array<Record<string, unknown>>,
+    });
   }
   if (wants('alert', 'urgent', 'priority', 'critical', 'attention')) {
     const alerts = await analyticsService.getAlerts(organizationId, 15);
-    cards.push({ kind: 'alerts', title: 'Priority alerts', rows: (alerts as unknown as Array<Record<string, unknown>>).slice(0, 5) });
+    cards.push({
+      kind: 'alerts',
+      title: 'Priority alerts',
+      rows: (alerts as unknown as Array<Record<string, unknown>>).slice(0, 5),
+    });
   }
   if (cards.length === 0) {
     const issues = await analyticsService.getTopIssues(organizationId, 5);
-    cards.push({ kind: 'issues', title: 'Top recurring issues', rows: issues as unknown as Array<Record<string, unknown>> });
+    cards.push({
+      kind: 'issues',
+      title: 'Top recurring issues',
+      rows: issues as unknown as Array<Record<string, unknown>>,
+    });
   }
 
   const summary = await chatWithAI(
@@ -411,7 +453,10 @@ export async function chatWithAI(
 }
 
 export function buildChatPrompt(message: string, feedbackContext: FeedbackContextItem[]): string {
-  const context = feedbackContext.slice(0, 15).map((f) => formatContextLine(f, 300)).join('\n');
+  const context = feedbackContext
+    .slice(0, 15)
+    .map((f) => formatContextLine(f, 300))
+    .join('\n');
 
   return `You are an AI assistant helping a business owner understand their customer feedback.
 
@@ -458,7 +503,10 @@ export async function* streamChat(
  * server-side; the client only ever sends conversation messages.
  */
 export function buildChatSystemPrompt(feedbackContext: FeedbackContextItem[]): string {
-  const context = feedbackContext.slice(0, 15).map((f) => formatContextLine(f, 300)).join('\n');
+  const context = feedbackContext
+    .slice(0, 15)
+    .map((f) => formatContextLine(f, 300))
+    .join('\n');
 
   return `You are an AI assistant helping a business owner understand their customer feedback.
 

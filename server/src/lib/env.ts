@@ -23,7 +23,9 @@ const envSchema = z.object({
 
   // AI (Vercel AI SDK + Google provider)
   GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
-  AI_MODEL: z.string().default('gemini-2.0-flash'),
+  // gemini-2.0-flash was retired by Google (returns "no longer available");
+  // the API now directs callers to gemini-3.6-flash.
+  AI_MODEL: z.string().default('gemini-3.6-flash'),
 
   // Stripe
   STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY is required'),
