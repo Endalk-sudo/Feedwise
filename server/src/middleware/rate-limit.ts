@@ -10,17 +10,24 @@ import logger from '@/utils/logger.js';
  * (shared across instances / serverless), otherwise falls back to
  * the default in-memory store.
  */
-export function createRateLimiter(options: {
-  windowMs?: number;
-  max?: number;
-  message?: string;
-  keyGenerator?: (req: Request) => string;
-  prefix?: string;
-} = {}) {
+export function createRateLimiter(
+  options: {
+    windowMs?: number;
+    max?: number;
+    message?: string;
+    keyGenerator?: (req: Request) => string;
+    prefix?: string;
+  } = {},
+) {
   const redis = getRedis();
+  // Local dev only: E2E/browser runs reuse one IP and exhaust the shared
+  // Redis `rl:*` counters mid-run (429s on sign-up/get-session). Relax the
+  // caps outside production so repeated dev runs don't self-DoS.
+  const devRelax = process.env.NODE_ENV !== 'production';
+  const scale = (n: number) => (devRelax ? n * 20 : n);
   const base = {
     windowMs: options.windowMs || 15 * 60 * 1000,
-    max: options.max || 100,
+    max: scale(options.max || 100),
     standardHeaders: true as const,
     legacyHeaders: false as const,
     // ipKeyGenerator is required by express-rate-limit v8 when using a custom
