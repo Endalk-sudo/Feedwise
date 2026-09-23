@@ -31,7 +31,19 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        // Split long-lived vendor code out of the entry chunk so app deploys
+        // don't invalidate the (largest, rarely changing) library bundle.
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return;
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'vendor-react';
+          if (id.includes('@tanstack')) return 'vendor-query';
+          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
+          if (id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('sonner'))
+            return 'vendor-ui';
+          if (id.includes('@ai-sdk') || id.includes('/ai/') || id.includes('better-auth'))
+            return 'vendor-ai';
+          return 'vendor';
+        },
       },
     },
   },
